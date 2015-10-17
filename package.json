@@ -1,0 +1,41 @@
+{
+  "name": "sumseti-nodejs",
+  "version": "0.0.1",
+  "description": "",
+  "main": "server.js",
+  "start": "node server.js",
+  "private": true,
+  "author": "",
+  "dependencies": {
+    "babel": "^5.6.14",
+    "babel-core": "^5.6.15",
+    "bcrypt": "^0.8.5",
+    "body-parser": "^1.14.0",
+    "crypto-js": "^3.1.5",
+    "dateformat": "^1.0.11",
+    "del": "^1.2.0",
+    "express": "^4.12.4",
+    "express-graphql": "^0.3.0",
+    "express-jwt": "^3.0.1",
+    "express-subdomain": "^1.0.4",
+    "extend": "^3.0.0",
+    "graphql": "^0.4.2",
+    "graphql-relay": "^0.3.1",
+    "jwt-refresh-token": "0.0.3",
+    "jwt-simple": "^0.3.0",
+    "lodash": "^3.9.3",
+    "moment": "^2.10.3",
+    "multer": "^1.0.3",
+    "node-uuid": "^1.4.3",
+    "orientjs": "^2.0.0",
+    "q": "^1.4.1",
+    "schema-inspector": "^1.5.1",
+    "sendgrid": "^1.9.2",
+    "validator": "^4.0.6"
+  },
+  "devDependencies": {
+    "istanbul": "^0.3.16",
+    "jest-cli": "^0.4.13",
+    "mocha": "^2.2.5"
+  }
+}
