@@ -1,3 +1,5 @@
+'use strict';
+
 var moment = require('moment');
 var jwt = require('jwt-simple');
 import {AppConfig} from '../../../config';

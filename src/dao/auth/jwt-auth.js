@@ -1,3 +1,5 @@
+'use strict';
+
 var exports = module.exports;
 var jwt = require('jwt-simple');
 import {AppConfig} from '../../config';

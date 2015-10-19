@@ -1,3 +1,5 @@
+'use strict';
+
 var CursorToOffset = require('./cursorToOffset');
 
 // before > after

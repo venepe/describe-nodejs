@@ -1,3 +1,5 @@
+'use strict';
+
 class Image extends Object {}
 class Paper extends Object {}
 class Project extends Object {}

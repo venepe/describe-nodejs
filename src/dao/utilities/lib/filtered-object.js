@@ -1,3 +1,5 @@
+'use strict';
+
 var _ = require('lodash');
 
 var filtered_object = function(obj, filter, object) {

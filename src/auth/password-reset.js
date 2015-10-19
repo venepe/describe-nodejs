@@ -1,3 +1,5 @@
+'use strict';
+
 var dao = require('../dao');
 
 function PasswordReset(user, payload) {

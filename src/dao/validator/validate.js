@@ -1,3 +1,5 @@
+'use strict';
+
 var inspector = require('schema-inspector');
 
 var validateAndSanitize = function(schema, object) {

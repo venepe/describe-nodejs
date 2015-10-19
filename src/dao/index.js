@@ -1,3 +1,5 @@
+'use strict';
+
 var OrientDB = require('../db');
 import {OrientDbConfig} from '../config';
 var server = OrientDB(OrientDbConfig);

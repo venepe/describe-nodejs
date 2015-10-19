@@ -1,3 +1,5 @@
+'use strict';
+
 var schema = {
     type: 'object',
     code: 400,

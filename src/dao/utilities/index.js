@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = {
   AuthToken: require('./lib/auth-token.js'),
   FilteredObject: require('./lib/filtered-object.js'),
@@ -7,5 +9,5 @@ module.exports = {
   HashPassword: require('./lib/hashPassword.js'),
   Generate: require('./lib/generate.js'),
   IsValidPassword: require('./lib/is-valid-password.js'),
-  Constants: require('./lib/constants.js') 
+  Constants: require('./lib/constants.js')
 }

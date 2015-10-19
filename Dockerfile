@@ -1,3 +1,3 @@
-FROM node:0.12.7-onbuild
+FROM node:4.2-onbuild
 # replace this with your application's default port
 EXPOSE 3000

@@ -1,3 +1,5 @@
+'use strict';
+
 var Base64 = require('./base64');
 
 var PREFIX = 'arrayconnection:';

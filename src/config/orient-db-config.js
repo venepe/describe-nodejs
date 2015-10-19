@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = {
   host: process.env.ORIENTDB_HOST,
   port: process.env.ORIENTDB_PORT,

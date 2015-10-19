@@ -1,3 +1,5 @@
+'use strict';
+
 function getPasswordPattern() {
   // return /^(?=.*[^a-zA-Z])(?=.*[a-z])(?=.*[A-Z])\S{6,}$/;
   return /.*/;
