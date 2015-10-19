@@ -3,7 +3,6 @@
 var OrientDB = require('../db');
 import {OrientDbConfig} from '../config';
 var server = OrientDB(OrientDbConfig);
-var authToken = require('./auth/jwt-auth');
 
 function DAO(user) {
   if (!(this instanceof DAO)) return new DAO(user);
