@@ -1,7 +1,5 @@
 'use strict';
 
-var exports = module.exports;
-
 var _class = 'User';
 var validator = require('../validator');
 var utilites = require('../utilities');
@@ -37,4 +35,5 @@ Me.prototype.get = function () {
     });
   });
 }
+
 module.exports = Me;

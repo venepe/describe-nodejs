@@ -1,7 +1,5 @@
 'use strict';
 
-var exports = module.exports;
-
 var _class = 'User';
 var validator = require('../validator');
 var utilities = require('../utilities');

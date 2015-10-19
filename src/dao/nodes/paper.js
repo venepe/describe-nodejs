@@ -1,7 +1,5 @@
 'use strict';
 
-var exports = module.exports;
-
 var _class = 'Paper';
 var validator = require('../validator');
 var utilites = require('../utilities');

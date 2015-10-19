@@ -1,7 +1,5 @@
 'use strict';
 
-var exports = module.exports;
-
 var _class = 'Image';
 var validator = require('../validator');
 var utilites = require('../utilities');

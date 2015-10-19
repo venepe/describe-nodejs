@@ -1,7 +1,5 @@
 'use strict';
 
-var exports = module.exports;
-
 var _class = 'Project';
 var utilites = require('../utilities');
 
