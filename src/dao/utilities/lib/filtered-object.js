@@ -1,6 +1,6 @@
 'use strict';
 
-var _ = require('lodash');
+const _ = require('lodash');
 
 var filtered_object = function(obj, filter, object) {
   //'in_.*|out_.*|@.*' RegExp to remove in_ & out_ relations

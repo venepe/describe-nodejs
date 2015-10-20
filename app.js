@@ -1,24 +1,24 @@
 'use strict';
 
-var express = require('express');
-var graphqlHTTP = require('express-graphql');
-var bodyParser = require('body-parser')
-var app = express();
-var server = require('http').Server(app);
-var jwt = require('express-jwt');
-var jwtRefreshToken = require('jwt-refresh-token');
+const express = require('express');
+const graphqlHTTP = require('express-graphql');
+const bodyParser = require('body-parser')
+const app = express();
+const server = require('http').Server(app);
+const jwt = require('express-jwt');
+const jwtRefreshToken = require('jwt-refresh-token');
 import {AppConfig} from './src/config';
-var dao = require('./src/dao');
-var uuid = require('node-uuid');
-var baseUrl = 'http://localhost:3000';
+const dao = require('./src/dao');
+const uuid = require('node-uuid');
+const baseUrl = 'http://localhost:3000';
 import {graphql} from 'graphql';
 import {fromGlobalId} from 'graphql-relay';
-var schema = require('./src/graphql/schema');
-var multer  = require('multer');
-var signup = require('./src/auth/signup');
-var authenticate = require('./src/auth/authenticate');
-var passwordReset = require('./src/auth/password-reset');
-var upload = multer({ dest: __dirname + '/public/uploads/images/full_size/' });
+const schema = require('./src/graphql/schema');
+const multer  = require('multer');
+const signup = require('./src/auth/signup');
+const authenticate = require('./src/auth/authenticate');
+const passwordReset = require('./src/auth/password-reset');
+const upload = multer({ dest: __dirname + '/public/uploads/images/full_size/' });
 
 app.use(jwt({
   secret: AppConfig.JWTSecret,

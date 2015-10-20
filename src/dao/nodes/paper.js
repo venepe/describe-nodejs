@@ -1,8 +1,8 @@
 'use strict';
 
-var _class = 'Paper';
-var validator = require('../validator');
-var utilites = require('../utilities');
+const _class = 'Paper';
+const validator = require('../validator');
+const utilites = require('../utilities');
 
 import {
   Paper

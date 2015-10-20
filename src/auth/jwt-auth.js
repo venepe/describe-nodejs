@@ -1,6 +1,6 @@
 'use strict';
 
-var jwt = require('jwt-simple');
+const jwt = require('jwt-simple');
 import {AppConfig} from '../config';
 
 module.exports = function(socket, next) {

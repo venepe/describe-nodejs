@@ -1,8 +1,8 @@
 'use strict';
 
-var _class = 'Image';
-var validator = require('../validator');
-var utilites = require('../utilities');
+const _class = 'Image';
+const validator = require('../validator');
+const utilites = require('../utilities');
 
 import {
   Image

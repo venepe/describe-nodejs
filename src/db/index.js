@@ -1,7 +1,7 @@
 'use strict';
 
-var OrientDB = require('orientjs');
-var utilites = require('../dao/utilities');
+const OrientDB = require('orientjs');
+const utilites = require('../dao/utilities');
 
 OrientDB.Statement.prototype.SMTINode = '';
 

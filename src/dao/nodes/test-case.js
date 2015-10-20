@@ -1,8 +1,8 @@
 'use strict';
 
-var _class = 'TestCase';
-var validator = require('../validator');
-var utilites = require('../utilities');
+const _class = 'TestCase';
+const validator = require('../validator');
+const utilites = require('../utilities');
 
 import {
   TestCase

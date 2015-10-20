@@ -1,7 +1,7 @@
 'use strict';
 
-var uuid = require('node-uuid');
-var utilities = require('../../utilities');
+const uuid = require('node-uuid');
+const utilities = require('../../utilities');
 
 function getSchema() {
   return {

@@ -1,7 +1,7 @@
 'use strict';
 
-var _class = 'Project';
-var utilites = require('../utilities');
+const _class = 'Project';
+const utilites = require('../utilities');
 
 function Search(query, params) {
   // if (!(this instanceof Search)) return new Search(query);

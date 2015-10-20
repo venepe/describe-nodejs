@@ -1,6 +1,6 @@
 'use strict';
 
-var inspector = require('schema-inspector');
+const inspector = require('schema-inspector');
 
 var validateAndSanitize = function(schema, object) {
   var sanObject = inspector.sanitize(schema, object);

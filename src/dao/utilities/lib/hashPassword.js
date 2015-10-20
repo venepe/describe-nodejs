@@ -1,7 +1,7 @@
 'use strict';
 
-var CryptoJS = require('crypto-js');
-var app_config = require('../../../config/');
+const CryptoJS = require('crypto-js');
+const app_config = require('../../../config/');
 
 import {
   AppConfig

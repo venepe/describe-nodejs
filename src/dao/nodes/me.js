@@ -1,9 +1,9 @@
 'use strict';
 
-var _class = 'User';
-var validator = require('../validator');
-var utilites = require('../utilities');
-var app_config = require('../../config/app-config');
+const _class = 'User';
+const validator = require('../validator');
+const utilites = require('../utilities');
+const app_config = require('../../config/app-config');
 
 function Me() {
   // if (!(this instanceof Me)) return new Me();

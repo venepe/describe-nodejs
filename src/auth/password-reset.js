@@ -1,6 +1,6 @@
 'use strict';
 
-var dao = require('../dao');
+const dao = require('../dao');
 
 function PasswordReset(user, payload) {
   return dao(user).User(user.id).updatePassword(payload)

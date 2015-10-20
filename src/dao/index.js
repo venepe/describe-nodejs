@@ -1,8 +1,8 @@
 'use strict';
 
-var OrientDB = require('../db');
+const OrientDB = require('../db');
 import {OrientDbConfig} from '../config';
-var server = OrientDB(OrientDbConfig);
+const server = OrientDB(OrientDbConfig);
 
 function DAO(user) {
   if (!(this instanceof DAO)) return new DAO(user);

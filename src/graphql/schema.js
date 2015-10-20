@@ -1,6 +1,6 @@
 'use strict';
 
-var dao = require('../dao');
+const dao = require('../dao');
 
 import {
   graphql,

@@ -1,7 +1,7 @@
 'use strict';
 
-var validator = require('validator');
-var utilities = require('../../utilities');
+const validator = require('validator');
+const utilities = require('../../utilities');
 
 var schema = {
   type: 'object',
