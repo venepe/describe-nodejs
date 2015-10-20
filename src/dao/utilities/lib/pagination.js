@@ -19,14 +19,14 @@ const CursorToOffset = require('./cursorToOffset');
 // skip 1 - 3 limit 3 orderBy ASC
 
 function getOrientDBPageFromGraphQL(args) {
-  var skip = 0;
-  var limit = 25;
-  var orderBy = 'createdAt DESC';
+  let skip = 0;
+  let limit = 25;
+  let orderBy = 'createdAt DESC';
 
-  var first = args.first || 0;
-  var last = args.last || 0;
-  var before = (args.before) ? CursorToOffset(args.before) : 0;
-  var after = (args.after) ? CursorToOffset(args.after) : 0;
+  let first = args.first || 0;
+  let last = args.last || 0;
+  let before = (args.before) ? CursorToOffset(args.before) : 0;
+  let after = (args.after) ? CursorToOffset(args.after) : 0;
 
   if (args.first) {
     skip = (after >= before) ? after : (before > first) ? 0 : first - before;

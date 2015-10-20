@@ -1,8 +1,8 @@
 'use strict';
 
 function isValidPassword(password) {
-  var passwordRegex = '^(?=.*[^a-zA-Z])(?=.*[a-z])(?=.*[A-Z])\S{6,}$';
-  var regEx = new RegExp(passwordRegex);
+  let passwordRegex = '^(?=.*[^a-zA-Z])(?=.*[a-z])(?=.*[A-Z])\S{6,}$';
+  let regEx = new RegExp(passwordRegex);
   return regEx.test(password);
 }
 

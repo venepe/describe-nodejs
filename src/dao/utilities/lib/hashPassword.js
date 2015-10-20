@@ -8,8 +8,8 @@ import {
 } from '../../../config'
 
 function hashPassword(password) {
-  var salt = AppConfig.PasswordSalt;
-  var hashedPassword = CryptoJS.MD5(password + salt);
+  let salt = AppConfig.PasswordSalt;
+  let hashedPassword = CryptoJS.MD5(password + salt);
   return hashedPassword.toString();
 }
 

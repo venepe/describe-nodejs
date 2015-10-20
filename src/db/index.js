@@ -24,7 +24,7 @@ OrientDB.Statement.prototype.getTestCase = function() {
 }
 
 OrientDB.Statement.prototype.addTestCases = function() {
-  var statement = 'expand(outE(\'Requires\').inV(\'TestCase\'))';
+  let statement = 'expand(outE(\'Requires\').inV(\'TestCase\'))';
 
   return this.select('$tc[0-24].id as tcId, $tc[0-24].it as tcIt, $tc[0-24].createdAt as tcCreatedAt, $tc[0-24].updatedAt as tcUpdatedAt')
         .let('tc', function(s) {
