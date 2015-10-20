@@ -38,7 +38,7 @@ PaperDAO.prototype.get = function () {
 
     })
     .done(() => {
-      db.close();
+      // db.close();
     });
   });
 }
@@ -69,7 +69,7 @@ PaperDAO.prototype.getEdgeCreated = function (args) {
 
     })
     .done(() => {
-      db.close();
+      // db.close();
     });
   });
 }
@@ -99,7 +99,7 @@ PaperDAO.prototype.getEdgeDescribes = function (args) {
       reject();
     })
     .done(() => {
-      db.close();
+      // db.close();
     });
   });
 }
@@ -171,7 +171,7 @@ PaperDAO.prototype.create = function (object) {
 
         })
         .done(() => {
-          db.close();
+          // db.close();
         });
 
       } else {
@@ -230,7 +230,7 @@ PaperDAO.prototype.update = function (object) {
 
         })
         .done(() => {
-          db.close();
+          // db.close();
         });
 
       } else {
@@ -265,7 +265,7 @@ PaperDAO.prototype.del = function () {
 
     })
     .done(() => {
-      db.close();
+      // db.close();
     });
   });
 }

@@ -48,7 +48,7 @@ UserAuthenticate.prototype.authenticate = function (object) {
           reject({message: 'Invalid email or password'})
         })
         .done(() => {
-          db.close();
+          // db.close();
         });
       } else {
         console.log(err);

@@ -38,7 +38,7 @@ ImageDAO.prototype.get = function () {
 
     })
     .done(function() {
-      db.close();
+      // db.close();
     });
   });
 }
@@ -69,7 +69,7 @@ ImageDAO.prototype.getEdgeCreated = function (args) {
 
     })
     .done(function() {
-      db.close();
+      // db.close();
     });
   });
 }

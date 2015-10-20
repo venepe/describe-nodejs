@@ -38,7 +38,7 @@ ProjectDAO.prototype.get = function () {
 
   })
   .done(function() {
-    db.close();
+    // db.close();
   });
 });
 }
@@ -65,7 +65,7 @@ ProjectDAO.prototype.inEdgeRequired = function () {
 
     })
     .done(function() {
-      db.close();
+      // db.close();
     });
   });
 }
@@ -96,7 +96,7 @@ ProjectDAO.prototype.inEdgeFulfilled = function (args) {
 
     })
     .done(() => {
-      db.close();
+      // db.close();
     });
   });
 }
@@ -127,7 +127,7 @@ ProjectDAO.prototype.getEdgeCreated = function (args) {
 
     })
     .done(() => {
-      db.close();
+      // db.close();
     });
   });
 }
@@ -182,7 +182,7 @@ ProjectDAO.prototype.create = function (object) {
 
         })
         .done(() => {
-          db.close();
+          // db.close();
         });
 
       } else {
@@ -256,7 +256,7 @@ ProjectDAO.prototype.createFulfills = function (object) {
 
         })
         .done(() => {
-          db.close();
+          // db.close();
         });
 
       } else {
@@ -314,7 +314,7 @@ ProjectDAO.prototype.update = function (object) {
 
         })
         .done(() => {
-          db.close();
+          // db.close();
         });
 
       } else {
@@ -349,7 +349,7 @@ ProjectDAO.prototype.del = function () {
 
     })
     .done(() => {
-      db.close();
+      // db.close();
     });
   });
 }

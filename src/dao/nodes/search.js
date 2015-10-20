@@ -40,7 +40,7 @@ Search.prototype.findProject = function (args) {
       reject();
     })
     .done(function() {
-      db.close();
+      // db.close();
     });
   });
 }
@@ -75,7 +75,7 @@ Search.prototype.findProject = function (args) {
 //       reject();
 //     })
 //     .done(function() {
-//       // db.close();
+//      // db.close();
 //     });
 //   });
 // }

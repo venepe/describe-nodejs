@@ -31,7 +31,7 @@ Me.prototype.get = function () {
       reject();
     })
     .done(() => {
-      db.close();
+      // db.close();
     });
   });
 }

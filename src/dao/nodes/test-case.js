@@ -38,7 +38,7 @@ TestCaseDAO.prototype.get = function () {
 
     })
     .done(() => {
-      db.close();
+      // db.close();
     });
   });
 }
@@ -69,7 +69,7 @@ TestCaseDAO.prototype.getEdgeCreated = function (args) {
 
     })
     .done(() => {
-      db.close();
+      // db.close();
     });
   });
 }
@@ -100,7 +100,7 @@ TestCaseDAO.prototype.getEdgeRequired = function (args) {
 
     })
     .done(() => {
-      db.close();
+      // db.close();
     });
   });
 }
@@ -126,7 +126,7 @@ TestCaseDAO.prototype.getEdgeTargeted = function () {
 
     })
     .done(() => {
-      db.close();
+      // db.close();
     });
   });
 }
@@ -199,7 +199,7 @@ TestCaseDAO.prototype.create = function (object) {
 
         })
         .done(() => {
-          db.close();
+          // db.close();
         });
 
       } else {
@@ -258,7 +258,7 @@ TestCaseDAO.prototype.update = function (object) {
 
         })
         .done(() => {
-          db.close();
+          // db.close();
         });
 
       } else {
@@ -293,7 +293,7 @@ TestCaseDAO.prototype.del = function () {
       reject();
     })
     .done(() => {
-      db.close();
+      // db.close();
     });
   });
 }

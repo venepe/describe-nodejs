@@ -37,7 +37,7 @@ UserDAO.prototype.get = function() {
       reject();
     })
     .done(() => {
-      db.close();
+      // db.close();
     });
   });
 }
@@ -64,7 +64,7 @@ UserDAO.prototype.inEdgeCreated = function () {
 
     })
     .done(() => {
-      db.close();
+      // db.close();
     });
   });
 }
@@ -113,7 +113,7 @@ UserDAO.prototype.create = function (object) {
           reject();
         })
         .done(() => {
-          db.close();
+          // db.close();
         });
       } else {
         reject(err);
@@ -165,7 +165,7 @@ UserDAO.prototype.update = function (object) {
             reject();
           })
           .done(() => {
-            db.close();
+            // db.close();
           });
         } else {
           reject(err);
@@ -246,7 +246,7 @@ UserDAO.prototype.updatePassword = function (object) {
             reject();
           })
           .done(() => {
-            db.close();
+            // db.close();
           });
         } else {
           reject(err);
@@ -282,7 +282,7 @@ UserDAO.prototype.del = function (callback) {
       reject();
     })
     .done(() => {
-      db.close();
+      // db.close();
     });
   });
 }
