@@ -1,17 +1,13 @@
 'use strict';
 
 const OrientDB = require('../db');
-import {OrientDbConfig} from '../config';
+import {OrientDbConfig, SumsetiDbConfig} from '../config';
 const server = OrientDB(OrientDbConfig);
 
 function DAO(user) {
   if (!(this instanceof DAO)) return new DAO(user);
   this.user = user || {};
-  this.db = server.use({
-    name: 'sumseti',
-    username: 'writer',
-    password: 'writer'
-  });
+  this.db = server.use(SumsetiDbConfig);
 }
 
 DAO.prototype.Image = function(targetId, params) {
