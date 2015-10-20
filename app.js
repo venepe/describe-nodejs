@@ -44,13 +44,13 @@ app.use(function(req, res, next) {
 })
 
 app.post('/authenticate', bodyParser.json(), function(req, res) {
-  var authBody = req.body.authenticate || {};
+  let authBody = req.body.authenticate || {};
   authenticate(authBody)
   .then(function(auth) {
     res.status(200).json({authenticate: auth});
   })
   .catch(function(err) {
-    var errors = [{message: 'Invalid email or password.'}]
+    let errors = [{message: 'Invalid email or password.'}]
     res.status(400).json({errors});
   })
 });
@@ -60,55 +60,55 @@ app.get('/default/images/:id', function(req, res) {
 });
 
 app.post('/token', function(req, res) {
-  var token = req.headers['x-access-token'] || {};
+  let token = req.headers['x-access-token'] || {};
   try {
-    var newToken = jwtRefreshToken.refresh(token, AppConfig.JWTSecret, {});
+    let newToken = jwtRefreshToken.refresh(token, AppConfig.JWTSecret, {});
     res.status(200).json({token: newToken});
   } catch (e) {
-    var errors = [{message: 'Invalid token.'}]
+    let errors = [{message: 'Invalid token.'}]
     res.status(401).json({errors});
 
   }
 });
 
 app.post('/register', bodyParser.json(), function(req, res) {
-  var user = req.body.register || {};
+  let user = req.body.register || {};
   signup(user)
   .then(function(user) {
-    var authenticate = user.authenticate;
+    let authenticate = user.authenticate;
     res.status(200).json({register: authenticate});
   })
   .catch(function(err) {
-    var errors = [{message: 'Invalid email or password.'}]
+    let errors = [{message: 'Invalid email or password.'}]
     res.status(400).json({errors});
   })
 });
 
 app.post('/password', bodyParser.json(), function(req, res) {
-  var password = req.body.password || {};
-  var user = req.user;
+  let password = req.body.password || {};
+  let user = req.user;
   passwordReset(user, password)
   .then(function(user) {
-    var authenticate = user.authenticate || {};
+    let authenticate = user.authenticate || {};
     res.status(200).json({password: authenticate});
   })
   .catch(function(err) {
-    var errors = [{message: 'Invalid password.'}]
+    let errors = [{message: 'Invalid password.'}]
     res.status(400).json({errors});
   })
 });
 
 app.post('/forgot', bodyParser.json(), function(req, res) {
-  var forgot = req.body.forgot || {};
+  let forgot = req.body.forgot || {};
   console.log('send email');
   res.status(200).json({forgot: null});
 });
 
 app.post('/graphql', upload.single('image'), function(req, res, next){
     if (req.body && req.file && req.body.variables) {
-      var variables = JSON.parse(req.body.variables);
-      var filename = req.file.filename;
-      var url = req.file.destination.replace(__dirname + '/public' , baseUrl);
+      let variables = JSON.parse(req.body.variables);
+      let filename = req.file.filename;
+      let url = req.file.destination.replace(__dirname + '/public' , baseUrl);
       variables.input.uri = url + filename;
       variables = JSON.stringify(variables);
       req.body.variables = variables;
