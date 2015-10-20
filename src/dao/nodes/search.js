@@ -10,11 +10,11 @@ function Search(query, params) {
 }
 
 Search.prototype.findProject = function (args) {
-  var pageObject = utilites.Pagination.getOrientDBPageFromGraphQL(args);
+  let pageObject = utilites.Pagination.getOrientDBPageFromGraphQL(args);
 
   return new Promise((resolve, reject) => {
-    var query = this.query;
-    var user = this.user;
+    let query = this.query;
+    let user = this.user;
     var db = this.db;
 
     query = query + '*';
@@ -29,18 +29,18 @@ Search.prototype.findProject = function (args) {
     .skip(pageObject.skip)
     .limit(pageObject.limit)
     .order(pageObject.orderBy)
-    .transform(function(record) {
+    .transform((record) => {
       return utilites.FilteredObject(record, '@.*|rid');
     })
     .all()
-    .then(function (records) {
+    .then((records) => {
       resolve(records);
     })
-    .catch(function (e) {
+    .catch((e) => {
       reject();
     })
     .done(function() {
-      // db.close();
+      db.close();
     });
   });
 }

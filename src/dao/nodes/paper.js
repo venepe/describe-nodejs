@@ -16,30 +16,29 @@ function PaperDAO(targetId, params) {
 
 PaperDAO.prototype.get = function () {
   return new Promise((resolve, reject) => {
-    var user = this.user;
-    var db = this.db;
-    var id = this.targetId;
+    let user = this.user;
+    let db = this.db;
+    let id = this.targetId;
 
     db
-    // .select('id, text, createdAt, updatedAt')
     .getPaper()
     .from(_class)
     .where({id: id})
     .limit(1)
     .transform(function(record) {
-      var paper = new Paper();
+      let paper = new Paper();
       return utilites.FilteredObject(record, '@.*|rid', paper);
     })
     .one()
-    .then(function (record) {
+    .then((record) => {
       resolve(record);
     })
-    .catch(function (e) {
+    .catch((e) => {
       reject();
 
     })
-    .done(function() {
-      // db.close();
+    .done(() => {
+      db.close();
     });
   });
 }
@@ -48,9 +47,9 @@ PaperDAO.prototype.getEdgeCreated = function (args) {
   var pageObject = utilites.Pagination.getOrientDBPageFromGraphQL(args);
 
   return new Promise((resolve, reject) => {
-    var id = this.targetId;
-    var user = this.user;
-    var db = this.db;
+    let user = this.user;
+    let db = this.db;
+    let id = this.targetId;
 
     db
     .getPaper()
@@ -58,30 +57,30 @@ PaperDAO.prototype.getEdgeCreated = function (args) {
     .skip(pageObject.skip)
     .limit(pageObject.limit)
     .order(pageObject.orderBy)
-    .transform(function(record) {
+    .transform((record) => {
       return utilites.FilteredObject(record, '@.*|rid');
     })
     .all()
-    .then(function (records) {
+    .then((records) => {
       resolve(records);
     })
-    .catch(function (e) {
+    .catch((e) => {
       reject();
 
     })
-    .done(function() {
-      // db.close();
+    .done(() => {
+      db.close();
     });
   });
 }
 
 PaperDAO.prototype.getEdgeDescribes = function (args) {
-  var pageObject = utilites.Pagination.getOrientDBPageFromGraphQL(args);
+  let pageObject = utilites.Pagination.getOrientDBPageFromGraphQL(args);
 
   return new Promise((resolve, reject) => {
-    var id = this.targetId;
-    var user = this.user;
-    var db = this.db;
+    let user = this.user;
+    let db = this.db;
+    let id = this.targetId;
 
     db
     .getPaper()
@@ -89,30 +88,29 @@ PaperDAO.prototype.getEdgeDescribes = function (args) {
     .skip(pageObject.skip)
     .limit(pageObject.limit)
     .order(pageObject.orderBy)
-    .transform(function(record) {
+    .transform((record) => {
       return utilites.FilteredObject(record, '@.*|rid');
     })
     .all()
-    .then(function (records) {
+    .then((records) => {
       resolve(records);
     })
-    .catch(function (e) {
+    .catch((e) => {
       reject();
-
     })
-    .done(function() {
-      // db.close();
+    .done(() => {
+      db.close();
     });
   });
 }
 
 PaperDAO.prototype.create = function (object) {
   return new Promise((resolve, reject) => {
-    var db = this.db;
-    var relationalId = this.targetId;
-    var user = this.user;
-    var userId = this.user.id;
-    var role = this.user.role;
+    let db = this.db;
+    let relationalId = this.targetId;
+    let user = this.user;
+    let userId = this.user.id;
+    let role = this.user.role;
 
     validator.Validate(object).isPaper(function(err, object) {
 
@@ -160,20 +158,21 @@ PaperDAO.prototype.create = function (object) {
         })
         .commit()
         .return('$paper')
-        .transform(function(record) {
+        .transform((record) => {
           return utilites.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
         })
         .one()
-        .then(function (record) {
+        .then((record) => {
           resolve(record);
         })
-        .catch(function (e) {
+        .catch((e) => {
           console.log(e);
-          console.log('we have an eror');
           reject();
 
         })
-        .done();
+        .done(() => {
+          db.close();
+        });
 
       } else {
         reject(err);
@@ -184,11 +183,11 @@ PaperDAO.prototype.create = function (object) {
 
 PaperDAO.prototype.update = function (object) {
   return new Promise((resolve, reject) => {
-    var targetId = this.targetId;
-    var db = this.db;
-    var user = this.user;
-    var userId = this.user.id;
-    var role = this.user.role;
+    let targetId = this.targetId;
+    let db = this.db;
+    let user = this.user;
+    let userId = this.user.id;
+    let role = this.user.role;
 
     validator.Validate(object, true).isPaper(function(err, object) {
 
@@ -230,7 +229,9 @@ PaperDAO.prototype.update = function (object) {
           reject();
 
         })
-        .done();
+        .done(() => {
+          db.close();
+        });
 
       } else {
         reject(err);
@@ -241,11 +242,11 @@ PaperDAO.prototype.update = function (object) {
 
 PaperDAO.prototype.del = function () {
   return new Promise((resolve, reject) => {
-    var targetId = this.targetId;
-    var db = this.db;
-    var user = this.user;
-    var userId = this.user.id;
-    var role = this.user.role;
+    let targetId = this.targetId;
+    let db = this.db;
+    let user = this.user;
+    let userId = this.user.id;
+    let role = this.user.role;
 
     db.delete('VERTEX', _class)
     .where({
@@ -255,15 +256,17 @@ PaperDAO.prototype.del = function () {
       '_allow CONTAINS "' + role + '"'
     )
     .one()
-    .then(function() {
+    .then(() => {
       resolve({success: true});
     })
-    .catch(function(e) {
+    .catch((e) => {
       console.log(e);
       reject();
 
     })
-    .done();
+    .done(() => {
+      db.close();
+    });
   });
 }
 

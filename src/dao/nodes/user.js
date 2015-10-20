@@ -16,66 +16,67 @@ function UserDAO(targetId, params) {
 
 UserDAO.prototype.get = function() {
   return new Promise((resolve, reject) => {
-    var user = this.user;
-    var db = this.db;
-    var id = this.targetId;
+    let user = this.user;
+    let db = this.db;
+    let id = this.targetId;
 
     db
     .getUser()
     .from(_class)
     .where({id: id})
     .limit(1)
-    .transform(function(record) {
-      var user = new User ();
+    .transform((record) => {
+      let user = new User ();
       return utilities.FilteredObject(record, '@.*|rid', user);
     })
     .one()
-    .then(function (record) {
+    .then((record) => {
       resolve(record);
     })
-    .catch(function (e) {
+    .catch((e) => {
       reject();
     })
-    .done(function() {
-      // db.close();
+    .done(() => {
+      db.close();
     });
   });
 }
 
 UserDAO.prototype.inEdgeCreated = function () {
   return new Promise((resolve, reject) => {
-    var id = this.targetId;
-    var user = this.user;
-    var db = this.db;
+    let user = this.user;
+    let db = this.db;
+    let id = this.targetId;
 
     db
     .getUser()
     .inCreatesFromNode(id)
     .limit(25)
-    .transform(function(record) {
+    .transform((record) => {
       return utilities.FilteredObject(record, '@.*|rid');
     })
     .all()
-    .then(function (records) {
+    .then((records) => {
       resolve(records);
     })
-    .catch(function (e) {
+    .catch((e) => {
       reject();
 
     })
-    .done(function() {
+    .done(() => {
+      db.close();
     });
   });
 }
 
 UserDAO.prototype.create = function (object) {
   return new Promise((resolve, reject) => {
-    var db = this.db;
+    let db = this.db;
 
     validator.Validate(object).isUser(function(err, object) {
       if (err.valid === true) {
 
-        var password = object.password;
+        let password = object.password;
         password = utilities.HashPassword(password);
         object.password = password;
 
@@ -83,37 +84,37 @@ UserDAO.prototype.create = function (object) {
         .create('vertex', 'User')
         .set(object)
         .set({_allow: [object.id]})
-        .transform(function (record) {
-          console.log(record);
+        .transform((record) => {
           return utilities.FilteredObject(record, 'in_.*|out_.*|@.*|password|^_');
         })
         .one()
-        .then(function (user) {
+        .then((user) => {
           if(user) {
-            var username = user.username;
-            var uuid = user.id;
-            var graphQLID = utilities.Base64.base64('User:' + uuid);
-            var payload = {
+            let username = user.username;
+            let uuid = user.id;
+            let graphQLID = utilities.Base64.base64('User:' + uuid);
+            let payload = {
               username: username,
               id: graphQLID,
               role: uuid
             };
-            var authenticate = utilities.AuthToken(payload);
+            let authenticate = utilities.AuthToken(payload);
 
             user.authenticate = authenticate;
 
             resolve(user);
           } else {
-            //did not create
             reject({});
           }
 
         })
-        .catch(function(e) {
+        .catch((e) => {
           console.log(e);
           reject();
         })
-        .done();
+        .done(() => {
+          db.close();
+        });
       } else {
         reject(err);
       }
@@ -123,17 +124,17 @@ UserDAO.prototype.create = function (object) {
 
 UserDAO.prototype.update = function (object) {
   return new Promise((resolve, reject) => {
-    var targetId = this.targetId;
-    var db = this.db;
-    var user = this.user;
-    var userId = this.user.id;
-    var role = this.user.role;
+    let targetId = this.targetId;
+    let db = this.db;
+    let user = this.user;
+    let userId = this.user.id;
+    let role = this.user.role;
 
     if (userId === targetId) {
       validator.Validate(object, true).isUser(function(err, object) {
 
         if (err.valid === true) {
-          console.log(object);
+
           db
           .let('update', function(s) {
             s
@@ -152,18 +153,20 @@ UserDAO.prototype.update = function (object) {
           })
           .commit()
           .return('$user')
-          .transform(function (record) {
+          .transform((record) => {
             return utilities.FilteredObject(record, 'in_.*|out_.*|@.*|password|^_');
           })
           .one()
-          .then(function (record) {
+          .then((record) => {
             resolve(record);
           })
-          .catch(function(e) {
+          .catch((e) => {
             console.log(e);
             reject();
           })
-          .done();
+          .done(() => {
+            db.close();
+          });
         } else {
           reject(err);
         }
@@ -176,18 +179,18 @@ UserDAO.prototype.update = function (object) {
 
 UserDAO.prototype.updatePassword = function (object) {
   return new Promise((resolve, reject) => {
-    var targetId = this.targetId;
-    var db = this.db;
-    var user = this.user;
-    var userId = this.user.id;
-    var role = this.user.role;
+    let targetId = this.targetId;
+    let db = this.db;
+    let user = this.user;
+    let userId = this.user.id;
+    let role = this.user.role;
 
     if (userId === targetId) {
       validator.Validate(object).isPassword(function(err, object) {
 
         if (err.valid === true) {
-          var currentPassword = object.current;
-          var newPassword = object.new;
+          let currentPassword = object.current;
+          let newPassword = object.new;
           currentPassword = utilities.HashPassword(currentPassword);
           newPassword = utilities.HashPassword(newPassword);
 
@@ -214,25 +217,23 @@ UserDAO.prototype.updatePassword = function (object) {
           })
           .commit()
           .return('$user')
-          .transform(function (record) {
+          .transform((record) => {
             return utilities.FilteredObject(record, 'in_.*|out_.*|@.*|password|^_');
           })
           .one()
-          .then(function (user) {
+          .then((user) => {
             if(user) {
-              var username = user.username;
-              var uuid = user.id;
-              var graphQLID = utilities.Base64.base64('User:' + uuid);
-              var payload = {
+              let username = user.username;
+              let uuid = user.id;
+              let graphQLID = utilities.Base64.base64('User:' + uuid);
+              let payload = {
                 username: username,
                 id: graphQLID,
                 role: uuid
               };
-              var authenticate = utilities.AuthToken(payload);
+              let authenticate = utilities.AuthToken(payload);
 
               user.authenticate = authenticate;
-
-              console.log(user);
 
               resolve(user);
             } else {
@@ -240,11 +241,13 @@ UserDAO.prototype.updatePassword = function (object) {
               reject({});
             }
           })
-          .catch(function(e) {
+          .catch((e) => {
             console.log(e);
             reject();
           })
-          .done();
+          .done(() => {
+            db.close();
+          });
         } else {
           reject(err);
         }
@@ -257,11 +260,11 @@ UserDAO.prototype.updatePassword = function (object) {
 
 UserDAO.prototype.del = function (callback) {
   return new Promise((resolve, reject) => {
-    var targetId = this.targetId;
-    var db = this.db;
-    var user = this.user;
-    var userId = this.user.id;
-    var role = this.user.role;
+    let targetId = this.targetId;
+    let db = this.db;
+    let user = this.user;
+    let userId = this.user.id;
+    let role = this.user.role;
 
     db.delete('VERTEX', _class)
     .where({
@@ -271,15 +274,16 @@ UserDAO.prototype.del = function (callback) {
       '_allow CONTAINS "' + role + '"'
     )
     .one()
-    .then(function () {
+    .then(() => {
       resolve({success: true});
     })
-    .catch(function(e) {
+    .catch((e) => {
       console.log(e);
       reject();
-
     })
-    .done();
+    .done(() => {
+      db.close();
+    });
   });
 }
 

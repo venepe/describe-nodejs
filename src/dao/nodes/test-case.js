@@ -16,40 +16,40 @@ function TestCaseDAO(targetId, params) {
 
 TestCaseDAO.prototype.get = function () {
   return new Promise((resolve, reject) => {
-    var user = this.user;
-    var db = this.db;
-    var id = this.targetId;
+    let user = this.user;
+    let db = this.db;
+    let id = this.targetId;
 
     db
     .getTestCase()
     .from(_class)
     .where({id: id})
     .limit(1)
-    .transform(function(record) {
-      var testCase = new TestCase();
+    .transform((record) => {
+      let testCase = new TestCase();
       return utilites.FilteredObject(record, '@.*|rid', testCase);
     })
     .one()
-    .then(function (record) {
+    .then((record) => {
       resolve(record);
     })
-    .catch(function (e) {
+    .catch((e) => {
       reject();
 
     })
-    .done(function() {
-      // db.close();
+    .done(() => {
+      db.close();
     });
   });
 }
 
 TestCaseDAO.prototype.getEdgeCreated = function (args) {
-  var pageObject = utilites.Pagination.getOrientDBPageFromGraphQL(args);
+  let pageObject = utilites.Pagination.getOrientDBPageFromGraphQL(args);
 
   return new Promise((resolve, reject) => {
-    var id = this.targetId;
-    var user = this.user;
-    var db = this.db;
+    let user = this.user;
+    let db = this.db;
+    let id = this.targetId;
 
     db
     .getTestCase()
@@ -57,30 +57,30 @@ TestCaseDAO.prototype.getEdgeCreated = function (args) {
     .skip(pageObject.skip)
     .limit(pageObject.limit)
     .order(pageObject.orderBy)
-    .transform(function(record) {
+    .transform((record) => {
       return utilites.FilteredObject(record, '@.*|rid');
     })
     .all()
-    .then(function (records) {
+    .then((records) => {
       resolve(records);
     })
-    .catch(function (e) {
+    .catch((e) => {
       reject();
 
     })
-    .done(function() {
-      // db.close();
+    .done(() => {
+      db.close();
     });
   });
 }
 
 TestCaseDAO.prototype.getEdgeRequired = function (args) {
-  var pageObject = utilites.Pagination.getOrientDBPageFromGraphQL(args);
+  let pageObject = utilites.Pagination.getOrientDBPageFromGraphQL(args);
 
   return new Promise((resolve, reject) => {
-    var id = this.targetId;
-    var user = this.user;
-    var db = this.db;
+    let user = this.user;
+    let db = this.db;
+    let id = this.targetId;
 
     db
     .getTestCase()
@@ -88,56 +88,56 @@ TestCaseDAO.prototype.getEdgeRequired = function (args) {
     .skip(pageObject.skip)
     .limit(pageObject.limit)
     .order(pageObject.orderBy)
-    .transform(function(record) {
+    .transform((record) => {
       return utilites.FilteredObject(record, '@.*|rid');
     })
     .all()
-    .then(function (records) {
+    .then((records) => {
       resolve(records);
     })
-    .catch(function (e) {
+    .catch((e) => {
       reject();
 
     })
-    .done(function() {
-      // db.close();
+    .done(() => {
+      db.close();
     });
   });
 }
 
 TestCaseDAO.prototype.getEdgeTargeted = function () {
   return new Promise((resolve, reject) => {
-    var id = this.targetId;
-    var user = this.user;
-    var db = this.db;
+    let user = this.user;
+    let db = this.db;
+    let id = this.targetId;
 
     db
     .getTestCase()
     .outTargetsRequiresFromNode(id)
-    .transform(function(record) {
+    .transform((record) => {
       return utilites.FilteredObject(record, '@.*|rid');
     })
     .all()
-    .then(function (records) {
+    .then((records) => {
       resolve(records);
     })
-    .catch(function (e) {
+    .catch((e) => {
       reject();
 
     })
-    .done(function() {
-      // db.close();
+    .done(() => {
+      db.close();
     });
   });
 }
 
 TestCaseDAO.prototype.create = function (object) {
   return new Promise((resolve, reject) => {
-    var db = this.db;
-    var relationalId = this.targetId;
-    var user = this.user;
-    var userId = this.user.id;
-    var role = this.user.role;
+    let db = this.db;
+    let relationalId = this.targetId;
+    let user = this.user;
+    let userId = this.user.id;
+    let role = this.user.role;
 
     validator.Validate(object).isTestCase(function(err, object) {
 
@@ -186,21 +186,21 @@ TestCaseDAO.prototype.create = function (object) {
         })
         .commit()
         .return('$testCase')
-        .transform(function(record) {
-          console.log(record);
+        .transform((record) => {
           return utilites.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
         })
         .one()
-        .then(function (result) {
+        .then((result) => {
           resolve(result);
         })
-        .catch(function (e) {
+        .catch((e) => {
           console.log(e);
-          console.log('we have an eror');
           reject();
 
         })
-        .done();
+        .done(() => {
+          db.close();
+        });
 
       } else {
         reject(err);
@@ -211,11 +211,11 @@ TestCaseDAO.prototype.create = function (object) {
 
 TestCaseDAO.prototype.update = function (object) {
   return new Promise((resolve, reject) => {
-    var targetId = this.targetId;
-    var db = this.db;
-    var user = this.user;
-    var userId = this.user.id;
-    var role = this.user.role;
+    let targetId = this.targetId;
+    let db = this.db;
+    let user = this.user;
+    let userId = this.user.id;
+    let role = this.user.role;
 
     validator.Validate(object, true).isTestCase(function(err, object) {
 
@@ -245,19 +245,21 @@ TestCaseDAO.prototype.update = function (object) {
         })
         .commit()
         .return('$newTestCase')
-        .transform(function (record) {
+        .transform((record) => {
           return utilites.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
         })
         .one()
-        .then(function (record) {
+        .then((record) => {
           resolve(record);
         })
-        .catch(function(e) {
+        .catch((e) => {
           console.log(e);
           reject();
 
         })
-        .done();
+        .done(() => {
+          db.close();
+        });
 
       } else {
         reject(err);
@@ -268,13 +270,12 @@ TestCaseDAO.prototype.update = function (object) {
 };
 
 TestCaseDAO.prototype.del = function () {
-  console.log('delete');
   return new Promise((resolve, reject) => {
-    var targetId = this.targetId;
-    var db = this.db;
-    var user = this.user;
-    var userId = this.user.id;
-    var role = this.user.role;
+    let targetId = this.targetId;
+    let db = this.db;
+    let user = this.user;
+    let userId = this.user.id;
+    let role = this.user.role;
 
     db.delete('VERTEX', _class)
     .where({
@@ -284,15 +285,16 @@ TestCaseDAO.prototype.del = function () {
       '_allow CONTAINS "' + role + '"'
     )
     .one()
-    .then(function() {
+    .then(() => {
       resolve({success: true});
     })
-    .catch(function(e) {
+    .catch((e) => {
       console.log(e);
       reject();
-
     })
-    .done();
+    .done(() => {
+      db.close();
+    });
   });
 }
 

@@ -11,27 +11,27 @@ function Me() {
 
 Me.prototype.get = function () {
   return new Promise((resolve, reject) => {
-    var user = this.user || {};
-    var db = this.db;
-    var id = user.id;
+    let user = this.user || {};
+    let db = this.db;
+    let id = user.id;
 
     db
     .getUser()
     .from(_class)
     .where({id: id})
     .limit(1)
-    .transform(function(record) {
+    .transform((record) => {
       return utilites.FilteredObject(record, '@.*|rid');
     })
     .one()
-    .then(function (record) {
+    .then((record) => {
       resolve(record);
     })
-    .catch(function (e) {
+    .catch((e) => {
       reject();
     })
-    .done(function() {
-      // db.close();
+    .done(() => {
+      db.close();
     });
   });
 }

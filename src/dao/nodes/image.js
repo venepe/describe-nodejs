@@ -16,9 +16,9 @@ function ImageDAO(targetId, params) {
 
 ImageDAO.prototype.get = function () {
   return new Promise((resolve, reject) => {
-    var user = this.user;
-    var db = this.db;
-    var id = this.targetId;
+    let user = this.user;
+    let db = this.db;
+    let id = this.targetId;
 
     db
     .getImage()
@@ -38,18 +38,18 @@ ImageDAO.prototype.get = function () {
 
     })
     .done(function() {
-      // db.close();
+      db.close();
     });
   });
 }
 
 ImageDAO.prototype.getEdgeCreated = function (args) {
-  var pageObject = utilites.Pagination.getOrientDBPageFromGraphQL(args);
+  let pageObject = utilites.Pagination.getOrientDBPageFromGraphQL(args);
 
   return new Promise((resolve, reject) => {
-    var id = this.targetId;
-    var user = this.user;
-    var db = this.db;
+    let user = this.user;
+    let db = this.db;
+    let id = this.targetId;
 
     db
     .getImage()
@@ -69,7 +69,7 @@ ImageDAO.prototype.getEdgeCreated = function (args) {
 
     })
     .done(function() {
-      // db.close();
+      db.close();
     });
   });
 }
