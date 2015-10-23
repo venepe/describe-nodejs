@@ -10,7 +10,6 @@ const jwtRefreshToken = require('jwt-refresh-token');
 import {AppConfig} from './src/config';
 const dao = require('./src/dao');
 const uuid = require('node-uuid');
-const baseUrl = 'http://localhost:3000';
 import {graphql} from 'graphql';
 import {fromGlobalId} from 'graphql-relay';
 const schema = require('./src/graphql/schema');
@@ -19,6 +18,8 @@ const signup = require('./src/auth/signup');
 const authenticate = require('./src/auth/authenticate');
 const passwordReset = require('./src/auth/password-reset');
 const upload = multer({ dest: __dirname + '/public/uploads/images/full_size/' });
+const port = process.env.PORT || 8000;
+const baseUrl = 'http://localhost:' + port;
 
 app.use(jwt({
   secret: AppConfig.JWTSecret,
@@ -32,6 +33,8 @@ app.use(jwt({
 }));
 
 app.use(function(req, res, next) {
+  console.log(req.url);
+  console.log('get graphql');
   if (req.user) {
     //Get id from the graphql id
     try {
@@ -127,4 +130,4 @@ app.use('/graphql', graphqlHTTP(request => ({
   rootValue: {user: request.user}
 })));
 
-server.listen(3000);
+server.listen(port);
