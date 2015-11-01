@@ -107,12 +107,15 @@ app.post('/forgot', bodyParser.json(), function(req, res) {
   res.status(200).json({forgot: null});
 });
 
-app.post('/graphql', upload.single('image'), function(req, res, next){
+app.post('/graphql', upload.single('0'), function(req, res, next){
     if (req.body && req.file && req.body.variables) {
       let variables = JSON.parse(req.body.variables);
+      console.log(Object.keys(variables));
       let filename = req.file.filename;
       let url = req.file.destination.replace(__dirname + '/public' , baseUrl);
-      variables.input.uri = url + filename;
+      let input = variables.input || variables.input_0;
+      input.uri = url + filename;
+      variables.input = input;
       variables = JSON.stringify(variables);
       req.body.variables = variables;
     }

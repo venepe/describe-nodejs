@@ -129,7 +129,7 @@ ImageDAO.prototype.getEdgeCovered = function (args) {
       } else {
         var defaultCoverImage = {
           id: id,
-          uri: 'http://localhost:3000/default/images/' + id
+          uri: 'http://localhost:8000/default/images/' + id
         };
         resolve([
           defaultCoverImage
