@@ -2,7 +2,7 @@
 
 const express = require('express');
 const graphqlHTTP = require('express-graphql');
-const bodyParser = require('body-parser')
+const bodyParser = require('body-parser');
 const app = express();
 const server = require('http').Server(app);
 const jwt = require('express-jwt');
@@ -105,6 +105,12 @@ app.post('/forgot', bodyParser.json(), function(req, res) {
   let forgot = req.body.forgot || {};
   console.log('send email');
   res.status(200).json({forgot: null});
+});
+
+app.post('/reset', bodyParser.json(), function(req, res) {
+  let reset = req.body.reset || {};
+  console.log('hard reset password');
+  res.status(200).json({reset: null});
 });
 
 app.post('/graphql', upload.single('0'), function(req, res, next){
