@@ -31,7 +31,6 @@ import {
 
 import {
   Image,
-  Paper,
   Project,
   TestCase,
   User,
@@ -75,8 +74,6 @@ var {nodeInterface, nodeField} = nodeDefinitions(
       return dao(user).TestCase(id).get();
     } else if (type === 'Image') {
       return dao(user).Image(id).get();
-    } else if (type === 'Paper') {
-      return dao(user).Paper(id).get();
     } else if (type === 'User') {
       return dao(user).User(id).get();
     } else {
@@ -91,8 +88,6 @@ var {nodeInterface, nodeField} = nodeDefinitions(
       return testCaseType;
     } else if (obj instanceof Image) {
       return imageType;
-    } else if (obj instanceof Paper) {
-      return paperType;
     } else if (obj instanceof User) {
       return userType;
     } else {
@@ -210,16 +205,6 @@ let projectType = new GraphQLObjectType({
         ,
         args
       ),
-    },
-    papers: {
-      type: paperConnection,
-      description: 'The papers of the project.',
-      args: connectionArgs,
-      resolve: (project, args, context) => connectionFromPromisedArray(
-        dao(context.rootValue.user).Paper(project.id).getEdgeDescribes(args)
-        ,
-        args
-      ),
     }
   }),
   interfaces: [nodeInterface],
@@ -248,16 +233,6 @@ let testCaseType = new GraphQLObjectType({
       args: connectionArgs,
       resolve: (testCase, args, context) => connectionFromPromisedArray(
         dao(context.rootValue.user).Image(testCase.id).getEdgeDescribes(args)
-        ,
-        args
-      ),
-    },
-    papers: {
-      type: paperConnection,
-      description: 'The papers describing the test case.',
-      args: connectionArgs,
-      resolve: (testCase, args, context) => connectionFromPromisedArray(
-        dao(context.rootValue.user).Paper(testCase.id).getEdgeDescribes(args)
         ,
         args
       ),
@@ -298,27 +273,6 @@ let imageType = new GraphQLObjectType({
   interfaces: [nodeInterface],
 });
 
-let paperType = new GraphQLObjectType({
-  name: 'Paper',
-  description: 'Paper object',
-  fields: () => ({
-    id: globalIdField('Paper'),
-    text: {
-      type: GraphQLString,
-      description: 'The writen text of the paper.',
-    },
-    createdAt: {
-      type: GraphQLString,
-      description: 'The timestamp when the paper was created.',
-    },
-    updatedAt: {
-      type: GraphQLString,
-      description: 'The timestamp when the paper was last updated.',
-    }
-  }),
-  interfaces: [nodeInterface],
-});
-
 var {connectionType: testCaseConnection, edgeType: GraphQLTestCaseEdge} =
   connectionDefinitions({name: 'TestCase', nodeType: testCaseType});
 
@@ -330,9 +284,6 @@ var {connectionType: imageConnection, edgeType: GraphQLImageEdge} =
 
 var {connectionType: coverImageConnection, edgeType: GraphQLCoverImageEdge} =
   connectionDefinitions({name: 'CoverImage', nodeType: imageType});
-
-var {connectionType: paperConnection, edgeType: GraphQLPaperEdge} =
-  connectionDefinitions({name: 'Paper', nodeType: paperType});
 
 var {connectionType: fulfillConnection, edgeType: GraphQLFulfillEdge} =
   connectionDefinitions({name: 'Fulfills', nodeType: projectType});
@@ -677,86 +628,6 @@ var deleteTestCase = mutationWithClientMutationId({
   }
 });
 
-var introducePaper = mutationWithClientMutationId({
-  name: 'IntroducePaper',
-  inputFields: {
-    targetId: {
-      type: new GraphQLNonNull(GraphQLID)
-    },
-    text: {
-      type: new GraphQLNonNull(GraphQLString),
-      description: 'The writen text of the paper.',
-    }
-  },
-  outputFields: {
-    paperEdge: {
-      type: GraphQLPaperEdge,
-      resolve: (payload) => {
-        return {
-          cursor: cursorForObjectInConnection([payload], payload),
-          node: payload,
-        };
-      }
-    },
-    target: {
-      type: nodeInterface,
-      resolve: () => {},
-    }
-  },
-  mutateAndGetPayload: ({targetId, text}, context) => {
-    var localId = fromGlobalId(targetId).id;
-    return dao(context.rootValue.user).Paper(localId).create({text});
-  }
-});
-
-var updatePaper = mutationWithClientMutationId({
-  name: 'UpdatePaper',
-  inputFields: {
-    id: {
-      type: new GraphQLNonNull(GraphQLID)
-    },
-    text: {
-      type: new GraphQLNonNull(GraphQLString),
-      description: 'The writen text of the paper.',
-    }
-  },
-  outputFields: {
-    paper: {
-      type: paperType,
-      resolve: (payload) => payload
-    }
-  },
-  mutateAndGetPayload: ({id, text}, context) => {
-    var localId = fromGlobalId(id).id;
-    return dao(context.rootValue.user).Paper(localId).update({text});
-  }
-});
-
-var deletePaper = mutationWithClientMutationId({
-  name: 'DeletePaper',
-  inputFields: {
-    id: {
-      type: new GraphQLNonNull(GraphQLID)
-    }
-  },
-  outputFields: {
-    deletedPaperId: {
-      type: GraphQLID,
-      resolve: ({id}) => id,
-    },
-    target: {
-      type: nodeInterface,
-      resolve: () => {},
-    }
-  },
-  mutateAndGetPayload: ({id}, context) => {
-    var localId = fromGlobalId(id).id;
-    return dao(context.rootValue.user).Paper(localId).del().then(function (data) {
-      return {id};
-    });
-  }
-});
-
 var introduceImage = mutationWithClientMutationId({
   name: 'IntroduceImage',
   inputFields: {
@@ -927,9 +798,6 @@ var schema = new GraphQLSchema({
       introduceTestCase: introduceTestCase,
       updateTestCase: updateTestCase,
       deleteTestCase: deleteTestCase,
-      introducePaper: introducePaper,
-      updatePaper: updatePaper,
-      deletePaper: deletePaper,
       introduceImage: introduceImage,
       deleteImage: deleteImage,
       deleteCoverImage: deleteCoverImage,

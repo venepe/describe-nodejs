@@ -26,14 +26,6 @@ DAO.prototype.Me = function() {
   return m;
 }
 
-DAO.prototype.Paper = function(targetId, params) {
-  let Paper = require('./nodes/paper.js');
-  let ppr = new Paper(targetId, params);
-  ppr.db = this.db;
-  ppr.user = this.user;
-  return ppr;
-}
-
 DAO.prototype.Project = function(targetId, params) {
   let Project = require('./nodes/project.js');
   let pjt = new Project(targetId, params);

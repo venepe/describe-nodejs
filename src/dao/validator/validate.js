@@ -25,19 +25,6 @@ var validate = function(object, isOptional) {
     callback(result.result, result.object);
   };
 
-  this.isPaper = function(callback) {
-    var schema;
-    var result;
-    if (isOptional) {
-      schema = require('./schema/paper-optional.js');
-    } else {
-      schema = require('./schema/paper.js')();
-    }
-
-    result = validateAndSanitize(schema, this.object);
-    callback(result.result, result.object);
-  };
-
   this.isProject = function(callback) {
     var schema;
     var result;

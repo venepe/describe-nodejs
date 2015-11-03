@@ -95,40 +95,6 @@ OrientDB.Statement.prototype.getProject = function() {
   return this.select('id, title, createdAt, updatedAt')
 }
 
-OrientDB.Db.prototype.getPaper = function() {
-  this.SMTINode = 'Paper';
-  return this.select('id, text, createdAt, updatedAt')
-}
-
-OrientDB.Statement.prototype.getPaper = function() {
-  return this.select('id, text, createdAt, updatedAt')
-}
-
-OrientDB.Statement.prototype.addPapers = function() {
-  return this.select('$ppr[0-24].id as pprId, $ppr[0-24].text as pprText, $ppr[0-24].createdAt as pprCreatedAt, $ppr[0-24].updatedAt as pprUpdatedAt')
-        .let('ppr', function(s) {
-          s
-          .select()
-          .from(function (s) {
-            s
-            .select('expand(outE(\'Describes\').inV(\'Paper\'))')
-            .from('$parent.$current')
-            .order({
-              createdAt: 'DESC'
-            })
-          })
-          .where({'@class': 'Paper'})
-        })
-        .transform(function(record) {
-          var papers = [];
-          for (var i = record.pprId.length - 1; i >= 0; i--) {
-            papers.push({id: record.pprId[i], text: record.pprText[i], createdAt: record.pprCreatedAt[i], updatedAt: record.pprUpdatedAt[i]})
-          }
-          record.papers = papers;
-          return utiltextes.FilteredObject(record, 'ppr.*');
-        })
-}
-
 OrientDB.Statement.prototype.outCreatesFromNode = function(id) {
   return this.from(function (s) {
     s
