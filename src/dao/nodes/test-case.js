@@ -26,6 +26,8 @@ TestCaseDAO.prototype.get = function () {
     .where({id: id})
     .limit(1)
     .transform((record) => {
+      let isFulfilled = record.isFulfilled;
+      record.isFulfilled = (isFulfilled.length > 0) ? true : false;
       let testCase = new TestCase();
       return utilites.FilteredObject(record, '@.*|rid', testCase);
     })
@@ -58,6 +60,8 @@ TestCaseDAO.prototype.getEdgeCreated = function (args) {
     .limit(pageObject.limit)
     .order(pageObject.orderBy)
     .transform((record) => {
+      let isFulfilled = record.isFulfilled;
+      record.isFulfilled = (isFulfilled.length > 0) ? true : false;
       return utilites.FilteredObject(record, '@.*|rid');
     })
     .all()
@@ -89,6 +93,8 @@ TestCaseDAO.prototype.getEdgeRequired = function (args) {
     .limit(pageObject.limit)
     .order(pageObject.orderBy)
     .transform((record) => {
+      let isFulfilled = record.isFulfilled;
+      record.isFulfilled = (isFulfilled.length > 0) ? true : false;
       return utilites.FilteredObject(record, '@.*|rid');
     })
     .all()
@@ -115,6 +121,8 @@ TestCaseDAO.prototype.getEdgeTargeted = function () {
     .getTestCase()
     .outTargetsRequiresFromNode(id)
     .transform((record) => {
+      let isFulfilled = record.isFulfilled;
+      record.isFulfilled = (isFulfilled.length > 0) ? true : false;
       return utilites.FilteredObject(record, '@.*|rid');
     })
     .all()

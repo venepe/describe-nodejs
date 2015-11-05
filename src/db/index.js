@@ -16,11 +16,11 @@ OrientDB.Statement.prototype.getUser = function() {
 
 OrientDB.Db.prototype.getTestCase = function() {
   this.SMTINode = 'TestCase';
-  return this.select('id, it, createdAt, updatedAt');
+  return this.select('id, it, createdAt, updatedAt, inE(\'Fulfills\') as isFulfilled');
 }
 
 OrientDB.Statement.prototype.getTestCase = function() {
-  return this.select('id, it, createdAt, updatedAt');
+  return this.select('id, it, createdAt, updatedAt, inE(\'Fulfills\') as isFulfilled');
 }
 
 OrientDB.Statement.prototype.addTestCases = function() {

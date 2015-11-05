@@ -70,37 +70,6 @@ ProjectDAO.prototype.inEdgeRequired = function () {
   });
 }
 
-ProjectDAO.prototype.inEdgeFulfilled = function (args) {
-  let pageObject = utilites.Pagination.getOrientDBPageFromGraphQL(args);
-
-  return new Promise((resolve, reject) => {
-    let user = this.user;
-    let db = this.db;
-    let id = this.targetId;
-
-    db
-    .getProject()
-    .inFulfillsFromNode(id)
-    .skip(pageObject.skip)
-    .limit(pageObject.limit)
-    .order(pageObject.orderBy)
-    .transform((record) => {
-      return utilites.FilteredObject(record, '@.*|rid');
-    })
-    .all()
-    .then((records) => {
-      resolve(records);
-    })
-    .catch((e) => {
-      reject();
-
-    })
-    .done(() => {
-      // db.close();
-    });
-  });
-}
-
 ProjectDAO.prototype.getEdgeCreated = function (args) {
   let pageObject = utilites.Pagination.getOrientDBPageFromGraphQL(args);
 
@@ -166,80 +135,6 @@ ProjectDAO.prototype.create = function (object) {
           .create('edge', 'Creates')
           .from('$user')
           .to('$project')
-        })
-        .commit()
-        .return('$project')
-        .transform((record) => {
-          return utilites.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
-        })
-        .one()
-        .then((record) => {
-          record.testCases = [];
-          resolve(record);
-        })
-        .catch((e) => {
-          reject();
-
-        })
-        .done(() => {
-          // db.close();
-        });
-
-      } else {
-        reject(err);
-      }
-    });
-  });
-}
-
-ProjectDAO.prototype.createFulfills = function (object) {
-  return new Promise((resolve, reject) => {
-    let db = this.db;
-    let relationalId = this.targetId;
-    let user = this.user;
-    let userId = this.user.id;
-    let role = this.user.role;
-
-    validator.Validate(object).isProject(function(err, object) {
-
-      if (err.valid === true) {
-        db
-        .let('testCase', function (s) {
-          s
-          .select()
-          .from('TestCase')
-          .where({
-            id: relationalId
-          })
-        })
-        .let('user', function (s) {
-          s
-          .select()
-          .from('User')
-          .where({
-            id: userId
-          })
-          .where(
-            '_allow CONTAINS "' + role + '"'
-          )
-        })
-        .let('project', function(s) {
-          s
-          .create('vertex', 'Project')
-          .set(object)
-          .set({_allow: [role]})
-        })
-        .let('creates', function (s) {
-          s
-          .create('edge', 'Creates')
-          .from('$user')
-          .to('$project')
-        })
-        .let('fulfills', function (s) {
-          s
-          .create('edge', 'Fulfills')
-          .from('$project')
-          .to('$testCase')
         })
         .commit()
         .return('$project')

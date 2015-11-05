@@ -146,6 +146,38 @@ ImageDAO.prototype.getEdgeCovered = function (args) {
   });
 }
 
+
+ImageDAO.prototype.inEdgeFulfilled = function (args) {
+  let pageObject = utilites.Pagination.getOrientDBPageFromGraphQL(args);
+
+  return new Promise((resolve, reject) => {
+    let user = this.user;
+    let db = this.db;
+    let id = this.targetId;
+
+    db
+    .getImage()
+    .inFulfillsFromNode(id)
+    .skip(pageObject.skip)
+    .limit(pageObject.limit)
+    .order(pageObject.orderBy)
+    .transform((record) => {
+      return utilites.FilteredObject(record, '@.*|rid');
+    })
+    .all()
+    .then((records) => {
+      resolve(records);
+    })
+    .catch((e) => {
+      reject();
+
+    })
+    .done(() => {
+      // db.close();
+    });
+  });
+}
+
 ImageDAO.prototype.create = function (object) {
   return new Promise((resolve, reject) => {
     var db = this.db;
@@ -290,6 +322,80 @@ ImageDAO.prototype.createCover = function (object) {
 
         })
         .done();
+
+      } else {
+        reject(err);
+      }
+    });
+  });
+}
+
+ImageDAO.prototype.createFulfills = function (object) {
+  return new Promise((resolve, reject) => {
+    var db = this.db;
+    var relationalId = this.targetId;
+    var user = this.user;
+    var userId = this.user.id;
+    var role = this.user.role;
+
+    validator.Validate(object).isImage(function(err, object) {
+
+      if (err.valid === true) {
+        db
+        .let('testCase', function (s) {
+          s
+          .select()
+          .from('TestCase')
+          .where({
+            id: relationalId
+          })
+        })
+        .let('user', function (s) {
+          s
+          .select()
+          .from('User')
+          .where({
+            id: userId
+          })
+          .where(
+            '_allow CONTAINS "' + role + '"'
+          )
+        })
+        .let('image', function(s) {
+          s
+          .create('vertex', 'Image')
+          .set(object)
+          .set({_allow: [role]})
+        })
+        .let('creates', function (s) {
+          s
+          .create('edge', 'Creates')
+          .from('$user')
+          .to('$image')
+        })
+        .let('fulfills', function (s) {
+          s
+          .create('edge', 'Fulfills')
+          .from('$image')
+          .to('$testCase')
+        })
+        .commit()
+        .return('$image')
+        .transform(function(record) {
+          return utilites.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
+        })
+        .one()
+        .then(function (record) {
+          record.testCases = [];
+          resolve(record);
+        })
+        .catch(function (e) {
+          reject();
+
+        })
+        .done(() => {
+          // db.close();
+        });
 
       } else {
         reject(err);

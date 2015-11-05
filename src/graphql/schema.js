@@ -219,6 +219,10 @@ let testCaseType = new GraphQLObjectType({
       type: GraphQLString,
       description: 'The \"it\" or what a test case should do.',
     },
+    isFulfilled: {
+      type: GraphQLBoolean,
+      description: 'Whether the test case is fulfilled.',
+    },
     createdAt: {
       type: GraphQLString,
       description: 'The timestamp when the test case was created.',
@@ -239,10 +243,10 @@ let testCaseType = new GraphQLObjectType({
     },
     fulfillments: {
       type: fulfillConnection,
-      description: 'The projects fulfilling the test case.',
+      description: 'The images fulfilling the test case.',
       args: connectionArgs,
       resolve: (testCase, args, context) => connectionFromPromisedArray(
-        dao(context.rootValue.user).Project(testCase.id).inEdgeFulfilled(args)
+        dao(context.rootValue.user).Image(testCase.id).inEdgeFulfilled(args)
         ,
         args
       ),
@@ -286,7 +290,7 @@ var {connectionType: coverImageConnection, edgeType: GraphQLCoverImageEdge} =
   connectionDefinitions({name: 'CoverImage', nodeType: imageType});
 
 var {connectionType: fulfillConnection, edgeType: GraphQLFulfillEdge} =
-  connectionDefinitions({name: 'Fulfills', nodeType: projectType});
+  connectionDefinitions({name: 'Fulfills', nodeType: imageType});
 
 // var {connectionType: searchProjectsConnection} =
 //   connectionDefinitions({name: 'SearchProjects', nodeType: projectType});
@@ -445,25 +449,25 @@ var introduceProject = mutationWithClientMutationId({
   }
 });
 
-var fulfillProject = mutationWithClientMutationId({
-  name: 'FulfillProject',
+var fulfillImage = mutationWithClientMutationId({
+  name: 'FulfillImage',
   inputFields: {
     testCaseId: {
       type: new GraphQLNonNull(GraphQLID)
     },
-    title: {
+    uri: {
       type: new GraphQLNonNull(GraphQLString),
-      description: 'The title of the project.',
+      description: 'The uri of the image.',
     }
   },
   outputFields: {
     fulfillmentEdge: {
-      type: GraphQLProjectEdge,
+      type: GraphQLImageEdge,
       resolve: (payload) => {
-        var project = payload.project;
+        var image = payload.image;
         return {
-          cursor: cursorForObjectInConnection([project], project),
-          node: project,
+          cursor: cursorForObjectInConnection([image], image),
+          node: image,
         };
       }
     },
@@ -480,16 +484,16 @@ var fulfillProject = mutationWithClientMutationId({
       },
     },
   },
-  mutateAndGetPayload: ({testCaseId, title}, context) => {
+  mutateAndGetPayload: ({testCaseId, uri}, context) => {
     var localId = fromGlobalId(testCaseId).id;
     var user = context.rootValue.user
     return new Promise((resolve, reject) => {
       dao(user)
-        .Project(localId)
-        .createFulfills({title})
-        .then(function(project) {
+        .Image(localId)
+        .createFulfills({uri})
+        .then(function(image) {
           resolve({
-            project,
+            image,
             user
           });
         })
@@ -792,7 +796,7 @@ var schema = new GraphQLSchema({
       updateUser: updateUser,
       deleteUser: deleteUser,
       introduceProject: introduceProject,
-      fulfillProject: fulfillProject,
+      fulfillImage: fulfillImage,
       updateProject: updateProject,
       deleteProject: deleteProject,
       introduceTestCase: introduceTestCase,
