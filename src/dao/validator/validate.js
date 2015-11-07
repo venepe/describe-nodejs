@@ -12,13 +12,13 @@ var validate = function(object, isOptional) {
   this.object = object;
   isOptional = isOptional || false;
 
-  this.isImage = function(callback) {
+  this.isFile = function(callback) {
     var schema;
     var result;
     if (isOptional) {
-      schema = require('./schema/image-optional.js');
+      schema = require('./schema/file-optional.js');
     } else {
-      schema = require('./schema/image.js')();
+      schema = require('./schema/file.js')();
     }
 
     result = validateAndSanitize(schema, this.object);

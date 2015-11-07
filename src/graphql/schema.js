@@ -30,7 +30,7 @@ import {
 } from 'graphql-relay';
 
 import {
-  Image,
+  File,
   Project,
   TestCase,
   User,
@@ -72,8 +72,8 @@ var {nodeInterface, nodeField} = nodeDefinitions(
       return dao(user).Project(id).get();
     } else if (type === 'TestCase') {
       return dao(user).TestCase(id).get();
-    } else if (type === 'Image') {
-      return dao(user).Image(id).get();
+    } else if (type === 'File') {
+      return dao(user).File(id).get();
     } else if (type === 'User') {
       return dao(user).User(id).get();
     } else {
@@ -86,8 +86,8 @@ var {nodeInterface, nodeField} = nodeDefinitions(
       return projectType;
     } else if (obj instanceof TestCase) {
       return testCaseType;
-    } else if (obj instanceof Image) {
-      return imageType;
+    } else if (obj instanceof File) {
+      return fileType;
     } else if (obj instanceof User) {
       return userType;
     } else {
@@ -130,7 +130,7 @@ let userType = new GraphQLObjectType({
       description: 'The cover images of the user.',
       args: connectionArgs,
       resolve: (user, args, context) => connectionFromPromisedArray(
-        dao(context.rootValue.user).Image(user.id).getEdgeCovered(args)
+        dao(context.rootValue.user).File(user.id).getEdgeCovered(args)
         ,
         args
       ),
@@ -191,17 +191,17 @@ let projectType = new GraphQLObjectType({
       description: 'The cover images of the project.',
       args: connectionArgs,
       resolve: (project, args, context) => connectionFromPromisedArray(
-        dao(context.rootValue.user).Image(project.id).getEdgeCovered(args)
+        dao(context.rootValue.user).File(project.id).getEdgeCovered(args)
         ,
         args
       ),
     },
-    images: {
-      type: imageConnection,
-      description: 'The images of the project.',
+    examples: {
+      type: exampleConnection,
+      description: 'The files exemplifying the project.',
       args: connectionArgs,
       resolve: (project, args, context) => connectionFromPromisedArray(
-        dao(context.rootValue.user).Image(project.id).getEdgeDescribes(args)
+        dao(context.rootValue.user).File(project.id).getEdgeExemplifies(args)
         ,
         args
       ),
@@ -231,22 +231,22 @@ let testCaseType = new GraphQLObjectType({
       type: GraphQLString,
       description: 'The timestamp when the test case was last updated.',
     },
-    images: {
-      type: imageConnection,
-      description: 'The images describing the test case.',
+    examples: {
+      type: exampleConnection,
+      description: 'The files exemplifying the test case.',
       args: connectionArgs,
       resolve: (testCase, args, context) => connectionFromPromisedArray(
-        dao(context.rootValue.user).Image(testCase.id).getEdgeDescribes(args)
+        dao(context.rootValue.user).File(testCase.id).getEdgeExemplifies(args)
         ,
         args
       ),
     },
     fulfillments: {
       type: fulfillConnection,
-      description: 'The images fulfilling the test case.',
+      description: 'The files fulfilling the test case.',
       args: connectionArgs,
       resolve: (testCase, args, context) => connectionFromPromisedArray(
-        dao(context.rootValue.user).Image(testCase.id).inEdgeFulfilled(args)
+        dao(context.rootValue.user).File(testCase.id).inEdgeFulfilled(args)
         ,
         args
       ),
@@ -256,22 +256,22 @@ let testCaseType = new GraphQLObjectType({
 });
 
 
-let imageType = new GraphQLObjectType({
-  name: 'Image',
-  description: 'Image object',
+let fileType = new GraphQLObjectType({
+  name: 'File',
+  description: 'File object',
   fields: () => ({
-    id: globalIdField('Image'),
+    id: globalIdField('File'),
     uri: {
       type: GraphQLString,
-      description: 'The uri of the image.',
+      description: 'The uri of the file.',
     },
     createdAt: {
       type: GraphQLString,
-      description: 'The timestamp when the image was created.',
+      description: 'The timestamp when the file was created.',
     },
     updatedAt: {
       type: GraphQLString,
-      description: 'The timestamp when the image was last updated.',
+      description: 'The timestamp when the file was last updated.',
     }
   }),
   interfaces: [nodeInterface],
@@ -283,14 +283,14 @@ var {connectionType: testCaseConnection, edgeType: GraphQLTestCaseEdge} =
 var {connectionType: projectConnection, edgeType: GraphQLProjectEdge} =
   connectionDefinitions({name: 'Project', nodeType: projectType});
 
-var {connectionType: imageConnection, edgeType: GraphQLImageEdge} =
-  connectionDefinitions({name: 'Image', nodeType: imageType});
+var {connectionType: exampleConnection, edgeType: GraphQLExampleEdge} =
+  connectionDefinitions({name: 'Examples', nodeType: fileType});
 
 var {connectionType: coverImageConnection, edgeType: GraphQLCoverImageEdge} =
-  connectionDefinitions({name: 'CoverImage', nodeType: imageType});
+  connectionDefinitions({name: 'CoverImages', nodeType: fileType});
 
 var {connectionType: fulfillConnection, edgeType: GraphQLFulfillEdge} =
-  connectionDefinitions({name: 'Fulfills', nodeType: imageType});
+  connectionDefinitions({name: 'Fulfills', nodeType: fileType});
 
 // var {connectionType: searchProjectsConnection} =
 //   connectionDefinitions({name: 'SearchProjects', nodeType: projectType});
@@ -449,25 +449,25 @@ var introduceProject = mutationWithClientMutationId({
   }
 });
 
-var fulfillImage = mutationWithClientMutationId({
-  name: 'FulfillImage',
+var introduceFulfillment = mutationWithClientMutationId({
+  name: 'IntroduceFulfillment',
   inputFields: {
     testCaseId: {
       type: new GraphQLNonNull(GraphQLID)
     },
     uri: {
       type: new GraphQLNonNull(GraphQLString),
-      description: 'The uri of the image.',
+      description: 'The uri of the file.',
     }
   },
   outputFields: {
     fulfillmentEdge: {
-      type: GraphQLImageEdge,
+      type: GraphQLFulfillEdge,
       resolve: (payload) => {
-        var image = payload.image;
+        var file = payload.file;
         return {
-          cursor: cursorForObjectInConnection([image], image),
-          node: image,
+          cursor: cursorForObjectInConnection([file], file),
+          node: file,
         };
       }
     },
@@ -494,11 +494,11 @@ var fulfillImage = mutationWithClientMutationId({
     var user = context.rootValue.user
     return new Promise((resolve, reject) => {
       dao(user)
-        .Image(localId)
-        .createFulfills({uri})
-        .then(function(image) {
+        .Fulfillment(localId)
+        .create({uri})
+        .then(function(file) {
           resolve({
-            image,
+            file,
             user,
             testCaseId : localId
           });
@@ -638,20 +638,20 @@ var deleteTestCase = mutationWithClientMutationId({
   }
 });
 
-var introduceImage = mutationWithClientMutationId({
-  name: 'IntroduceImage',
+var introduceExample = mutationWithClientMutationId({
+  name: 'IntroduceExample',
   inputFields: {
     targetId: {
       type: new GraphQLNonNull(GraphQLID)
     },
     uri: {
       type: new GraphQLNonNull(GraphQLString),
-      description: 'The uri of the image.',
+      description: 'The uri of the file.',
     }
   },
   outputFields: {
-    imageEdge: {
-      type: GraphQLImageEdge,
+    exampleEdge: {
+      type: GraphQLExampleEdge,
       resolve: (payload) => {
         return {
           cursor: cursorForObjectInConnection([payload], payload),
@@ -666,19 +666,19 @@ var introduceImage = mutationWithClientMutationId({
   },
   mutateAndGetPayload: ({targetId, uri}, context) => {
     var localId = fromGlobalId(targetId).id;
-    return dao(context.rootValue.user).Image(localId).create({uri});
+    return dao(context.rootValue.user).Example(localId).create({uri});
   }
 });
 
-var deleteImage = mutationWithClientMutationId({
-  name: 'DeleteImage',
+var deleteFile = mutationWithClientMutationId({
+  name: 'DeleteFile',
   inputFields: {
     id: {
       type: new GraphQLNonNull(GraphQLID)
     }
   },
   outputFields: {
-    deletedImageId: {
+    deletedFileId: {
       type: GraphQLID,
       resolve: ({id}) => id,
     },
@@ -689,7 +689,7 @@ var deleteImage = mutationWithClientMutationId({
   },
   mutateAndGetPayload: ({id}, context) => {
     var localId = fromGlobalId(id).id;
-    return dao(context.rootValue.user).Image(localId).del().then(function (data) {
+    return dao(context.rootValue.user).File(localId).del().then(function (data) {
       return {id};
     });
   }
@@ -724,8 +724,8 @@ var deleteFulfillment = mutationWithClientMutationId({
     var localTestCaseId = fromGlobalId(testCaseId).id;
     return new Promise((resolve, reject) => {
       dao(context.rootValue.user)
-        .Image(localId)
-        .delFulfills(localTestCaseId)
+        .Fulfillment(localId)
+        .del(localTestCaseId)
         .then(function(payload) {
           resolve(payload);
         })
@@ -744,12 +744,12 @@ var introduceCoverImage = mutationWithClientMutationId({
     },
     uri: {
       type: new GraphQLNonNull(GraphQLString),
-      description: 'The uri of the image.',
+      description: 'The uri of the file.',
     }
   },
   outputFields: {
-    imageEdge: {
-      type: GraphQLImageEdge,
+    coverImageEdge: {
+      type: GraphQLCoverImageEdge,
       resolve: (payload) => {
         return {
           cursor: cursorForObjectInConnection([payload], payload),
@@ -764,7 +764,7 @@ var introduceCoverImage = mutationWithClientMutationId({
   },
   mutateAndGetPayload: ({targetId, uri}, context) => {
     var localId = fromGlobalId(targetId).id;
-    return dao(context.rootValue.user).Image(localId).createCover({uri});
+    return dao(context.rootValue.user).Cover(localId).create({uri});
   }
 });
 
@@ -787,7 +787,7 @@ var deleteCoverImage = mutationWithClientMutationId({
   },
   mutateAndGetPayload: ({id}, context) => {
     var localId = fromGlobalId(id).id;
-    return dao(context.rootValue.user).Image(localId).del().then(function (data) {
+    return dao(context.rootValue.user).Cover(localId).del().then(function (data) {
       return {id};
     });
   }
@@ -843,14 +843,14 @@ var schema = new GraphQLSchema({
       updateUser: updateUser,
       deleteUser: deleteUser,
       introduceProject: introduceProject,
-      fulfillImage: fulfillImage,
+      introduceFulfillment: introduceFulfillment,
       updateProject: updateProject,
       deleteProject: deleteProject,
       introduceTestCase: introduceTestCase,
       updateTestCase: updateTestCase,
       deleteTestCase: deleteTestCase,
-      introduceImage: introduceImage,
-      deleteImage: deleteImage,
+      introduceExample: introduceExample,
+      deleteFile: deleteFile,
       deleteFulfillment: deleteFulfillment,
       deleteCoverImage: deleteCoverImage,
       introduceCoverImage: introduceCoverImage,

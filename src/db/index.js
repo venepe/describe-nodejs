@@ -52,36 +52,36 @@ OrientDB.Statement.prototype.addTestCases = function() {
         })
 }
 
-OrientDB.Db.prototype.getImage = function() {
-  this.SMTINode = 'Image';
+OrientDB.Db.prototype.getFile = function() {
+  this.SMTINode = 'File';
   return this.select('id, uri, createdAt, updatedAt');
 }
 
-OrientDB.Statement.prototype.getImage = function() {
+OrientDB.Statement.prototype.getFile = function() {
   return this.select('id, uri, createdAt, updatedAt');
 }
 
-OrientDB.Statement.prototype.addImages = function() {
+OrientDB.Statement.prototype.addFiles = function() {
   return this.select('$img[0-24].id as imgId, $img[0-24].uri as imgUri, $img[0-24].createdAt as imgCreatedAt, $img[0-24].updatedAt as imgUpdatedAt')
         .let('img', function(s) {
           s
           .select()
           .from(function (s) {
             s
-            .select('expand(outE(\'Describes\').inV(\'Image\'))')
+            .select('expand(outE(\'Exemplifies\').inV(\'File\'))')
             .from('$parent.$current')
             .order({
               createdAt: 'DESC'
             })
           })
-          .where({'@class': 'Image'})
+          .where({'@class': 'File'})
         })
         .transform(function(record) {
-          var images = [];
+          var files = [];
           for (var i = record.imgId.length - 1; i >= 0; i--) {
-            images.push({id: record.imgId[i], uri: record.imgUri[i], createdAt: record.imgCreatedAt[i], updatedAt: record.imgUpdatedAt[i]})
+            files.push({id: record.imgId[i], uri: record.imgUri[i], createdAt: record.imgCreatedAt[i], updatedAt: record.imgUpdatedAt[i]})
           }
-          record.images = images;
+          record.files = files;
           return utiluries.FilteredObject(record, 'img.*');
         })
 }
@@ -127,10 +127,10 @@ OrientDB.Statement.prototype.inCreatesFromNode = function(id) {
   .where({'@class': this.db.SMTINode})
 }
 
-OrientDB.Statement.prototype.outDescribesFromNode = function(id) {
+OrientDB.Statement.prototype.outExemplifiesFromNode = function(id) {
   return this.from(function (s) {
     s
-    .select('expand(out("Describes"))')
+    .select('expand(out("Exemplifies"))')
     .from(function (s) {
       s
       .select()
@@ -143,10 +143,10 @@ OrientDB.Statement.prototype.outDescribesFromNode = function(id) {
   .where({'@class': this.db.SMTINode})
 }
 
-OrientDB.Statement.prototype.inDescribesFromNode = function(id) {
+OrientDB.Statement.prototype.inExemplifiesFromNode = function(id) {
   return this.from(function (s) {
     s
-    .select('expand(in("Describes"))')
+    .select('expand(in("Exemplifies"))')
     .from(function (s) {
       s
       .select()

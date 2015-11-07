@@ -1,12 +1,12 @@
 'use strict';
 
-class Image extends Object {}
+class File extends Object {}
 class Project extends Object {}
 class TestCase extends Object {}
 class User extends Object {}
 
 module.exports = {
-  Image: Image,
+  File: File,
   Project: Project,
   TestCase: TestCase,
   User: User
