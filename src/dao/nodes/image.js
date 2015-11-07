@@ -433,4 +433,51 @@ ImageDAO.prototype.del = function () {
   });
 }
 
+ImageDAO.prototype.delFulfills = function (testCaseId) {
+  return new Promise((resolve, reject) => {
+    var del = require('del');
+    var targetId = this.targetId;
+    var db = this.db;
+    var user = this.user;
+    var userId = this.user.id;
+    var role = this.user.role;
+
+    db
+    .let('deletes', function (s) {
+      s
+      .delete('VERTEX', _class)
+      .where({
+        id: targetId
+      })
+    })
+    .let('testCase', function (s) {
+      s
+      .getTestCase()
+      .from('TestCase')
+      .where({
+        id: testCaseId
+      })
+    })
+    .commit()
+    .return('$testCase')
+    .transform(function(record) {
+      let isFulfilled = record.isFulfilled;
+      record.isFulfilled = (isFulfilled.length > 0) ? true : false;
+      return utilites.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
+    })
+    .one()
+    .then(function (testCase) {
+      let payload = {deletedFulfillmentId: targetId, testCase};
+      resolve(payload);
+    })
+    .catch(function (e) {
+      reject();
+
+    })
+    .done(() => {
+      // db.close();
+    });
+  });
+}
+
 module.exports = ImageDAO;

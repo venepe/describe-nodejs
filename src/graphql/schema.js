@@ -473,7 +473,12 @@ var fulfillImage = mutationWithClientMutationId({
     },
     testCase: {
       type: testCaseType,
-      resolve: () => {},
+      resolve: (payload) => {
+        return {
+          id: payload.testCaseId,
+          isFulfilled: true
+        }
+      },
     },
     me: {
       type: userType,
@@ -494,7 +499,8 @@ var fulfillImage = mutationWithClientMutationId({
         .then(function(image) {
           resolve({
             image,
-            user
+            user,
+            testCaseId : localId
           });
         })
         .catch(function(e) {
@@ -689,6 +695,47 @@ var deleteImage = mutationWithClientMutationId({
   }
 });
 
+var deleteFulfillment = mutationWithClientMutationId({
+  name: 'DeleteFulfillment',
+  inputFields: {
+    id: {
+      type: new GraphQLNonNull(GraphQLID)
+    },
+    testCaseId: {
+      type: new GraphQLNonNull(GraphQLID)
+    }
+  },
+  outputFields: {
+    deletedFulfillmentId: {
+      type: GraphQLID,
+      resolve: (payload) => {
+        return payload.deletedFulfillmentId;
+      },
+    },
+    testCase: {
+      type: testCaseType,
+      resolve: (payload) => {
+        return payload.testCase;
+      },
+    },
+  },
+  mutateAndGetPayload: ({id, testCaseId}, context) => {
+    var localId = fromGlobalId(id).id;
+    var localTestCaseId = fromGlobalId(testCaseId).id;
+    return new Promise((resolve, reject) => {
+      dao(context.rootValue.user)
+        .Image(localId)
+        .delFulfills(localTestCaseId)
+        .then(function(payload) {
+          resolve(payload);
+        })
+        .catch(function(e) {
+          reject();
+        });
+    });
+  }
+});
+
 var introduceCoverImage = mutationWithClientMutationId({
   name: 'IntroduceCoverImage',
   inputFields: {
@@ -804,6 +851,7 @@ var schema = new GraphQLSchema({
       deleteTestCase: deleteTestCase,
       introduceImage: introduceImage,
       deleteImage: deleteImage,
+      deleteFulfillment: deleteFulfillment,
       deleteCoverImage: deleteCoverImage,
       introduceCoverImage: introduceCoverImage,
     }
