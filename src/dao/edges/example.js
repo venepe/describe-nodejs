@@ -90,4 +90,33 @@ ExampleDAO.prototype.create = function (object) {
   });
 }
 
+ExampleDAO.prototype.del = function () {
+  return new Promise((resolve, reject) => {
+    var del = require('del');
+    var targetId = this.targetId;
+    var db = this.db;
+    var user = this.user;
+    var userId = this.user.id;
+    var role = this.user.role;
+
+    db.delete('VERTEX', _class)
+    .where({
+      id: targetId
+    })
+    .where(
+      '_allow CONTAINS "' + role + '"'
+    )
+    .one()
+    .then(function() {
+      resolve({id: targetId});
+    })
+    .catch(function(e) {
+      console.log(e);
+      reject();
+
+    })
+    .done();
+  });
+}
+
 module.exports = ExampleDAO;

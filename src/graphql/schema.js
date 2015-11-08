@@ -670,31 +670,6 @@ var introduceExample = mutationWithClientMutationId({
   }
 });
 
-var deleteFile = mutationWithClientMutationId({
-  name: 'DeleteFile',
-  inputFields: {
-    id: {
-      type: new GraphQLNonNull(GraphQLID)
-    }
-  },
-  outputFields: {
-    deletedFileId: {
-      type: GraphQLID,
-      resolve: ({id}) => id,
-    },
-    target: {
-      type: nodeInterface,
-      resolve: () => {},
-    }
-  },
-  mutateAndGetPayload: ({id}, context) => {
-    var localId = fromGlobalId(id).id;
-    return dao(context.rootValue.user).File(localId).del().then(function (data) {
-      return {id};
-    });
-  }
-});
-
 var deleteFulfillment = mutationWithClientMutationId({
   name: 'DeleteFulfillment',
   inputFields: {
@@ -732,6 +707,34 @@ var deleteFulfillment = mutationWithClientMutationId({
         .catch(function(e) {
           reject();
         });
+    });
+  }
+});
+
+var deleteExample = mutationWithClientMutationId({
+  name: 'DeleteExample',
+  inputFields: {
+    id: {
+      type: new GraphQLNonNull(GraphQLID)
+    },
+    targetId: {
+      type: new GraphQLNonNull(GraphQLID)
+    }
+  },
+  outputFields: {
+    deletedExampleId: {
+      type: GraphQLID,
+      resolve: ({id}) => id,
+    },
+    target: {
+      type: nodeInterface,
+      resolve: () => {},
+    }
+  },
+  mutateAndGetPayload: ({id}, context) => {
+    var localId = fromGlobalId(id).id;
+    return dao(context.rootValue.user).Example(localId).del().then(function (data) {
+      return {id};
     });
   }
 });
@@ -850,7 +853,7 @@ var schema = new GraphQLSchema({
       updateTestCase: updateTestCase,
       deleteTestCase: deleteTestCase,
       introduceExample: introduceExample,
-      deleteFile: deleteFile,
+      deleteExample: deleteExample,
       deleteFulfillment: deleteFulfillment,
       deleteCoverImage: deleteCoverImage,
       introduceCoverImage: introduceCoverImage,
