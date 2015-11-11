@@ -6,247 +6,248 @@ const utilites = require('../utilities');
 
 import {
   Project
-} from '../model'
+} from '../model';
 
-function ProjectDAO(targetId, params) {
-  // if (!(this instanceof ProjectDAO)) return new ProjectDAO(targetId);
-  this.targetId = targetId;
-  this.params = params;
-}
+class ProjectDAO {
+  constructor(targetId, params) {
+    this.targetId = targetId;
+    this.params = params;
+  }
 
-ProjectDAO.prototype.get = function () {
-  return new Promise((resolve, reject) => {
-    let user = this.user;
-    let db = this.db;
-    let id = this.targetId;
+  get() {
+    return new Promise((resolve, reject) => {
+      let user = this.user;
+      let db = this.db;
+      let id = this.targetId;
 
-  db
-  .getProject()
-  .from(_class)
-  .where({id: id})
-  .limit(1)
-  .transform((record) => {
-    let project = new Project();
-    return utilites.FilteredObject(record, '@.*|rid', project);
-  })
-  .one()
-  .then((record) => {
-    resolve(record);
-  })
-  .catch((e) => {
-    reject();
+      db
+      .getProject()
+      .from(_class)
+      .where({id: id})
+      .limit(1)
+      .transform((record) => {
+        let project = new Project();
+        return utilites.FilteredObject(record, '@.*|rid', project);
+      })
+      .one()
+      .then((record) => {
+        resolve(record);
+      })
+      .catch((e) => {
+        reject();
 
-  })
-  .done(function() {
-    // db.close();
-  });
-});
-}
-
-ProjectDAO.prototype.inEdgeRequired = function () {
-  return new Promise((resolve, reject) => {
-    let user = this.user;
-    let db = this.db;
-    let id = this.targetId;
-
-    db
-    .getProject()
-    .inRequiresFromNode(id)
-    .limit(25)
-    .transform((record) => {
-      return utilites.FilteredObject(record, '@.*|rid');
-    })
-    .all()
-    .then((records) => {
-      resolve(records);
-    })
-    .catch((e) => {
-      reject();
-
-    })
-    .done(function() {
-      // db.close();
+      })
+      .done(function() {
+        // db.close();
+      });
     });
-  });
-}
+  }
 
-ProjectDAO.prototype.getEdgeCreated = function (args) {
-  let pageObject = utilites.Pagination.getOrientDBPageFromGraphQL(args);
+  inEdgeRequired() {
+    return new Promise((resolve, reject) => {
+      let user = this.user;
+      let db = this.db;
+      let id = this.targetId;
 
-  return new Promise((resolve, reject) => {
-    let user = this.user;
-    let db = this.db;
-    let id = this.targetId;
+      db
+      .getProject()
+      .inRequiresFromNode(id)
+      .limit(25)
+      .transform((record) => {
+        return utilites.FilteredObject(record, '@.*|rid');
+      })
+      .all()
+      .then((records) => {
+        resolve(records);
+      })
+      .catch((e) => {
+        reject();
 
-    db
-    .getProject()
-    .outCreatesFromNode(id)
-    .skip(pageObject.skip)
-    .limit(pageObject.limit)
-    .order(pageObject.orderBy)
-    .transform((record) => {
-      return utilites.FilteredObject(record, '@.*|rid');
-    })
-    .all()
-    .then((records) => {
-      resolve(records);
-    })
-    .catch((e) => {
-      reject();
-
-    })
-    .done(() => {
-      // db.close();
+      })
+      .done(function() {
+        // db.close();
+      });
     });
-  });
-}
+  }
 
-ProjectDAO.prototype.create = function (object) {
-  return new Promise((resolve, reject) => {
-    let db = this.db;
-    let relationalId = this.targetId;
-    let user = this.user;
-    let userId = this.user.id;
-    let role = this.user.role;
+  getEdgeCreated(args) {
+    let pageObject = utilites.Pagination.getOrientDBPageFromGraphQL(args);
 
-    validator.Validate(object).isProject(function(err, object) {
+    return new Promise((resolve, reject) => {
+      let user = this.user;
+      let db = this.db;
+      let id = this.targetId;
 
-      if (err.valid === true) {
-        db
-        .let('user', function (s) {
-          s
-          .select()
-          .from('User')
-          .where({
-            id: relationalId
+      db
+      .getProject()
+      .outCreatesFromNode(id)
+      .skip(pageObject.skip)
+      .limit(pageObject.limit)
+      .order(pageObject.orderBy)
+      .transform((record) => {
+        return utilites.FilteredObject(record, '@.*|rid');
+      })
+      .all()
+      .then((records) => {
+        resolve(records);
+      })
+      .catch((e) => {
+        reject();
+
+      })
+      .done(() => {
+        // db.close();
+      });
+    });
+  }
+
+  create(object) {
+    return new Promise((resolve, reject) => {
+      let db = this.db;
+      let relationalId = this.targetId;
+      let user = this.user;
+      let userId = this.user.id;
+      let role = this.user.role;
+
+      validator.Validate(object).isProject(function(err, object) {
+
+        if (err.valid === true) {
+          db
+          .let('user', function (s) {
+            s
+            .select()
+            .from('User')
+            .where({
+              id: relationalId
+            })
+            .where(
+              '_allow CONTAINS "' + role + '"'
+            )
           })
-          .where(
-            '_allow CONTAINS "' + role + '"'
-          )
-        })
-        .let('project', function(s) {
-          s
-          .create('vertex', 'Project')
-          .set(object)
-          .set({_allow: [role]})
-        })
-        .let('creates', function (s) {
-          s
-          .create('edge', 'Creates')
-          .from('$user')
-          .to('$project')
-        })
-        .commit()
-        .return('$project')
-        .transform((record) => {
-          return utilites.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
-        })
-        .one()
-        .then((record) => {
-          record.testCases = [];
-          resolve(record);
-        })
-        .catch((e) => {
-          reject();
-
-        })
-        .done(() => {
-          // db.close();
-        });
-
-      } else {
-        reject(err);
-      }
-    });
-  });
-}
-
-ProjectDAO.prototype.update = function (object) {
-  return new Promise((resolve, reject) => {
-    let targetId = this.targetId;
-    let db = this.db;
-    let user = this.user;
-    let userId = this.user.id;
-    let role = this.user.role;
-
-    validator.Validate(object, true).isProject(function(err, object) {
-
-      if (err.valid === true) {
-
-        db
-        .let('project', function(s) {
-          s
-          .select()
-          .from(_class)
-          .where({
-            id: targetId
+          .let('project', function(s) {
+            s
+            .create('vertex', 'Project')
+            .set(object)
+            .set({_allow: [role]})
           })
-          .where(
-            '_allow CONTAINS "' + role + '"'
-          )
-        })
-        .let('update', function(s) {
-          s
-          .update('$project')
-          .set(object)
-        })
-        .let('newProject', function(s) {
-          s
-          .getProject()
-          .from('$project')
-        })
-        .commit()
-        .return('$newProject')
-        .transform((record) => {
-          return utilites.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
-        })
-        .one()
-        .then((record) => {
-          resolve(record);
-        })
-        .catch((e) => {
-          reject();
+          .let('creates', function (s) {
+            s
+            .create('edge', 'Creates')
+            .from('$user')
+            .to('$project')
+          })
+          .commit()
+          .return('$project')
+          .transform((record) => {
+            return utilites.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
+          })
+          .one()
+          .then((record) => {
+            record.testCases = [];
+            resolve(record);
+          })
+          .catch((e) => {
+            reject();
 
-        })
-        .done(() => {
-          // db.close();
-        });
+          })
+          .done(() => {
+            // db.close();
+          });
 
-      } else {
-        reject(err);
-      }
-
+        } else {
+          reject(err);
+        }
+      });
     });
-  });
-};
+  }
 
-ProjectDAO.prototype.del = function () {
-  return new Promise((resolve, reject) => {
-    let targetId = this.targetId;
-    let db = this.db;
-    let user = this.user;
-    let userId = this.user.id;
-    let role = this.user.role;
+  update(object) {
+    return new Promise((resolve, reject) => {
+      let targetId = this.targetId;
+      let db = this.db;
+      let user = this.user;
+      let userId = this.user.id;
+      let role = this.user.role;
 
-    db.delete('VERTEX', _class)
-    .where({
-      id: targetId
-    })
-    .where(
-      '_allow CONTAINS "' + role + '"'
-    )
-    .one()
-    .then(() => {
-      resolve({id: targetId});
-    })
-    .catch((e) => {
-      resolve(e);
+      validator.Validate(object, true).isProject(function(err, object) {
 
-    })
-    .done(() => {
-      // db.close();
+        if (err.valid === true) {
+
+          db
+          .let('project', function(s) {
+            s
+            .select()
+            .from(_class)
+            .where({
+              id: targetId
+            })
+            .where(
+              '_allow CONTAINS "' + role + '"'
+            )
+          })
+          .let('update', function(s) {
+            s
+            .update('$project')
+            .set(object)
+          })
+          .let('newProject', function(s) {
+            s
+            .getProject()
+            .from('$project')
+          })
+          .commit()
+          .return('$newProject')
+          .transform((record) => {
+            return utilites.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
+          })
+          .one()
+          .then((record) => {
+            resolve(record);
+          })
+          .catch((e) => {
+            reject();
+
+          })
+          .done(() => {
+            // db.close();
+          });
+
+        } else {
+          reject(err);
+        }
+
+      });
     });
-  });
+  }
+
+  del() {
+    return new Promise((resolve, reject) => {
+      let targetId = this.targetId;
+      let db = this.db;
+      let user = this.user;
+      let userId = this.user.id;
+      let role = this.user.role;
+
+      db.delete('VERTEX', _class)
+      .where({
+        id: targetId
+      })
+      .where(
+        '_allow CONTAINS "' + role + '"'
+      )
+      .one()
+      .then(() => {
+        resolve({id: targetId});
+      })
+      .catch((e) => {
+        resolve(e);
+
+      })
+      .done(() => {
+        // db.close();
+      });
+    });
+  }
 }
 
-module.exports = ProjectDAO;
+export default ProjectDAO;

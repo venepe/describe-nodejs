@@ -6,117 +6,118 @@ const utilites = require('../utilities');
 
 import {
   File
-} from '../model'
+} from '../model';
 
-function CoverDAO(targetId, params) {
-  // if (!(this instanceof CoverDAO)) return new CoverDAO(targetId);
-  this.targetId = targetId;
-  this.params = params;
-}
+class CoverDAO {
+  constructor(targetId, params) {
+    this.targetId = targetId;
+    this.params = params;
+  }
 
-CoverDAO.prototype.create = function (object) {
-  return new Promise((resolve, reject) => {
-    var db = this.db;
-    var relationalId = this.targetId;
-    var user = this.user;
-    var userId = this.user.id;
-    var role = this.user.role;
+  create(object) {
+    return new Promise((resolve, reject) => {
+      var db = this.db;
+      var relationalId = this.targetId;
+      var user = this.user;
+      var userId = this.user.id;
+      var role = this.user.role;
 
-    validator.Validate(object).isFile(function(err, object) {
+      validator.Validate(object).isFile(function(err, object) {
 
-      if (err.valid === true) {
-        db
-        .let('target', function (s) {
-          s
-          .select()
-          .from('indexvalues:id')
-          .where({
-            id: relationalId
+        if (err.valid === true) {
+          db
+          .let('target', function (s) {
+            s
+            .select()
+            .from('indexvalues:id')
+            .where({
+              id: relationalId
+            })
+            .where(
+              '_allow CONTAINS "' + role + '"'
+            )
           })
-          .where(
-            '_allow CONTAINS "' + role + '"'
-          )
-        })
-        .let('user', function (s) {
-          s
-          .select()
-          .from('User')
-          .where({
-            id: userId
+          .let('user', function (s) {
+            s
+            .select()
+            .from('User')
+            .where({
+              id: userId
+            })
+            .where(
+              '_allow CONTAINS "' + role + '"'
+            )
           })
-          .where(
-            '_allow CONTAINS "' + role + '"'
-          )
-        })
-        .let('file', function(s) {
-          s
-          .create('vertex', 'File')
-          .set(object)
-          .set({_allow: [role]})
-        })
-        .let('creates', function (s) {
-          s
-          .create('edge', 'Creates')
-          .from('$user')
-          .to('$file')
-        })
-        .let('covers', function (s) {
-          s
-          .create('edge', 'Covers')
-          .from('$file')
-          .to('$target')
-        })
-        .commit()
-        .return('$file')
-        .transform(function(record) {
-          return utilites.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
-        })
-        .one()
-        .then(function (record) {
-          resolve(record);
-        })
-        .catch(function (e) {
-          console.log(e);
-          console.log('we have an eror');
-          reject();
+          .let('file', function(s) {
+            s
+            .create('vertex', 'File')
+            .set(object)
+            .set({_allow: [role]})
+          })
+          .let('creates', function (s) {
+            s
+            .create('edge', 'Creates')
+            .from('$user')
+            .to('$file')
+          })
+          .let('covers', function (s) {
+            s
+            .create('edge', 'Covers')
+            .from('$file')
+            .to('$target')
+          })
+          .commit()
+          .return('$file')
+          .transform(function(record) {
+            return utilites.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
+          })
+          .one()
+          .then(function (record) {
+            resolve(record);
+          })
+          .catch(function (e) {
+            console.log(e);
+            console.log('we have an eror');
+            reject();
 
-        })
-        .done();
+          })
+          .done();
 
-      } else {
-        reject(err);
-      }
+        } else {
+          reject(err);
+        }
+      });
     });
-  });
+  }
+
+  del() {
+    return new Promise((resolve, reject) => {
+      var del = require('del');
+      var targetId = this.targetId;
+      var db = this.db;
+      var user = this.user;
+      var userId = this.user.id;
+      var role = this.user.role;
+
+      db.delete('VERTEX', _class)
+      .where({
+        id: targetId
+      })
+      .where(
+        '_allow CONTAINS "' + role + '"'
+      )
+      .one()
+      .then(function() {
+        resolve({id: targetId});
+      })
+      .catch(function(e) {
+        console.log(e);
+        reject();
+
+      })
+      .done();
+    });
+  }
 }
 
-CoverDAO.prototype.del = function () {
-  return new Promise((resolve, reject) => {
-    var del = require('del');
-    var targetId = this.targetId;
-    var db = this.db;
-    var user = this.user;
-    var userId = this.user.id;
-    var role = this.user.role;
-
-    db.delete('VERTEX', _class)
-    .where({
-      id: targetId
-    })
-    .where(
-      '_allow CONTAINS "' + role + '"'
-    )
-    .one()
-    .then(function() {
-      resolve({id: targetId});
-    })
-    .catch(function(e) {
-      console.log(e);
-      reject();
-
-    })
-    .done();
-  });
-}
-
-module.exports = CoverDAO;
+export default CoverDAO;

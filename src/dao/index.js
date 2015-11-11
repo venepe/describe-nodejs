@@ -1,7 +1,7 @@
 'use strict';
 
 const OrientDB = require('../db');
-import {OrientDbConfig, SumsetiDbConfig} from '../config';
+import { OrientDbConfig, SumsetiDbConfig } from '../config';
 const server = OrientDB(OrientDbConfig);
 
 function DAO(user) {
@@ -40,14 +40,6 @@ DAO.prototype.Fulfillment = function(targetId, params) {
   ful.db = this.db;
   ful.user = this.user;
   return ful;
-}
-
-DAO.prototype.Me = function() {
-  let Me = require('./nodes/me.js');
-  let m = new Me();
-  m.db = this.db;
-  m.user = this.user;
-  return m;
 }
 
 DAO.prototype.Project = function(targetId, params) {
