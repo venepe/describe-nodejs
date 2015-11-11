@@ -147,12 +147,12 @@ class TestCaseDAO {
       let userId = this.user.id;
       let role = this.user.role;
 
-      validator.Validate(object).isTestCase(function(err, object) {
+      validator.Validate(object).isTestCase((err, object) => {
 
         if (err.valid === true) {
 
           db
-          .let('project', function (s) {
+          .let('project', (s) => {
             s
             .select()
             .from('Project')
@@ -163,7 +163,7 @@ class TestCaseDAO {
               '_allow CONTAINS "' + role + '"'
             )
           })
-          .let('user', function (s) {
+          .let('user', (s) => {
             s
             .select()
             .from('User')
@@ -174,19 +174,19 @@ class TestCaseDAO {
               '_allow CONTAINS "' + role + '"'
             )
           })
-          .let('testCase', function(s) {
+          .let('testCase', (s) => {
             s
             .create('vertex', 'TestCase')
             .set(object)
             .set({_allow: [role]})
           })
-          .let('creates', function (s) {
+          .let('creates', (s) => {
             s
             .create('edge', 'Creates')
             .from('$user')
             .to('$testCase')
           })
-          .let('requires', function (s) {
+          .let('requires', (s) => {
             s
             .create('edge', 'Requires')
             .from('$project')
@@ -225,12 +225,12 @@ class TestCaseDAO {
       let userId = this.user.id;
       let role = this.user.role;
 
-      validator.Validate(object, true).isTestCase(function(err, object) {
+      validator.Validate(object, true).isTestCase((err, object) => {
 
         if (err.valid === true) {
 
           db
-          .let('testCase', function(s) {
+          .let('testCase', (s) => {
             s
             .select()
             .from(_class)
@@ -241,12 +241,12 @@ class TestCaseDAO {
               '_allow CONTAINS "' + role + '"'
             )
           })
-          .let('update', function(s) {
+          .let('update', (s) => {
             s
             .update('$testCase')
             .set(object)
           })
-          .let('newTestCase', function(s) {
+          .let('newTestCase', (s) => {
             s
             .getTestCase()
             .from('$testCase')

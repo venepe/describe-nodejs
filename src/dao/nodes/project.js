@@ -37,7 +37,7 @@ class ProjectDAO {
         reject();
 
       })
-      .done(function() {
+      .done(() => {
         // db.close();
       });
     });
@@ -64,7 +64,7 @@ class ProjectDAO {
         reject();
 
       })
-      .done(function() {
+      .done(() => {
         // db.close();
       });
     });
@@ -109,11 +109,11 @@ class ProjectDAO {
       let userId = this.user.id;
       let role = this.user.role;
 
-      validator.Validate(object).isProject(function(err, object) {
+      validator.Validate(object).isProject((err, object) => {
 
         if (err.valid === true) {
           db
-          .let('user', function (s) {
+          .let('user', (s) => {
             s
             .select()
             .from('User')
@@ -124,13 +124,13 @@ class ProjectDAO {
               '_allow CONTAINS "' + role + '"'
             )
           })
-          .let('project', function(s) {
+          .let('project', (s) => {
             s
             .create('vertex', 'Project')
             .set(object)
             .set({_allow: [role]})
           })
-          .let('creates', function (s) {
+          .let('creates', (s) => {
             s
             .create('edge', 'Creates')
             .from('$user')
@@ -169,12 +169,12 @@ class ProjectDAO {
       let userId = this.user.id;
       let role = this.user.role;
 
-      validator.Validate(object, true).isProject(function(err, object) {
+      validator.Validate(object, true).isProject((err, object) => {
 
         if (err.valid === true) {
 
           db
-          .let('project', function(s) {
+          .let('project', (s) => {
             s
             .select()
             .from(_class)
@@ -185,12 +185,12 @@ class ProjectDAO {
               '_allow CONTAINS "' + role + '"'
             )
           })
-          .let('update', function(s) {
+          .let('update', (s) => {
             s
             .update('$project')
             .set(object)
           })
-          .let('newProject', function(s) {
+          .let('newProject', (s) => {
             s
             .getProject()
             .from('$project')

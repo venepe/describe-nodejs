@@ -9,7 +9,7 @@ class UserAuthenticateDAO {
     return new Promise((resolve, reject) => {
       let db = this.db;
 
-      validator.Validate(object).isCredential(function(err, object) {
+      validator.Validate(object).isCredential((err, object) => {
         if (err.valid === true) {
         	let email = object.email;
           let password = object.password;
@@ -40,7 +40,7 @@ class UserAuthenticateDAO {
             resolve(authenticate);
 
           })
-          .catch(function (e) {
+          .catch((e) => {
             console.log(e);
             reject({message: 'Invalid email or password'})
           })

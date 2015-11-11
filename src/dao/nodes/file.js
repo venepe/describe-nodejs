@@ -25,19 +25,19 @@ class FileDAO {
       .from(_class)
       .where({id: id})
       .limit(1)
-      .transform(function(record) {
-        var file = new File();
+      .transform((record) => {
+        let file = new File();
         return utilites.FilteredObject(record, '@.*|rid', file);
       })
       .one()
-      .then(function (record) {
+      .then((record) => {
         resolve(record);
       })
-      .catch(function (e) {
+      .catch((e) => {
         reject();
 
       })
-      .done(function() {
+      .done(() => {
         // db.close();
       });
     });
@@ -57,30 +57,30 @@ class FileDAO {
       .skip(pageObject.skip)
       .limit(pageObject.limit)
       .order(pageObject.orderBy)
-      .transform(function(record) {
+      .transform((record) => {
         return utilites.FilteredObject(record, '@.*|rid');
       })
       .all()
-      .then(function (records) {
+      .then((records) => {
         resolve(records);
       })
-      .catch(function (e) {
+      .catch((e) => {
         reject();
 
       })
-      .done(function() {
+      .done(() => {
         // db.close();
       });
     });
   }
 
   getEdgeExemplifies(args) {
-    var pageObject = utilites.Pagination.getOrientDBPageFromGraphQL(args);
+    let pageObject = utilites.Pagination.getOrientDBPageFromGraphQL(args);
 
     return new Promise((resolve, reject) => {
-      var id = this.targetId;
-      var user = this.user;
-      var db = this.db;
+      let id = this.targetId;
+      let user = this.user;
+      let db = this.db;
 
       db
       .getFile()
@@ -88,30 +88,30 @@ class FileDAO {
       .skip(pageObject.skip)
       .limit(pageObject.limit)
       .order(pageObject.orderBy)
-      .transform(function(record) {
+      .transform((record) => {
         return utilites.FilteredObject(record, '@.*|rid');
       })
       .all()
-      .then(function (records) {
+      .then((records) => {
         resolve(records);
       })
-      .catch(function (e) {
+      .catch((e) => {
         reject();
 
       })
-      .done(function() {
+      .done(() => {
         // db.close();
       });
     });
   }
 
   getEdgeCovered(args) {
-    var pageObject = utilites.Pagination.getOrientDBPageFromGraphQL(args);
+    let pageObject = utilites.Pagination.getOrientDBPageFromGraphQL(args);
 
     return new Promise((resolve, reject) => {
-      var id = this.targetId;
-      var user = this.user;
-      var db = this.db;
+      let id = this.targetId;
+      let user = this.user;
+      let db = this.db;
 
       db
       .getFile()
@@ -119,15 +119,15 @@ class FileDAO {
       .skip(pageObject.skip)
       .limit(pageObject.limit)
       .order(pageObject.orderBy)
-      .transform(function(record) {
+      .transform((record) => {
         return utilites.FilteredObject(record, '@.*|rid');
       })
       .all()
-      .then(function (records) {
+      .then((records) => {
         if (records && records.length > 0) {
           resolve(records);
         } else {
-          var defaultCoverFile = {
+          let defaultCoverFile = {
             id: id,
             uri: 'http://localhost:8000/default/images/' + id
           };
@@ -136,11 +136,11 @@ class FileDAO {
           ]);
         }
       })
-      .catch(function (e) {
+      .catch((e) => {
         reject();
 
       })
-      .done(function() {
+      .done(() => {
         // db.close();
       });
     });
@@ -179,12 +179,12 @@ class FileDAO {
 
   del() {
     return new Promise((resolve, reject) => {
-      var del = require('del');
-      var targetId = this.targetId;
-      var db = this.db;
-      var user = this.user;
-      var userId = this.user.id;
-      var role = this.user.role;
+      let del = require('del');
+      let targetId = this.targetId;
+      let db = this.db;
+      let user = this.user;
+      let userId = this.user.id;
+      let role = this.user.role;
 
       db.delete('VERTEX', _class)
       .where({
@@ -194,10 +194,10 @@ class FileDAO {
         '_allow CONTAINS "' + role + '"'
       )
       .one()
-      .then(function() {
+      .then(() => {
         resolve({id: targetId});
       })
-      .catch(function(e) {
+      .catch((e) => {
         console.log(e);
         reject();
 

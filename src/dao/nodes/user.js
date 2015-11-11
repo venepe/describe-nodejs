@@ -73,7 +73,7 @@ class UserDAO {
     return new Promise((resolve, reject) => {
       let db = this.db;
 
-      validator.Validate(object).isUser(function(err, object) {
+      validator.Validate(object).isUser((err, object) => {
         if (err.valid === true) {
 
           let password = object.password;
@@ -131,12 +131,12 @@ class UserDAO {
       let role = this.user.role;
 
       if (userId === targetId) {
-        validator.Validate(object, true).isUser(function(err, object) {
+        validator.Validate(object, true).isUser((err, object) => {
 
           if (err.valid === true) {
 
             db
-            .let('update', function(s) {
+            .let('update', (s) => {
               s
               .update(_class)
               .set(object)
@@ -145,7 +145,7 @@ class UserDAO {
                 '_allow CONTAINS "' + role + '"'
               )
             })
-            .let('user', function(s) {
+            .let('user', (s) => {
               s
               .getUser()
               .from(_class)
@@ -186,7 +186,7 @@ class UserDAO {
       let role = this.user.role;
 
       if (userId === targetId) {
-        validator.Validate(object).isPassword(function(err, object) {
+        validator.Validate(object).isPassword((err, object) => {
 
           if (err.valid === true) {
             let currentPassword = object.current;
@@ -195,7 +195,7 @@ class UserDAO {
             newPassword = utilities.HashPassword(newPassword);
 
             db
-            .let('update', function(s) {
+            .let('update', (s) => {
               s
               .update(_class)
               .set({
@@ -209,7 +209,7 @@ class UserDAO {
                 '_allow CONTAINS "' + role + '"'
               )
             })
-            .let('user', function(s) {
+            .let('user', (s) => {
               s
               .getUser()
               .from(_class)

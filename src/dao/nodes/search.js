@@ -15,7 +15,7 @@ class SearchDAO {
     return new Promise((resolve, reject) => {
       let query = this.query;
       let user = this.user;
-      var db = this.db;
+      let db = this.db;
 
       query = query + '*';
 
@@ -39,7 +39,7 @@ class SearchDAO {
       .catch((e) => {
         reject();
       })
-      .done(function() {
+      .done(() => {
         // db.close();
       });
     });
