@@ -17,7 +17,7 @@ const multer  = require('multer');
 const signup = require('./src/auth/signup');
 const authenticate = require('./src/auth/authenticate');
 const passwordReset = require('./src/auth/password-reset');
-const upload = multer({ dest: __dirname + '/public/uploads/images/full_size/' });
+const upload = multer({ dest: __dirname + '/public/uploads/images/full_size/', fileFilter: fileFilter });
 const port = process.env.PORT || 8000;
 const baseUrl = 'http://localhost:' + port;
 
@@ -33,8 +33,6 @@ app.use(jwt({
 }));
 
 app.use(function(req, res, next) {
-  console.log(req.url);
-  console.log('get graphql');
   if (req.user) {
     //Get id from the graphql id
     try {
@@ -113,19 +111,33 @@ app.post('/reset', bodyParser.json(), function(req, res) {
   res.status(200).json({reset: null});
 });
 
-app.post('/graphql', upload.single('0'), function(req, res, next){
-    if (req.body && req.file && req.body.variables) {
-      let variables = JSON.parse(req.body.variables);
-      console.log(Object.keys(variables));
-      let filename = req.file.filename;
-      let url = req.file.destination.replace(__dirname + '/public' , baseUrl);
-      let input = variables.input || variables.input_0;
-      input.uri = url + filename;
-      variables.input = input;
-      variables = JSON.stringify(variables);
-      req.body.variables = variables;
+function fileFilter (req, file, cb) {
+  let regEx = new RegExp(/\.(jpeg|jpg|png)$/i);
+  let originalname = file.originalname.toLowerCase();
+  let mimetype = file.mimetype.toLowerCase();
+  if (regEx.test(originalname) && (mimetype === 'image/jpeg' || mimetype === 'image/png')) {
+    cb(null, true);
+  } else {
+    cb(new Error({status: 400}));
+  }
+}
+
+app.post('/graphql', upload.single('0'), function(err, req, res, next){
+    if (err) {
+      res.status(400).json({});
+    } else {
+      if (req.body && req.file && req.body.variables) {
+        let variables = JSON.parse(req.body.variables);
+        let filename = req.file.filename;
+        let url = req.file.destination.replace(__dirname + '/public' , baseUrl);
+        let input = variables.input || variables.input_0;
+        input.uri = url + filename;
+        variables.input = input;
+        variables = JSON.stringify(variables);
+        req.body.variables = variables;
+      }
+      next();
     }
-    next();
 });
 
 app.get('/', function (req, res) {
@@ -138,5 +150,10 @@ app.use('/graphql', graphqlHTTP(request => ({
   schema: schema,
   rootValue: {user: request.user}
 })));
+
+app.use(function(err, req, res, next) {
+  // logic
+  res.status(500).json({});
+});
 
 server.listen(port);
