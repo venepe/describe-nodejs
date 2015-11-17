@@ -19,9 +19,7 @@ const authenticate = require('./src/auth/authenticate');
 const passwordReset = require('./src/auth/password-reset');
 const upload = multer({ dest: __dirname + '/public/uploads/images/full_size/'});
 const port = process.env.PORT || 8000;
-const baseUrl = 'http://localhost:' + port;
-
-console.log(process.env.DB_PORT_2424_TCP);
+const baseUrl = process.env.BASE_URL;
 
 app.use(jwt({
   secret: AppConfig.JWTSecret,

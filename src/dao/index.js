@@ -4,11 +4,6 @@ const OrientDB = require('../db');
 import { OrientDbConfig, SumsetiDbConfig } from '../config';
 const server = OrientDB(OrientDbConfig);
 
-server.list()
-.then(function (dbs) {
-  console.log('There are ' + dbs.length + ' databases on the server.');
-});
-
 function DAO(user) {
   if (!(this instanceof DAO)) return new DAO(user);
   this.user = user || {};
