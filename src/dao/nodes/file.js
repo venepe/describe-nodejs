@@ -3,6 +3,7 @@
 const _class = 'File';
 const validator = require('../validator');
 const utilites = require('../utilities');
+import { FileConfig } from '../../config';
 
 import {
   File
@@ -129,7 +130,7 @@ class FileDAO {
         } else {
           let defaultCoverFile = {
             id: id,
-            uri: 'http://localhost:8000/default/images/' + id
+            uri: FileConfig.DefaultImageDir + id
           };
           resolve([
             defaultCoverFile
