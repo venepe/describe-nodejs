@@ -1,7 +1,7 @@
 'use strict';
 
 const _class = 'File';
-const validator = require('../validator');
+const { SMTIValidator } = require('../validator');
 const utilites = require('../utilities');
 
 import {
@@ -22,11 +22,13 @@ class FulfillmentDAO {
       var userId = this.user.id;
       var role = this.user.role;
 
-      validator.Validate(object).isFile(function(err, object) {
+      let validator = new SMTIValidator(object);
 
-        if (err.valid === true) {
+      validator
+        .isFile()
+        .then((object) => {
           db
-          .let('testCase', function (s) {
+          .let('testCase', (s) => {
             s
             .select()
             .from('TestCase')
@@ -34,7 +36,7 @@ class FulfillmentDAO {
               id: relationalId
             })
           })
-          .let('user', function (s) {
+          .let('user', (s) => {
             s
             .select()
             .from('User')
@@ -45,19 +47,19 @@ class FulfillmentDAO {
               '_allow CONTAINS "' + role + '"'
             )
           })
-          .let('file', function(s) {
+          .let('file', (s) => {
             s
             .create('vertex', 'File')
             .set(object)
             .set({_allow: [role]})
           })
-          .let('creates', function (s) {
+          .let('creates', (s) => {
             s
             .create('edge', 'Creates')
             .from('$user')
             .to('$file')
           })
-          .let('fulfills', function (s) {
+          .let('fulfills', (s) => {
             s
             .create('edge', 'Fulfills')
             .from('$file')
@@ -65,26 +67,23 @@ class FulfillmentDAO {
           })
           .commit()
           .return('$file')
-          .transform(function(record) {
+          .transform((record) => {
             return utilites.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
           })
           .one()
-          .then(function (record) {
+          .then((record) => {
             record.testCases = [];
             resolve(record);
           })
-          .catch(function (e) {
+          .catch((e) => {
+            console.log('orientdb error: ' + e);
             reject();
-
           })
-          .done(() => {
-            // db.close();
-          });
-
-        } else {
-          reject(err);
-        }
-      });
+          .done();
+        })
+        .catch((errors) => {
+          reject(errors);
+        });
     });
   }
 
@@ -98,14 +97,14 @@ class FulfillmentDAO {
       var role = this.user.role;
 
       db
-      .let('deletes', function (s) {
+      .let('deletes', (s) => {
         s
         .delete('VERTEX', _class)
         .where({
           id: targetId
         })
       })
-      .let('testCase', function (s) {
+      .let('testCase', (s) => {
         s
         .getTestCase()
         .from('TestCase')
@@ -115,17 +114,17 @@ class FulfillmentDAO {
       })
       .commit()
       .return('$testCase')
-      .transform(function(record) {
+      .transform((record) => {
         let isFulfilled = record.isFulfilled;
         record.isFulfilled = (isFulfilled.length > 0) ? true : false;
         return utilites.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
       })
       .one()
-      .then(function (testCase) {
+      .then((testCase) => {
         let payload = {deletedFulfillmentId: targetId, testCase};
         resolve(payload);
       })
-      .catch(function (e) {
+      .catch((e) => {
         reject();
 
       })

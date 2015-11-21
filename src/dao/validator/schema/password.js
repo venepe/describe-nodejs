@@ -1,16 +1,14 @@
 'use strict';
 
-const validator = require('validator');
-const utilities = require('../../utilities');
+const validator = require('node-validator');
 
-var schema = {
-  type: 'object',
-  code: 400,
-  strict: true,
-  properties: {
-    current: {type: 'string', minLength: 6, maxLength: 32, pattern:utilities.Constants.getPasswordPattern()},
-    new: {type: 'string', minLength: 6, maxLength: 32, pattern:utilities.Constants.getPasswordPattern()}
-  }
-};
+function isValid(obj = {}, callback) {
+  let check = validator
+                .isObject()
+                .withRequired('current', validator.isString({ regex: /^[.*]z{6, 32}$/ }))
+                .withRequired('new', validator.isString({ regex: /^[.*]z{6, 32}$/ }));
 
-module.exports = schema;
+  validator.run(check, obj, (errorCount, errors) => callback);
+}
+
+module.exports = isValid;

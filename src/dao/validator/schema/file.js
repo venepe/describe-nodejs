@@ -1,18 +1,13 @@
 'use strict';
 
-const uuid = require('node-uuid');
-const utilities = require('../../utilities');
+const validator = require('node-validator');
 
-function getSchema() {
-  return {
-    type: 'object',
-    strict: true,
-    properties: {
-      id: {type: 'string', def: uuid.v4(), optional: false, pattern:utilities.Constants.getUUIDPattern()},
-      // uri: { type: 'string', pattern: /\.(jpeg|jpg|png)$/i}
-      uri: { type: 'string'}
-    }
-  }
+function isValid(obj = {}, callback) {
+  let check = validator
+              .isObject()
+              .withRequired('uri', validator.isString());
+
+  validator.run(check, obj, (errorCount, errors) => callback);
 }
 
-module.exports = getSchema;
+module.exports = isValid;

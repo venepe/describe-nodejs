@@ -1,7 +1,7 @@
 'use strict';
 
 const _class = 'TestCase';
-const validator = require('../validator');
+const { SMTIValidator } = require('../validator');
 const utilites = require('../utilities');
 
 import {
@@ -147,10 +147,11 @@ class TestCaseDAO {
       let userId = this.user.id;
       let role = this.user.role;
 
-      validator.Validate(object).isTestCase((err, object) => {
+      let validator = new SMTIValidator(object);
 
-        if (err.valid === true) {
-
+      validator
+        .isTestCase()
+        .then((object) => {
           db
           .let('project', (s) => {
             s
@@ -202,18 +203,15 @@ class TestCaseDAO {
             resolve(result);
           })
           .catch((e) => {
-            console.log(e);
+            console.log('orientdb error: ' + e);
             reject();
 
           })
-          .done(() => {
-            // db.close();
-          });
-
-        } else {
-          reject(err);
-        }
-      });
+          .done();
+        })
+        .catch((errors) => {
+          reject(errors);
+        });
     });
   }
 
@@ -225,10 +223,11 @@ class TestCaseDAO {
       let userId = this.user.id;
       let role = this.user.role;
 
-      validator.Validate(object, true).isTestCase((err, object) => {
+      let validator = new SMTIValidator(object, true);
 
-        if (err.valid === true) {
-
+      validator
+        .isTestCase()
+        .then((object) => {
           db
           .let('testCase', (s) => {
             s
@@ -261,19 +260,15 @@ class TestCaseDAO {
             resolve(record);
           })
           .catch((e) => {
-            console.log(e);
+            console.log('orientdb error: ' + e);
             reject();
 
           })
-          .done(() => {
-            // db.close();
-          });
-
-        } else {
-          reject(err);
-        }
-
-      });
+          .done();
+        })
+        .catch((errors) => {
+          reject(errors);
+        });
     });
   }
 

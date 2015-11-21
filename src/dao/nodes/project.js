@@ -1,7 +1,7 @@
 'use strict';
 
 const _class = 'Project';
-const validator = require('../validator');
+const { SMTIValidator } = require('../validator');
 const utilites = require('../utilities');
 
 import {
@@ -109,9 +109,11 @@ class ProjectDAO {
       let userId = this.user.id;
       let role = this.user.role;
 
-      validator.Validate(object).isProject((err, object) => {
+      let validator = new SMTIValidator(object);
 
-        if (err.valid === true) {
+      validator
+        .isProject()
+        .then((object) => {
           db
           .let('user', (s) => {
             s
@@ -147,17 +149,14 @@ class ProjectDAO {
             resolve(record);
           })
           .catch((e) => {
+            console.log('orientdb error: ' + e);
             reject();
-
           })
-          .done(() => {
-            // db.close();
-          });
-
-        } else {
-          reject(err);
-        }
-      });
+          .done();
+        })
+        .catch((errors) => {
+          reject(errors);
+        });
     });
   }
 
@@ -169,10 +168,11 @@ class ProjectDAO {
       let userId = this.user.id;
       let role = this.user.role;
 
-      validator.Validate(object, true).isProject((err, object) => {
+      let validator = new SMTIValidator(object, true);
 
-        if (err.valid === true) {
-
+      validator
+        .isProject()
+        .then((object) => {
           db
           .let('project', (s) => {
             s
@@ -205,18 +205,14 @@ class ProjectDAO {
             resolve(record);
           })
           .catch((e) => {
+            console.log('orientdb error: ' + e);
             reject();
-
           })
-          .done(() => {
-            // db.close();
-          });
-
-        } else {
-          reject(err);
-        }
-
-      });
+          .done();
+        })
+        .catch((errors) => {
+          reject(errors)
+        });
     });
   }
 

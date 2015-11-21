@@ -1,12 +1,13 @@
 'use strict';
 
-var schema = {
-    type: 'object',
-    code: 400,
-    strict: true,
-    properties: {
-      title: {type: 'string', minLength: 2, maxLength: 150, optional: true}
-    }
-};
+const validator = require('node-validator');
 
-module.exports = schema;
+function isValid(obj = {}, callback) {
+  let check = validator
+              .isObject()
+              .withOptional('title', validator.isString({ regex: /^[.*]z{2, 150}$/ }));
+
+  validator.run(check, obj, (errorCount, errors) => callback);
+}
+
+module.exports = isValid;

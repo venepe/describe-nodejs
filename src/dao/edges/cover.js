@@ -1,7 +1,7 @@
 'use strict';
 
 const _class = 'File';
-const validator = require('../validator');
+const { SMTIValidator } = require('../validator');
 const utilites = require('../utilities');
 
 import {
@@ -22,11 +22,13 @@ class CoverDAO {
       var userId = this.user.id;
       var role = this.user.role;
 
-      validator.Validate(object).isFile(function(err, object) {
+      let validator = new SMTIValidator(object);
 
-        if (err.valid === true) {
+      validator
+        .isFile()
+        .then((object) => {
           db
-          .let('target', function (s) {
+          .let('target', (s) => {
             s
             .select()
             .from('indexvalues:id')
@@ -37,7 +39,7 @@ class CoverDAO {
               '_allow CONTAINS "' + role + '"'
             )
           })
-          .let('user', function (s) {
+          .let('user', (s) => {
             s
             .select()
             .from('User')
@@ -48,19 +50,19 @@ class CoverDAO {
               '_allow CONTAINS "' + role + '"'
             )
           })
-          .let('file', function(s) {
+          .let('file', (s) => {
             s
             .create('vertex', 'File')
             .set(object)
             .set({_allow: [role]})
           })
-          .let('creates', function (s) {
+          .let('creates', (s) => {
             s
             .create('edge', 'Creates')
             .from('$user')
             .to('$file')
           })
-          .let('covers', function (s) {
+          .let('covers', (s) => {
             s
             .create('edge', 'Covers')
             .from('$file')
@@ -68,25 +70,22 @@ class CoverDAO {
           })
           .commit()
           .return('$file')
-          .transform(function(record) {
+          .transform((record) => {
             return utilites.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
           })
           .one()
-          .then(function (record) {
+          .then((record) => {
             resolve(record);
           })
-          .catch(function (e) {
-            console.log(e);
-            console.log('we have an eror');
+          .catch((e) => {
+            console.log('orientdb error: ' + e);
             reject();
-
           })
           .done();
-
-        } else {
-          reject(err);
-        }
-      });
+        })
+        .catch((errors) => {
+          reject(errors);
+        });
     });
   }
 
@@ -107,10 +106,10 @@ class CoverDAO {
         '_allow CONTAINS "' + role + '"'
       )
       .one()
-      .then(function() {
+      .then(() => {
         resolve({id: targetId});
       })
-      .catch(function(e) {
+      .catch((e) => {
         console.log(e);
         reject();
 

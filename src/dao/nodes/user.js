@@ -1,7 +1,7 @@
 'use strict';
 
 const _class = 'User';
-const validator = require('../validator');
+const { SMTIValidator } = require('../validator');
 const utilities = require('../utilities');
 
 import {
@@ -73,9 +73,11 @@ class UserDAO {
     return new Promise((resolve, reject) => {
       let db = this.db;
 
-      validator.Validate(object).isUser((err, object) => {
-        if (err.valid === true) {
+      let validator = new SMTIValidator(object);
 
+      validator
+        .isUser()
+        .then((object) => {
           let password = object.password;
           password = utilities.HashPassword(password);
           object.password = password;
@@ -109,16 +111,14 @@ class UserDAO {
 
           })
           .catch((e) => {
-            console.log(e);
+            console.log('orientdb error: ' + e);
             reject();
           })
-          .done(() => {
-            // db.close();
-          });
-        } else {
-          reject(err);
-        }
-      });
+          .done();
+        })
+        .catch((errors) => {
+          reject(errors);
+        })
     });
   }
 
@@ -131,10 +131,11 @@ class UserDAO {
       let role = this.user.role;
 
       if (userId === targetId) {
-        validator.Validate(object, true).isUser((err, object) => {
+        let validator = new SMTIValidator(object, true);
 
-          if (err.valid === true) {
-
+        validator
+          .isUser(object)
+          .then((object) => {
             db
             .let('update', (s) => {
               s
@@ -161,16 +162,14 @@ class UserDAO {
               resolve(record);
             })
             .catch((e) => {
-              console.log(e);
+              console.log('orientdb error: ' + e);
               reject();
             })
-            .done(() => {
-              // db.close();
-            });
-          } else {
-            reject(err);
-          }
-        });
+            .done();
+          })
+          .catch((errors) => {
+            reject(errors);
+          });
       } else {
         reject({});
       }
@@ -186,9 +185,11 @@ class UserDAO {
       let role = this.user.role;
 
       if (userId === targetId) {
-        validator.Validate(object).isPassword((err, object) => {
+        let validator = new SMTIValidator(object);
 
-          if (err.valid === true) {
+        validator
+          .isPassword()
+          .then((object) => {
             let currentPassword = object.current;
             let newPassword = object.new;
             currentPassword = utilities.HashPassword(currentPassword);
@@ -242,16 +243,14 @@ class UserDAO {
               }
             })
             .catch((e) => {
-              console.log(e);
+              console.log('orientdb error: ' + e);
               reject();
             })
-            .done(() => {
-              // db.close();
-            });
-          } else {
-            reject(err);
-          }
-        });
+            .done();
+          })
+          .catch((errors) => {
+            reject(errors);
+          });
       } else {
         reject({});
       }

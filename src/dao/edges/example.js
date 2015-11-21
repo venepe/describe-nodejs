@@ -1,7 +1,7 @@
 'use strict';
 
 const _class = 'File';
-const validator = require('../validator');
+const { SMTIValidator } = require('../validator');
 const utilites = require('../utilities');
 
 import {
@@ -16,17 +16,18 @@ class ExampleDAO {
 
   create(object) {
     return new Promise((resolve, reject) => {
-      var db = this.db;
-      var relationalId = this.targetId;
-      var user = this.user;
-      var userId = this.user.id;
-      var role = this.user.role;
+      let db = this.db;
+      let relationalId = this.targetId;
+      let user = this.user;
+      let userId = this.user.id;
+      let role = this.user.role;
+      let validator = new SMTIValidator(object);
 
-      validator.Validate(object).isFile(function(err, object) {
-
-        if (err.valid === true) {
+      validator
+        .isFile()
+        .then((object) => {
           db
-          .let('target', function (s) {
+          .let('target', (s) => {
             s
             .select()
             .from('indexvalues:id')
@@ -37,7 +38,7 @@ class ExampleDAO {
               '_allow CONTAINS "' + role + '"'
             )
           })
-          .let('user', function (s) {
+          .let('user', (s) => {
             s
             .select()
             .from('User')
@@ -48,19 +49,19 @@ class ExampleDAO {
               '_allow CONTAINS "' + role + '"'
             )
           })
-          .let('file', function(s) {
+          .let('file', (s) => {
             s
             .create('vertex', 'File')
             .set(object)
             .set({_allow: [role]})
           })
-          .let('creates', function (s) {
+          .let('creates', (s) => {
             s
             .create('edge', 'Creates')
             .from('$user')
             .to('$file')
           })
-          .let('exemplifies', function (s) {
+          .let('exemplifies', (s) => {
             s
             .create('edge', 'Exemplifies')
             .from('$file')
@@ -68,36 +69,33 @@ class ExampleDAO {
           })
           .commit()
           .return('$file')
-          .transform(function(record) {
+          .transform((record) => {
             return utilites.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
           })
           .one()
-          .then(function (record) {
+          .then((record) => {
             resolve(record);
           })
-          .catch(function (e) {
-            console.log(e);
-            console.log('we have an eror');
+          .catch((e) => {
+            console.log('orientdb error: ' + e);
             reject();
-
           })
           .done();
-
-        } else {
-          reject(err);
-        }
-      });
+        })
+        .catch((errors) => {
+          reject(errors);
+        });
     });
   }
 
   del() {
     return new Promise((resolve, reject) => {
-      var del = require('del');
-      var targetId = this.targetId;
-      var db = this.db;
-      var user = this.user;
-      var userId = this.user.id;
-      var role = this.user.role;
+      let del = require('del');
+      let targetId = this.targetId;
+      let db = this.db;
+      let user = this.user;
+      let userId = this.user.id;
+      let role = this.user.role;
 
       db.delete('VERTEX', _class)
       .where({
@@ -107,13 +105,12 @@ class ExampleDAO {
         '_allow CONTAINS "' + role + '"'
       )
       .one()
-      .then(function() {
+      .then(() => {
         resolve({id: targetId});
       })
-      .catch(function(e) {
-        console.log(e);
+      .catch((e) => {
+        console.log('orientdb error: ' + e);
         reject();
-
       })
       .done();
     });

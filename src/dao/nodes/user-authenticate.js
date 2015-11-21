@@ -1,7 +1,7 @@
 'use strict';
 
 const _class = 'User';
-const validator = require('../validator');
+const { SMTIValidator } = require('../validator');
 const utilities = require('../utilities');
 
 class UserAuthenticateDAO {
@@ -9,9 +9,12 @@ class UserAuthenticateDAO {
     return new Promise((resolve, reject) => {
       let db = this.db;
 
-      validator.Validate(object).isCredential((err, object) => {
-        if (err.valid === true) {
-        	let email = object.email;
+      let validator = new SMTIValidator(object);
+
+      validator
+        .isCredential()
+        .then((object) => {
+          let email = object.email;
           let password = object.password;
         	password = utilities.HashPassword(password);
 
@@ -41,17 +44,14 @@ class UserAuthenticateDAO {
 
           })
           .catch((e) => {
-            console.log(e);
+            console.log('orientdb error: ' + e);
             reject({message: 'Invalid email or password'})
           })
-          .done(() => {
-            // db.close();
-          });
-        } else {
-          console.log(err);
-          reject(err);
-        }
-      });
+          .done();
+        })
+        .catch((errors) => {
+          reject(errors);
+        });
     });
   }
 }
