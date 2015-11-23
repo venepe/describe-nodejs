@@ -39,9 +39,7 @@ class TestCaseDAO {
         reject();
 
       })
-      .done(() => {
-        // db.close();
-      });
+      .done();
     });
   }
 
@@ -72,9 +70,7 @@ class TestCaseDAO {
         reject();
 
       })
-      .done(() => {
-        // db.close();
-      });
+      .done();
     });
   }
 
@@ -105,9 +101,7 @@ class TestCaseDAO {
         reject();
 
       })
-      .done(() => {
-        // db.close();
-      });
+      .done();
     });
   }
 
@@ -133,9 +127,7 @@ class TestCaseDAO {
         reject();
 
       })
-      .done(() => {
-        // db.close();
-      });
+      .done();
     });
   }
 
@@ -203,7 +195,7 @@ class TestCaseDAO {
             resolve(result);
           })
           .catch((e) => {
-            console.log('orientdb error: ' + e);
+            console.log(`orientdb error: ${e}`);
             reject();
 
           })
@@ -260,7 +252,7 @@ class TestCaseDAO {
             resolve(record);
           })
           .catch((e) => {
-            console.log('orientdb error: ' + e);
+            console.log(`orientdb error: ${e}`);
             reject();
 
           })
@@ -295,9 +287,7 @@ class TestCaseDAO {
         console.log(e);
         reject();
       })
-      .done(() => {
-        // db.close();
-      });
+      .done();
     });
 
   }

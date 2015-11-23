@@ -123,7 +123,6 @@ app.post('/graphql', upload.single('0'), function(req, res, next){
       let destination = req.file.destination;
       let filePath = destination + filename;
       let finalFilePath = filePath.replace(FileConfig.TempDir, FileConfig.UploadDir);
-      console.log(finalFilePath);
       let magic = new Magic(mmm.MAGIC_MIME_TYPE);
       let re = /(jpeg|jpg|png)$/i;
       magic.detectFile(filePath, (err, result) => {
@@ -139,6 +138,7 @@ app.post('/graphql', upload.single('0'), function(req, res, next){
         } else {
           mv(filePath, finalFilePath, function(err) {
             if (err) {
+              console.log(`Failed to move image: ${filePath}`);
               let errors = [{message: 'Error on upload.'}];
               res.status(400).json({errors});
             } else {

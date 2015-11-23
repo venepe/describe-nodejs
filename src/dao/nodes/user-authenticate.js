@@ -44,7 +44,7 @@ class UserAuthenticateDAO {
 
           })
           .catch((e) => {
-            console.log('orientdb error: ' + e);
+            console.log(`orientdb error: ${e}`);
             reject({message: 'Invalid email or password'})
           })
           .done();

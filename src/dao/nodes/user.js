@@ -36,9 +36,7 @@ class UserDAO {
       .catch((e) => {
         reject();
       })
-      .done(() => {
-        // db.close();
-      });
+      .done();
     });
   }
 
@@ -63,9 +61,7 @@ class UserDAO {
         reject();
 
       })
-      .done(() => {
-        // db.close();
-      });
+      .done();
     });
   }
 
@@ -111,7 +107,7 @@ class UserDAO {
 
           })
           .catch((e) => {
-            console.log('orientdb error: ' + e);
+            console.log(`orientdb error: ${e}`);
             reject();
           })
           .done();
@@ -162,7 +158,7 @@ class UserDAO {
               resolve(record);
             })
             .catch((e) => {
-              console.log('orientdb error: ' + e);
+              console.log(`orientdb error: ${e}`);
               reject();
             })
             .done();
@@ -243,7 +239,7 @@ class UserDAO {
               }
             })
             .catch((e) => {
-              console.log('orientdb error: ' + e);
+              console.log(`orientdb error: ${e}`);
               reject();
             })
             .done();
@@ -280,9 +276,7 @@ class UserDAO {
         console.log(e);
         reject();
       })
-      .done(() => {
-        // db.close();
-      });
+      .done();
     });
   }
 }

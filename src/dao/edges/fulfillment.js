@@ -76,7 +76,7 @@ class FulfillmentDAO {
             resolve(record);
           })
           .catch((e) => {
-            console.log('orientdb error: ' + e);
+            console.log(`orientdb error: ${e}`);
             reject();
           })
           .done();
@@ -128,9 +128,7 @@ class FulfillmentDAO {
         reject();
 
       })
-      .done(() => {
-        // db.close();
-      });
+      .done();
     });
   }
 }

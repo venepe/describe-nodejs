@@ -37,9 +37,7 @@ class ProjectDAO {
         reject();
 
       })
-      .done(() => {
-        // db.close();
-      });
+      .done();
     });
   }
 
@@ -64,9 +62,7 @@ class ProjectDAO {
         reject();
 
       })
-      .done(() => {
-        // db.close();
-      });
+      .done();
     });
   }
 
@@ -95,9 +91,7 @@ class ProjectDAO {
         reject();
 
       })
-      .done(() => {
-        // db.close();
-      });
+      .done();
     });
   }
 
@@ -149,7 +143,7 @@ class ProjectDAO {
             resolve(record);
           })
           .catch((e) => {
-            console.log('orientdb error: ' + e);
+            console.log(`orientdb error: ${e}`);
             reject();
           })
           .done();
@@ -205,7 +199,7 @@ class ProjectDAO {
             resolve(record);
           })
           .catch((e) => {
-            console.log('orientdb error: ' + e);
+            console.log(`orientdb error: ${e}`);
             reject();
           })
           .done();
@@ -239,9 +233,7 @@ class ProjectDAO {
         resolve(e);
 
       })
-      .done(() => {
-        // db.close();
-      });
+      .done();
     });
   }
 }

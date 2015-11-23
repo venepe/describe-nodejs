@@ -77,7 +77,7 @@ class ExampleDAO {
             resolve(record);
           })
           .catch((e) => {
-            console.log('orientdb error: ' + e);
+            console.log(`orientdb error: ${e}`);
             reject();
           })
           .done();
@@ -109,7 +109,7 @@ class ExampleDAO {
         resolve({id: targetId});
       })
       .catch((e) => {
-        console.log('orientdb error: ' + e);
+        console.log(`orientdb error: ${e}`);
         reject();
       })
       .done();

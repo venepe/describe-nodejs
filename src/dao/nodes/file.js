@@ -38,9 +38,7 @@ class FileDAO {
         reject();
 
       })
-      .done(() => {
-        // db.close();
-      });
+      .done();
     });
   }
 
@@ -69,9 +67,7 @@ class FileDAO {
         reject();
 
       })
-      .done(() => {
-        // db.close();
-      });
+      .done();
     });
   }
 
@@ -100,9 +96,7 @@ class FileDAO {
         reject();
 
       })
-      .done(() => {
-        // db.close();
-      });
+      .done();
     });
   }
 
@@ -130,7 +124,7 @@ class FileDAO {
         } else {
           let defaultCoverFile = {
             id: id,
-            uri: FileConfig.DefaultImageDir + id
+            uri: FileConfig.DefaultImageUrl + id
           };
           resolve([
             defaultCoverFile
@@ -141,9 +135,7 @@ class FileDAO {
         reject();
 
       })
-      .done(() => {
-        // db.close();
-      });
+      .done();
     });
   }
 
@@ -172,9 +164,7 @@ class FileDAO {
         reject();
 
       })
-      .done(() => {
-        // db.close();
-      });
+      .done();
     });
   }
 

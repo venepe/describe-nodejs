@@ -39,9 +39,7 @@ class SearchDAO {
       .catch((e) => {
         reject();
       })
-      .done(() => {
-        // db.close();
-      });
+      .done();
     });
   }
 }

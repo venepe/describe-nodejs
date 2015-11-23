@@ -78,7 +78,7 @@ class CoverDAO {
             resolve(record);
           })
           .catch((e) => {
-            console.log('orientdb error: ' + e);
+            console.log(`orientdb error: ${e}`);
             reject();
           })
           .done();
