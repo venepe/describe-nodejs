@@ -7,7 +7,7 @@ function isValid(obj = {}, callback) {
               .isObject()
               .withRequired('uri', validator.isString());
 
-  validator.run(check, obj, (errorCount, errors) => callback);
+  validator.run(check, obj, callback);
 }
 
 module.exports = isValid;

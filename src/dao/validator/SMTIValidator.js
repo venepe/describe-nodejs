@@ -12,16 +12,18 @@ class SMTIValidator {
 
   isFile() {
     return new Promise((resolve, reject) => {
+      let isOptional = this.isOptional;
+      let obj = this.obj;
       let isValid;
       if (this.isOptional) {
         isValid = require('./schema/file.js');
       } else {
         isValid = require('./schema/file.js');
       }
-      isValid(this.obj, (errorCount, errors) => {
+      isValid(obj, (errorCount, errors) => {
         if (errorCount === 0) {
-          this.ob.id = uuid.v4();
-          resolve(this.obj);
+          obj.id = uuid.v4();
+          resolve(obj);
         } else {
           reject(errors);
         }
@@ -104,12 +106,12 @@ class SMTIValidator {
 
   isCredential() {
     return new Promise((resolve, reject) => {
+      let obj = this.obj;
       let isValid = require('./schema/credential.js');
 
-      isValid(this.obj, (errorCount, errors) => {
+      isValid(obj, (errorCount, errors) => {
         if (errorCount === 0) {
-          this.ob.id = uuid.v4();
-          resolve(this.obj);
+          resolve(obj);
         } else {
           reject(errors);
         }
@@ -119,11 +121,11 @@ class SMTIValidator {
 
   isPassword() {
     return new Promise((resolve, reject) => {
+      let obj = this.obj;
       let isValid = require('./schema/password.js');
 
-      isValid(this.obj, (errorCount, errors) => {
+      isValid(obj, (errorCount, errors) => {
         if (errorCount === 0) {
-          this.ob.id = uuid.v4();
           resolve(this.obj);
         } else {
           reject(errors);

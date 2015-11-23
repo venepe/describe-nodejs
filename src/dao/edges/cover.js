@@ -84,6 +84,8 @@ class CoverDAO {
           .done();
         })
         .catch((errors) => {
+          console.log('rejected');
+          console.log(errors);
           reject(errors);
         });
     });

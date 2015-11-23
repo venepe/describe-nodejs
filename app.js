@@ -7,7 +7,7 @@ const app = express();
 const server = require('http').Server(app);
 const jwt = require('express-jwt');
 const jwtRefreshToken = require('jwt-refresh-token');
-import {AppConfig} from './src/config';
+import {AppConfig, FileConfig} from './src/config';
 const dao = require('./src/dao');
 const uuid = require('node-uuid');
 import {graphql} from 'graphql';
@@ -17,9 +17,14 @@ const multer  = require('multer');
 const signup = require('./src/auth/signup');
 const authenticate = require('./src/auth/authenticate');
 const passwordReset = require('./src/auth/password-reset');
-const upload = multer({ dest: __dirname + '/public/uploads/images/full_size/'});
+const upload = multer({ dest: __dirname + FileConfig.TempDir});
 const port = process.env.PORT || 8000;
 const baseUrl = process.env.BASE_URL;
+const fs = require('fs');
+const mmm = require('mmmagic');
+const del = require('del');
+const mv = require('mv');
+const Magic = mmm.Magic;
 
 app.use(jwt({
   secret: AppConfig.JWTSecret,
@@ -111,18 +116,45 @@ app.post('/reset', bodyParser.json(), function(req, res) {
   res.status(200).json({reset: null});
 });
 
-app.post('/graphql', upload.single('0'), function(err, req, res, next){
+app.post('/graphql', upload.single('0'), function(req, res, next){
     if (req.body && req.file && req.body.variables) {
       let variables = JSON.parse(req.body.variables);
       let filename = req.file.filename;
-      let url = req.file.destination.replace(__dirname + '/public' , baseUrl);
-      let input = variables.input || variables.input_0;
-      input.uri = url + filename;
-      variables.input = input;
-      variables = JSON.stringify(variables);
-      req.body.variables = variables;
+      let destination = req.file.destination;
+      let filePath = destination + filename;
+      let finalFilePath = filePath.replace(FileConfig.TempDir, FileConfig.UploadDir);
+      console.log(finalFilePath);
+      let magic = new Magic(mmm.MAGIC_MIME_TYPE);
+      let re = /(jpeg|jpg|png)$/i;
+      magic.detectFile(filePath, (err, result) => {
+        if (err || !result.match(re)) {
+          let errors = [{message: 'Invalid file type.'}];
+          del([filePath])
+            .then((paths) => {
+              res.status(400).json({errors});
+            })
+            .catch(err => {
+              res.status(400).json({errors});
+            });
+        } else {
+          mv(filePath, finalFilePath, function(err) {
+            if (err) {
+              let errors = [{message: 'Error on upload.'}];
+              res.status(400).json({errors});
+            } else {
+              let input = variables.input || variables.input_0;
+              input.uri = finalFilePath.replace(__dirname + '/public' , baseUrl);
+              variables.input = input;
+              variables = JSON.stringify(variables);
+              req.body.variables = variables;
+              next();
+            }
+          });
+        }
+      });
+    } else {
+      next();
     }
-    next();
 });
 
 app.get('/', function (req, res) {
