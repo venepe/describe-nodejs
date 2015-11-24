@@ -74,9 +74,20 @@ class UserDAO {
       validator
         .isUser()
         .then((object) => {
-          let password = object.password;
-          password = utilities.HashPassword(password);
-          object.password = password;
+          return new Promise((resolve, reject) => {
+            utilities.SMTICrypt.encrypt(object.password)
+              .then((hash) => {
+                console.log(`hash: ${hash}`);
+                object.password = hash;
+                resolve(object);
+              })
+              .catch((error) => {
+                console.log(error);
+                reject({error});
+              });
+          });
+        })
+        .then((object) => {
 
           db
           .create('vertex', 'User')
@@ -113,6 +124,7 @@ class UserDAO {
           .done();
         })
         .catch((errors) => {
+          console.log(errors);
           reject(errors);
         })
     });
@@ -179,54 +191,51 @@ class UserDAO {
       let user = this.user;
       let userId = this.user.id;
       let role = this.user.role;
+      let userRecord = {};
+      let results = [];
 
       if (userId === targetId) {
         let validator = new SMTIValidator(object);
+        let currentPassword = object.current;
+        let newPassword = object.new;
 
         validator
           .isPassword()
           .then((object) => {
-            let currentPassword = object.current;
-            let newPassword = object.new;
-            currentPassword = utilities.HashPassword(currentPassword);
-            newPassword = utilities.HashPassword(newPassword);
-
+            return db
+                    .select('*')
+                    .from(_class)
+                    .where({
+                      id: targetId,
+                    })
+                    .limit(1)
+                    .one();
+          })
+          .then((userRecord) => {
+            console.log(`object.current ${object.current}`);
+            console.log(userRecord.password);
+            return utilities.SMTICrypt.compare(object.current, userRecord.password);
+          })
+          .then(() => {
+            console.log(`object.new ${object.new}`);
+            return utilities.SMTICrypt.encrypt(object.new);
+          })
+          .then((newHash) => {
             db
-            .let('update', (s) => {
-              s
-              .update(_class)
-              .set({
-                password: newPassword
-              })
-              .where({
-                id: targetId,
-                password: currentPassword
-              })
-              .where(
-                '_allow CONTAINS "' + role + '"'
-              )
+            .update(_class)
+            .set({
+              password: newHash
             })
-            .let('user', (s) => {
-              s
-              .getUser()
-              .from(_class)
-              .where({
-                id: targetId,
-                password: newPassword
-              })
-              .where(
-                '_allow CONTAINS "' + role + '"'
-              )
+            .where({
+              id: targetId
             })
-            .commit()
-            .return('$user')
-            .transform((record) => {
-              console.log(record);
-              return utilities.FilteredObject(record, 'in_.*|out_.*|@.*|password|^_');
-            })
-            .one()
-            .then((user) => {
-              if(user) {
+            .where(
+              '_allow CONTAINS "' + role + '"'
+            )
+            .scalar()
+            .then((results) => {
+              if (results > 0) {
+                let user = utilities.FilteredObject(userRecord, 'in_.*|out_.*|@.*|password|^_');
                 let username = user.username;
                 let uuid = user.id;
                 let graphQLID = utilities.Base64.base64('User:' + uuid);
@@ -241,17 +250,16 @@ class UserDAO {
 
                 resolve(user);
               } else {
-                //did not create
-                reject({});
+                reject();
               }
             })
             .catch((e) => {
               console.log(`orientdb error: ${e}`);
               reject();
             })
-            .done();
           })
           .catch((errors) => {
+            console.log(errors);
             console.log('Unable to find match');
             reject(errors);
           });

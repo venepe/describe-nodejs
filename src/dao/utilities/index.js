@@ -9,5 +9,6 @@ module.exports = {
   HashPassword: require('./lib/hashPassword.js'),
   Generate: require('./lib/generate.js'),
   IsValidPassword: require('./lib/is-valid-password.js'),
-  Constants: require('./lib/constants.js')
+  Constants: require('./lib/constants.js'),
+  SMTICrypt: require('./lib/SMTICrypt.js')
 }
