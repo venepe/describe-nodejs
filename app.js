@@ -118,6 +118,8 @@ app.post('/reset', bodyParser.json(), function(req, res) {
 
 app.post('/graphql', upload.single('0'), function(req, res, next){
     if (req.body && req.file && req.body.variables) {
+
+      //Get graphql variables and, if file matches type, add the uri to the mutation
       let variables = JSON.parse(req.body.variables);
       let filename = req.file.filename;
       let destination = req.file.destination;

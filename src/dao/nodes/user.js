@@ -210,11 +210,18 @@ class UserDAO {
               s
               .getUser()
               .from(_class)
-              .where({id: targetId})
+              .where({
+                id: targetId,
+                password: newPassword
+              })
+              .where(
+                '_allow CONTAINS "' + role + '"'
+              )
             })
             .commit()
             .return('$user')
             .transform((record) => {
+              console.log(record);
               return utilities.FilteredObject(record, 'in_.*|out_.*|@.*|password|^_');
             })
             .one()
@@ -245,6 +252,7 @@ class UserDAO {
             .done();
           })
           .catch((errors) => {
+            console.log('Unable to find match');
             reject(errors);
           });
       } else {
