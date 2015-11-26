@@ -1,6 +1,11 @@
 'use strict';
+const utilities = require('../dao/utilities');
 
 function forgotPasswordEmail(user) {
+  let authenticate = user.authenticate || {};
+  let token = authenticate.token;
+  let userId = user.id;
+
   return `<table class="yiv7718636575body-wrap" style="margin:0;padding:0;font-family:&quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;line-height:150%;border-spacing:0;background-color:#f5f5f5;width:100%;" id="yui_3_16_0_1_1448505976300_2206">
             <tbody id="yui_3_16_0_1_1448505976300_2205">
               <tr style="margin:0;padding:0;font-family:&quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;" id="yui_3_16_0_1_1448505976300_2228">
@@ -38,7 +43,7 @@ function forgotPasswordEmail(user) {
                         We've received a request to reset your password. If you didn't make the request, just ignore this email. Otherwise, you can reset your password using this link:
                       </div>
                       <div class="yiv7718636575p " style="margin:0;font-family:&quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;padding:0;margin-top:1em;" id="yui_3_16_0_1_1448505976300_2230">
-                        <a rel="nofollow" target="_blank" href="http://localhost:8080/index.html#/reset?eluid=0&amp;euid=71fded5c-eadc-a7ab-bbf9-6f24757c185f&amp;secret=oImi2LvjFwHER_0g6u56qVRs2Mz9cJ8pezC0ij9qWZ-y3o848X8APW8g6Ga229voQimgK-aae5bhMewOKfO1-g" class="yiv7718636575btn yiv7718636575btn-primary" style="margin:0;font-family:&quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;cursor:pointer;display:block;padding:10px 16px;text-decoration:none;border-radius:2px;border:1px solid;text-align:center;vertical-align:middle;font-weight:bold;white-space:nowrap;background:#ffffff;border-color:#ff4081;background-color:#ff4081;color:#ffffff;border-top-width:1px;" id="yui_3_16_0_1_1448505976300_2229">
+                        <a rel="nofollow" target="_blank" href="http://localhost:8080/index.html#/reset?id=${userId}&amp;token=${token}" class="yiv7718636575btn yiv7718636575btn-primary" style="margin:0;font-family:&quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;cursor:pointer;display:block;padding:10px 16px;text-decoration:none;border-radius:2px;border:1px solid;text-align:center;vertical-align:middle;font-weight:bold;white-space:nowrap;background:#ffffff;border-color:#ff4081;background-color:#ff4081;color:#ffffff;border-top-width:1px;" id="yui_3_16_0_1_1448505976300_2229">
                           Click here to reset your password
                         </a>
                       </div>

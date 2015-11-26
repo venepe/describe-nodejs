@@ -77,7 +77,6 @@ class UserDAO {
           return new Promise((resolve, reject) => {
             utilities.SMTICrypt.encrypt(object.password)
               .then((hash) => {
-                console.log(`hash: ${hash}`);
                 object.password = hash;
                 resolve(object);
               })
@@ -214,12 +213,9 @@ class UserDAO {
                     .one();
           })
           .then((userRecord) => {
-            console.log(`object.current ${object.current}`);
-            console.log(userRecord.password);
             return utilities.SMTICrypt.compare(object.current, userRecord.password);
           })
           .then(() => {
-            console.log(`object.new ${object.new}`);
             return utilities.SMTICrypt.encrypt(object.new);
           })
           .then((newHash) => {
@@ -262,7 +258,74 @@ class UserDAO {
           })
           .catch((errors) => {
             console.log(errors);
-            console.log('Unable to find match');
+            reject(errors);
+          });
+      } else {
+        reject({});
+      }
+    });
+  }
+
+  resetPassword(object) {
+    return new Promise((resolve, reject) => {
+      let targetId = this.targetId;
+      let db = this.db;
+      let user = this.user;
+      let userId = this.user.id;
+      let role = this.user.role;
+      let userRecord = {};
+      let results = [];
+
+      if (userId === targetId) {
+        let validator = new SMTIValidator(object);
+        let currentPassword = object.current;
+        let newPassword = object.new;
+
+        validator
+          .isReset()
+          .then((object) => {
+            return utilities.SMTICrypt.encrypt(object.password);
+          })
+          .then((newHash) => {
+            db
+            .update(_class)
+            .set({
+              password: newHash
+            })
+            .where({
+              id: targetId
+            })
+            .where(
+              '_allow CONTAINS "' + role + '"'
+            )
+            .scalar()
+            .then((results) => {
+              if (results > 0) {
+                let user = utilities.FilteredObject(userRecord, 'in_.*|out_.*|@.*|password|^_');
+                let username = user.username;
+                let uuid = user.id;
+                let graphQLID = utilities.Base64.base64('User:' + uuid);
+                let payload = {
+                  username: username,
+                  id: graphQLID,
+                  role: uuid
+                };
+                let authenticate = utilities.AuthToken(payload);
+
+                user.authenticate = authenticate;
+
+                resolve(user);
+              } else {
+                reject();
+              }
+            })
+            .catch((e) => {
+              console.log(`orientdb error: ${e}`);
+              reject();
+            })
+          })
+          .catch((errors) => {
+            console.log(errors);
             reject(errors);
           });
       } else {
@@ -327,7 +390,6 @@ class UserDAO {
       )
       .one()
       .then((result) => {
-        console.log(result);
         if (result > 0) {
           resolve({success: true});
         } else {

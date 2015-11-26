@@ -133,6 +133,21 @@ class SMTIValidator {
       });
     });
   }
+
+  isReset() {
+    return new Promise((resolve, reject) => {
+      let obj = this.obj;
+      let isValid = require('./schema/reset.js');
+
+      isValid(obj, (errorCount, errors) => {
+        if (errorCount === 0) {
+          resolve(this.obj);
+        } else {
+          reject(errors);
+        }
+      });
+    });
+  }
 }
 
 module.exports = SMTIValidator;

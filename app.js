@@ -162,8 +162,16 @@ app.post('/forgot', bodyParser.json(), function(req, res) {
 
 app.post('/reset', bodyParser.json(), function(req, res) {
   let reset = req.body.reset || {};
-  console.log('hard reset password');
-  res.status(200).json({reset: null});
+  let user = req.user;
+  passwordReset(user, reset)
+  .then(function(user) {
+    let authenticate = user.authenticate || {};
+    res.status(200).json({reset: authenticate});
+  })
+  .catch(function(err) {
+    let errors = [{message: 'Invalid entry.'}]
+    res.status(400).json({errors});
+  });
 });
 
 app.post('/graphql', upload.single('0'), function(req, res, next){
