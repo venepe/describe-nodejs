@@ -176,9 +176,11 @@ class UserDAO {
             .done();
           })
           .catch((errors) => {
+            console.log(errors);
             reject(errors);
           });
       } else {
+        console.log('erros');
         reject({});
       }
     });
@@ -269,6 +271,45 @@ class UserDAO {
     });
   }
 
+  forgotPassword(object) {
+    return new Promise((resolve, reject) => {
+      let user = this.user;
+      let db = this.db;
+      let email = object.email;
+
+      db
+      .getUser()
+      .from(_class)
+      .where({email})
+      .limit(1)
+      .transform((record) => {
+        let user = new User ();
+        return utilities.FilteredObject(record, '@.*|rid', user);
+      })
+      .one()
+      .then((record) => {
+        let user = utilities.FilteredObject(record, 'in_.*|out_.*|@.*|password|^_');
+        let username = user.username;
+        let uuid = user.id;
+        let graphQLID = utilities.Base64.base64('User:' + uuid);
+        let payload = {
+          username: username,
+          id: graphQLID,
+          role: uuid
+        };
+        let authenticate = utilities.AuthToken(payload);
+
+        user.authenticate = authenticate;
+
+        resolve(user);
+      })
+      .catch((e) => {
+        reject();
+      })
+      .done();
+    });
+  }
+
   del() {
     return new Promise((resolve, reject) => {
       let targetId = this.targetId;
@@ -285,8 +326,13 @@ class UserDAO {
         '_allow CONTAINS "' + role + '"'
       )
       .one()
-      .then(() => {
-        resolve({success: true});
+      .then((result) => {
+        console.log(result);
+        if (result > 0) {
+          resolve({success: true});
+        } else {
+          reject();
+        }
       })
       .catch((e) => {
         console.log(e);

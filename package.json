@@ -27,6 +27,7 @@
     "multer": "^1.0.3",
     "mv": "^2.1.1",
     "node-uuid": "^1.4.3",
+    "nodemailer": "^1.10.0",
     "orientjs": "^2.0.0",
     "schema-inspector": "^1.5.1",
     "validator": "^4.0.6"

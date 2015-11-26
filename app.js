@@ -15,6 +15,8 @@ import {fromGlobalId} from 'graphql-relay';
 const schema = require('./src/graphql/schema');
 const multer  = require('multer');
 const signup = require('./src/auth/signup');
+const deletAccount = require('./src/auth/delete-account');
+const forgotPassword = require('./src/auth/forgot-password');
 const authenticate = require('./src/auth/authenticate');
 const passwordReset = require('./src/auth/password-reset');
 const upload = multer({ dest: __dirname + FileConfig.TempDir});
@@ -25,6 +27,15 @@ const mmm = require('mmmagic');
 const del = require('del');
 const mv = require('mv');
 const Magic = mmm.Magic;
+const SMTIEmailTemplate = require('./src/utilities/SMTIEmailTemplate');
+const nodemailer = require('nodemailer');
+const transporter = nodemailer.createTransport({
+    service: 'Gmail',
+    auth: {
+        user: process.env.GMAIL_ACCOUNT,
+        pass: process.env.GMAIL_APP_PASSWORD
+    }
+});
 
 app.use(jwt({
   secret: AppConfig.JWTSecret,
@@ -90,6 +101,20 @@ app.post('/register', bodyParser.json(), function(req, res) {
   })
 });
 
+app.post('/unregister', bodyParser.json(), function(req, res) {
+  let unregister = req.body.unregister || {};
+  let userId = fromGlobalId(unregister.userId).id;
+  let user = req.user;
+  deletAccount(user, userId)
+  .then(function(payload) {
+    res.status(200).json({unregister: payload});
+  })
+  .catch(function(err) {
+    let errors = [{message: 'Unable to delete'}]
+    res.status(400).json({errors});
+  })
+});
+
 app.post('/password', bodyParser.json(), function(req, res) {
   let password = req.body.password || {};
   let user = req.user;
@@ -101,13 +126,38 @@ app.post('/password', bodyParser.json(), function(req, res) {
   .catch(function(err) {
     let errors = [{message: 'Invalid password.'}]
     res.status(400).json({errors});
-  })
+  });
 });
 
 app.post('/forgot', bodyParser.json(), function(req, res) {
   let forgot = req.body.forgot || {};
-  console.log('send email');
-  res.status(200).json({forgot: null});
+  forgotPassword(forgot)
+  .then(function(user) {
+    // setup e-mail data with unicode symbols
+    let authenticate = user.authenticate || {};
+    let email = user.email;
+    let html = SMTIEmailTemplate.forgotPasswordEmail(user);
+    const mailOptions = {
+        from: 'Sumseti Support <support@sumseti.com>',
+        to: email,
+        subject: 'Reset Password',
+        html
+    };
+
+    // send mail with defined transport object
+    transporter.sendMail(mailOptions, function(error, info){
+        if (error){
+          console.log(error);
+          res.status(400).json({errors: []});
+        } else {
+          res.status(200).json({forgot: null});
+        }
+    });
+  })
+  .catch(function(err) {
+    let errors = [{message: 'Invalid email address.'}]
+    res.status(400).json({errors});
+  });
 });
 
 app.post('/reset', bodyParser.json(), function(req, res) {

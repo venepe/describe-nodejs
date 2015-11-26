@@ -87,7 +87,7 @@ class FulfillmentDAO {
     });
   }
 
-  del() {
+  del(testCaseId) {
     return new Promise((resolve, reject) => {
       var del = require('del');
       var targetId = this.targetId;
@@ -97,6 +97,13 @@ class FulfillmentDAO {
       var role = this.user.role;
 
       db
+      .let('file', (s) => {
+        s
+        .getFile()
+        .from(_class)
+        .where({id: targetId})
+        .limit(1)
+      })
       .let('deletes', (s) => {
         s
         .delete('VERTEX', _class)
@@ -113,8 +120,9 @@ class FulfillmentDAO {
         })
       })
       .commit()
-      .return('$testCase')
-      .transform((record) => {
+      .return('[$testCase, $file]')
+      .transform((records) => {
+        let record = records[0];
         let isFulfilled = record.isFulfilled;
         record.isFulfilled = (isFulfilled.length > 0) ? true : false;
         return utilites.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
@@ -125,8 +133,8 @@ class FulfillmentDAO {
         resolve(payload);
       })
       .catch((e) => {
+        console.log(`orientdb error: ${e}`);
         reject();
-
       })
       .done();
     });

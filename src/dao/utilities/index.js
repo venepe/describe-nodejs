@@ -6,7 +6,6 @@ module.exports = {
   Base64: require('./lib/base64.js'),
   CursorToOffset: require('./lib/cursorToOffset.js'),
   Pagination: require('./lib/pagination.js'),
-  HashPassword: require('./lib/hashPassword.js'),
   Generate: require('./lib/generate.js'),
   IsValidPassword: require('./lib/is-valid-password.js'),
   Constants: require('./lib/constants.js'),
