@@ -2,7 +2,7 @@
 
 const _class = 'File';
 const validator = require('../validator');
-const utilites = require('../utilities');
+const utilites = require('../../utilities');
 import { FileConfig } from '../../config';
 
 import {

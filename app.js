@@ -8,8 +8,6 @@ const server = require('http').Server(app);
 const jwt = require('express-jwt');
 const jwtRefreshToken = require('jwt-refresh-token');
 import {AppConfig, FileConfig} from './src/config';
-const dao = require('./src/dao');
-const uuid = require('node-uuid');
 import {graphql} from 'graphql';
 import {fromGlobalId} from 'graphql-relay';
 const schema = require('./src/graphql/schema');
@@ -27,7 +25,7 @@ const mmm = require('mmmagic');
 const del = require('del');
 const mv = require('mv');
 const Magic = mmm.Magic;
-const SMTIEmailTemplate = require('./src/utilities/SMTIEmailTemplate');
+import {SMTIEmailTemplate} from './src/utilities';
 const nodemailer = require('nodemailer');
 const transporter = nodemailer.createTransport({
     service: 'Gmail',
@@ -73,7 +71,12 @@ app.post('/authenticate', bodyParser.json(), function(req, res) {
 });
 
 app.get('/default/images/:id', function(req, res) {
-  res.sendFile(__dirname + '/public/uploads/images/thumbnail/shaded.png');
+  let id = req.params.id;
+  if (id.match(/^[A-Za-z][A-Za-z0-9 -]*$/)) {
+    res.sendFile(__dirname + '/public/uploads/images/thumbnail/shaded-primary.png');
+  } else {
+    res.sendFile(__dirname + '/public/uploads/images/thumbnail/shaded-accent.png');
+  }
 });
 
 app.post('/token', function(req, res) {
@@ -138,7 +141,7 @@ app.post('/forgot', bodyParser.json(), function(req, res) {
     let email = user.email;
     let html = SMTIEmailTemplate.forgotPasswordEmail(user);
     const mailOptions = {
-        from: 'Sumseti Support <support@sumseti.com>',
+        from: 'Sumseti <automated@sumseti.com>',
         to: email,
         subject: 'Reset Password',
         html

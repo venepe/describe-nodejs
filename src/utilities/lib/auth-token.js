@@ -2,7 +2,7 @@
 
 const moment = require('moment');
 const jwt = require('jwt-simple');
-import {AppConfig} from '../../../config';
+import {AppConfig} from '../../config';
 
 var authToken = function(payload) {
   let object = payload;

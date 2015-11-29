@@ -2,7 +2,7 @@
 
 const _class = 'User';
 const { SMTIValidator } = require('../validator');
-const utilities = require('../utilities');
+const utilities = require('../../utilities');
 
 class UserAuthenticateDAO {
   authenticate(object) {
@@ -29,11 +29,10 @@ class UserAuthenticateDAO {
             utilities.SMTICrypt.compare(password, hash)
               .then(() => {
                 let email = record.email;
-                let username = record.username;
                 let uuid = record.id;
                 let graphQLID = utilities.Base64.base64('User:' + uuid);
                 let payload = {
-                  username: username,
+                  email: email,
                   id: graphQLID,
                   role: uuid
                 };

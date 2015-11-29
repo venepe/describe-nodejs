@@ -2,7 +2,7 @@
 
 const uuid = require('node-uuid');
 const validator = require('validator');
-const utilities = require('../utilities');
+const utilities = require('../../utilities');
 
 class SMTIValidator {
   constructor(obj, isOptional = false) {

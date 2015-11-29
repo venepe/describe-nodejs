@@ -1,7 +1,7 @@
 'use strict';
 
 const _class = 'Project';
-const utilites = require('../utilities');
+const utilites = require('../../utilities');
 
 class SearchDAO {
   constructor(targetId, params) {

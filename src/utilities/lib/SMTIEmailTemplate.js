@@ -1,5 +1,4 @@
 'use strict';
-const utilities = require('../dao/utilities');
 
 function forgotPasswordEmail(user) {
   let authenticate = user.authenticate || {};

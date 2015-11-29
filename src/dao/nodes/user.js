@@ -2,7 +2,7 @@
 
 const _class = 'User';
 const { SMTIValidator } = require('../validator');
-const utilities = require('../utilities');
+const utilities = require('../../utilities');
 
 import {
   User
@@ -98,11 +98,11 @@ class UserDAO {
           .one()
           .then((user) => {
             if(user) {
-              let username = user.username;
+              let email = user.email;
               let uuid = user.id;
               let graphQLID = utilities.Base64.base64('User:' + uuid);
               let payload = {
-                username: username,
+                email: email,
                 id: graphQLID,
                 role: uuid
               };
@@ -234,11 +234,11 @@ class UserDAO {
             .then((results) => {
               if (results > 0) {
                 let user = utilities.FilteredObject(userRecord, 'in_.*|out_.*|@.*|password|^_');
-                let username = user.username;
+                let email = user.email;
                 let uuid = user.id;
                 let graphQLID = utilities.Base64.base64('User:' + uuid);
                 let payload = {
-                  username: username,
+                  email: email,
                   id: graphQLID,
                   role: uuid
                 };
@@ -302,11 +302,11 @@ class UserDAO {
             .then((results) => {
               if (results > 0) {
                 let user = utilities.FilteredObject(userRecord, 'in_.*|out_.*|@.*|password|^_');
-                let username = user.username;
+                let email = user.email;
                 let uuid = user.id;
                 let graphQLID = utilities.Base64.base64('User:' + uuid);
                 let payload = {
-                  username: username,
+                  email: email,
                   id: graphQLID,
                   role: uuid
                 };
@@ -352,11 +352,11 @@ class UserDAO {
       .one()
       .then((record) => {
         let user = utilities.FilteredObject(record, 'in_.*|out_.*|@.*|password|^_');
-        let username = user.username;
+        let email = user.email;
         let uuid = user.id;
         let graphQLID = utilities.Base64.base64('User:' + uuid);
         let payload = {
-          username: username,
+          email: email,
           id: graphQLID,
           role: uuid
         };

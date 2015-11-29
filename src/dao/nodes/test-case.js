@@ -2,7 +2,7 @@
 
 const _class = 'TestCase';
 const { SMTIValidator } = require('../validator');
-const utilites = require('../utilities');
+const utilites = require('../../utilities');
 
 import {
   TestCase
