@@ -34,34 +34,7 @@ import {
   Project,
   TestCase,
   User,
-} from '../dao/model'
-
-let authticatedUserType = new GraphQLObjectType({
-  name: 'Authicated user',
-  description: 'Authicated user object',
-  fields: () => ({
-    id: {
-      type: new GraphQLNonNull(GraphQLString),
-      description: 'The id of the authenticated user.',
-    },
-    role: {
-      type: GraphQLString,
-      description: 'The role of the authenticated user.',
-    },
-    username: {
-      type: GraphQLString,
-      description: 'The username of the authenticated user.',
-    },
-    expires: {
-      type: GraphQLFloat,
-      description: 'When the authenticated user expires.',
-    },
-    token: {
-      type: GraphQLString,
-      description: 'The token of the an authenticated user.',
-    }
-  })
-});
+} from '../dao/model';
 
 var {nodeInterface, nodeField} = nodeDefinitions(
   (globalId, context) => {
@@ -295,45 +268,6 @@ var {connectionType: fulfillConnection, edgeType: GraphQLFulfillEdge} =
 // var {connectionType: searchProjectsConnection} =
 //   connectionDefinitions({name: 'SearchProjects', nodeType: projectType});
 
-var introduceUser = mutationWithClientMutationId({
-  name: 'IntroduceUser',
-  inputFields: {
-    username: {
-      type: new GraphQLNonNull(GraphQLString),
-      description: 'The handle of the user.',
-    },
-    fullName: {
-      type: GraphQLString,
-      description: 'The full name of the user.',
-    },
-    summary: {
-      type: GraphQLString,
-      description: 'The summary of the user.',
-    },
-    email: {
-      type: new GraphQLNonNull(GraphQLString),
-      description: 'The email of the user.',
-    },
-    password: {
-      type: new GraphQLNonNull(GraphQLString),
-      description: 'The password of the user.',
-    }
-  },
-  outputFields: {
-    user: {
-      type: userType,
-      resolve: (payload) => payload
-    },
-    authenticate: {
-      type: authticatedUserType,
-      resolve: (payload) => payload.authenticate
-    }
-  },
-  mutateAndGetPayload: ({username, fullName, summary, email, password}, context) => {
-    return dao().User().create({username, fullName, summary, email, password});
-  }
-});
-
 var updateUser = mutationWithClientMutationId({
   name: 'UpdateUser',
   inputFields: {
@@ -391,29 +325,6 @@ var deleteUser = mutationWithClientMutationId({
     return dao(context.rootValue.user).User(localId).del().then(function (data) {
       return {id};
     });
-  }
-});
-
-var authenticateUser = mutationWithClientMutationId({
-  name: 'AuthenticateUser',
-  inputFields: {
-    username: {
-      type: new GraphQLNonNull(GraphQLString),
-      description: 'The username of a user.',
-    },
-    password: {
-      type: new GraphQLNonNull(GraphQLString),
-      description: 'The password of a user.',
-    }
-  },
-  outputFields: {
-    authenticate: {
-      type: authticatedUserType,
-      resolve: (payload) => payload
-    }
-  },
-  mutateAndGetPayload: ({username, password}, context) => {
-    return dao().UserAuthenticate().authenticate({username, password});
   }
 });
 
@@ -841,8 +752,6 @@ var schema = new GraphQLSchema({
   mutation: new GraphQLObjectType({
     name: 'Mutation',
     fields: {
-      authenticateUser: authenticateUser,
-      introduceUser: introduceUser,
       updateUser: updateUser,
       deleteUser: deleteUser,
       introduceProject: introduceProject,
