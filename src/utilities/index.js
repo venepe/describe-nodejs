@@ -10,5 +10,6 @@ module.exports = {
   IsValidPassword: require('./lib/is-valid-password.js'),
   Constants: require('./lib/constants.js'),
   SMTICrypt: require('./lib/SMTICrypt.js'),
-  SMTIEmailTemplate: require('./lib/SMTIEmailTemplate.js')
+  SMTIEmailTemplate: require('./lib/SMTIEmailTemplate.js'),
+  SMTIDelFile: require('./lib/SMTIDelFile.js')
 }

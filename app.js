@@ -19,7 +19,7 @@ const authenticate = require('./src/auth/authenticate');
 const passwordReset = require('./src/auth/password-reset');
 const upload = multer({ dest: __dirname + FileConfig.TempDir});
 const port = process.env.PORT || 8000;
-const baseUrl = process.env.BASE_URL;
+const baseImageUrl = FileConfig.BaseImageUrl;
 const fs = require('fs');
 const mmm = require('mmmagic');
 const del = require('del');
@@ -206,7 +206,7 @@ app.post('/graphql', upload.single('0'), function(req, res, next){
               res.status(400).json({errors});
             } else {
               let input = variables.input || variables.input_0;
-              input.uri = finalFilePath.replace(__dirname + '/public' , baseUrl);
+              input.uri = finalFilePath.replace(__dirname + '/public' , baseImageUrl);
               variables.input = input;
               variables = JSON.stringify(variables);
               req.body.variables = variables;

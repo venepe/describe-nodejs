@@ -1,7 +1,8 @@
 'use strict';
 
 module.exports = {
-  TempDir: '/public/uploads/temp/',
-  UploadDir: '/public/uploads/images/full_size/',
-  DefaultImageUrl: process.env.BASE_URL + '/default/images/'
+  TempDir: process.env.IMAGE_TEMP_DIR,
+  UploadDir: process.env.IMAGE_UPLOAD_DIR,
+  DefaultImageUrl: process.env.BASE_DEFAULT_IMAGE_URL,
+  BaseImageUrl: process.env.BASE_IMAGE_URL
 }

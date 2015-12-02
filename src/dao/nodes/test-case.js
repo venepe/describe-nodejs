@@ -272,7 +272,8 @@ class TestCaseDAO {
       let userId = this.user.id;
       let role = this.user.role;
 
-      db.delete('VERTEX', _class)
+      db
+      .delete('VERTEX', _class)
       .where({
         id: targetId
       })
@@ -281,10 +282,34 @@ class TestCaseDAO {
       )
       .one()
       .then(() => {
-        resolve({success: true});
+        //delete dependencies in graph
+        db
+        .let('deleteExamples', (s) => {
+          s
+          .delete('VERTEX', 'File')
+          .where(
+            `out_Exemplifies.in[@Class = 'TestCase'].id = ${targetId}'`
+          )
+        })
+        .let('deleteFulfillments', (s) => {
+          s
+          .delete('VERTEX', 'File')
+          .where(
+            `out_Fulfills.in[@Class = 'TestCase'].id = ${targetId}'`
+          )
+        })
+        .commit()
+        .return('$deleteExamples')
+        .then(() => {
+          resolve({id: targetId});
+        })
+        .catch((e) => {
+          console.log(`orientdb error: ${e}`);
+          resolve({id: targetId});
+        })
       })
       .catch((e) => {
-        console.log(e);
+        console.log(`orientdb error: ${e}`);
         reject();
       })
       .done();

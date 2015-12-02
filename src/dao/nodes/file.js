@@ -177,7 +177,8 @@ class FileDAO {
       let userId = this.user.id;
       let role = this.user.role;
 
-      db.delete('VERTEX', _class)
+      db
+      .delete('VERTEX', _class)
       .where({
         id: targetId
       })
