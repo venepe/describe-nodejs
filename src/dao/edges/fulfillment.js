@@ -97,13 +97,6 @@ class FulfillmentDAO {
       var role = this.user.role;
 
       db
-      .let('file', (s) => {
-        s
-        .getFile()
-        .from(_class)
-        .where({id: targetId})
-        .limit(1)
-      })
       .let('deletes', (s) => {
         s
         .delete('VERTEX', _class)
@@ -120,9 +113,8 @@ class FulfillmentDAO {
         })
       })
       .commit()
-      .return('[$testCase, $file]')
-      .transform((records) => {
-        let record = records[0];
+      .return('$testCase')
+      .transform((record) => {
         let isFulfilled = record.isFulfilled;
         record.isFulfilled = (isFulfilled.length > 0) ? true : false;
         return utilites.FilteredObject(record, 'in_.*|out_.*|@.*|^_');

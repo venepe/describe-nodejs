@@ -2,8 +2,8 @@
 
 const dao = require('../dao');
 
-function ForgotPassword(payload) {
+function forgotPassword(payload) {
   return dao().User().forgotPassword(payload)
 }
 
-module.exports = ForgotPassword;
+module.exports = forgotPassword;

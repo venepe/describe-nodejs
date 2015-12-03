@@ -2,8 +2,8 @@
 
 const dao = require('../dao');
 
-function Authenticate(authenticate) {
+function authenticate(authenticate) {
   return dao().UserAuthenticate().authenticate(authenticate)
 }
 
-module.exports = Authenticate;
+module.exports = authenticate;

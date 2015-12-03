@@ -2,8 +2,8 @@
 
 const dao = require('../dao');
 
-function DeleteAccount(user, userId) {
+function deleteAccount(user, userId) {
   return dao(user).User(userId).del();
 }
 
-module.exports = DeleteAccount;
+module.exports = deleteAccount;

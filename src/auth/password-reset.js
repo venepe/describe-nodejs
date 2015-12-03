@@ -2,8 +2,8 @@
 
 const dao = require('../dao');
 
-function PasswordReset(user, payload) {
+function passwordReset(user, payload) {
   return dao(user).User(user.id).resetPassword(payload)
 }
 
-module.exports = PasswordReset;
+module.exports = passwordReset;

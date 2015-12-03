@@ -1,6 +1,6 @@
 'use strict';
 
-const CursorToOffset = require('./cursorToOffset');
+const CursorToOffset = require('./cursor-to-offset');
 
 // before > after
 //

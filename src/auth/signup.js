@@ -2,8 +2,8 @@
 
 const dao = require('../dao');
 
-function SignUp(user) {
+function signUp(user) {
   return dao().User().create(user)
 }
 
-module.exports = SignUp;
+module.exports = signUp;
