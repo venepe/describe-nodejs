@@ -228,52 +228,7 @@ class ProjectDAO {
       )
       .one()
       .then(() => {
-        //delete dependencies in graph
-        db
-        .let('deleteTestCaseExamples', (s) => {
-          s
-          .delete('VERTEX', 'File')
-          .where(
-            `out_Exemplifies.in[@Class = 'TestCase'].in_Requires.out[@Class = 'Project'].id = ${targetId}'`
-          )
-        })
-        .let('deleteTestCaseFulfillments', (s) => {
-          s
-          .delete('VERTEX', 'File')
-          .where(
-            `out_Fulfills.in[@Class = 'TestCase'].in_Requires.out[@Class = 'Project'].id = ${targetId}'`
-          )
-        })
-        .let('deleteTestCases', (s) => {
-          s
-          .delete('VERTEX', 'TestCase')
-          .where(
-            `in_Requires.out[@Class = 'Project'].id = ${targetId}'`
-          )
-        })
-        .let('deleteExamples', (s) => {
-          s
-          .delete('VERTEX', 'File')
-          .where(
-            `out_Exemplifies.in[@Class = 'Project'].id = ${targetId}'`
-          )
-        })
-        .let('deleteCovers', (s) => {
-          s
-          .delete('VERTEX', 'File')
-          .where(
-            `out_Covers.in[@Class = 'Project'].id = ${targetId}'`
-          )
-        })
-        .commit()
-        .return('$deleteTestCases')
-        .then(() => {
-          resolve({id: targetId});
-        })
-        .catch((e) => {
-          console.log(`orientdb error: ${e}`);
-          resolve({id: targetId});
-        })
+        resolve({id: targetId});
       })
       .catch((e) => {
         console.log(`orientdb error: ${e}`);
