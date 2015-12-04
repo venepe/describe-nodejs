@@ -10,6 +10,7 @@ const jwtRefreshToken = require('jwt-refresh-token');
 import {AppConfig, FileConfig} from './src/config';
 import {graphql} from 'graphql';
 import {fromGlobalId} from 'graphql-relay';
+const client = require('./src/client');
 const schema = require('./src/graphql/schema');
 const multer  = require('multer');
 const signup = require('./src/auth/signup');
@@ -73,9 +74,9 @@ app.post('/authenticate', bodyParser.json(), function(req, res) {
 app.get('/default/images/:id', function(req, res) {
   let id = req.params.id;
   if (id.match(/^[A-Za-z][A-Za-z0-9 -]*$/)) {
-    res.sendFile(__dirname + '/public/uploads/images/thumbnail/shaded-primary.png');
+    res.sendFile(__dirname + '/public/default/images/shaded-primary.png');
   } else {
-    res.sendFile(__dirname + '/public/uploads/images/thumbnail/shaded-accent.png');
+    res.sendFile(__dirname + '/public/default/images/shaded-accent.png');
   }
 });
 
@@ -220,9 +221,7 @@ app.post('/graphql', upload.single('0'), function(req, res, next){
     }
 });
 
-app.get('/', function (req, res) {
-  res.sendFile(__dirname + '/index.html');
-});
+app.use(client);
 
 app.use(express.static(__dirname + '/public'));
 
