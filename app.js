@@ -40,8 +40,8 @@ app.use(jwt({
   secret: AppConfig.JWTSecret,
   credentialsRequired: false,
   getToken: function fromHeaderOrQuerystring (req) {
-    if (req.headers['x-access-token']) {
-      return req.headers['x-access-token'];
+    if (req.headers['x-smti-authorization']) {
+      return req.headers['x-smti-authorization'];
     }
     return null;
   }
@@ -81,7 +81,7 @@ app.get('/default/images/:id', function(req, res) {
 });
 
 app.post('/token', function(req, res) {
-  let token = req.headers['x-access-token'] || {};
+  let token = req.headers['x-smti-authorization'] || {};
   try {
     let newToken = jwtRefreshToken.refresh(token, AppConfig.JWTSecret, {});
     res.status(200).json({token: newToken});

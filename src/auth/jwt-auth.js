@@ -4,7 +4,7 @@ const jwt = require('jwt-simple');
 import {AppConfig} from '../config';
 
 module.exports = function(socket, next) {
-  let token = socket.request.headers["x-access-token"];
+  let token = socket.request.headers["x-smti-authorization"];
   if (token) {
     try {
       var decoded = jwt.decode(token, AppConfig.JWTSecret;
