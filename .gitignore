@@ -11,3 +11,5 @@ npm-debug.log
 env.txt
 public/uploads/images/*
 public/uploads/temp/*
+public/build
+certs
