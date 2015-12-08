@@ -301,9 +301,9 @@ var updateUser = mutationWithClientMutationId({
       resolve: (payload) => payload
     }
   },
-  mutateAndGetPayload: ({id, username, fullName, summary, email, password}, context) => {
+  mutateAndGetPayload: ({id, username, fullName, summary}, context) => {
     var localId = fromGlobalId(id).id;
-    return dao(context.rootValue.user).User(localId).update({username, fullName, summary, email, password});
+    return dao(context.rootValue.user).User(localId).update({username, fullName, summary});
   }
 });
 

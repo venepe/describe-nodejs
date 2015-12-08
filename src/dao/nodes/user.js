@@ -141,7 +141,7 @@ class UserDAO {
         let validator = new SMTIValidator(object, true);
 
         validator
-          .isUser(object)
+          .isUser()
           .then((object) => {
             db
             .let('update', (s) => {
