@@ -117,16 +117,6 @@ let userType = new GraphQLObjectType({
         ,
         args
       ),
-    },
-    testCases: {
-      type: testCaseConnection,
-      description: 'The test cases created by the user.',
-      args: connectionArgs,
-      resolve: (user, args, context) => connectionFromPromisedArray(
-        dao(context.rootValue.user).TestCase(user.id).getEdgeCreated(args)
-        ,
-        args
-      ),
     }
   }),
   interfaces: [nodeInterface],
@@ -285,14 +275,6 @@ var updateUser = mutationWithClientMutationId({
     summary: {
       type: GraphQLString,
       description: 'The summary of the user.',
-    },
-    email: {
-      type: GraphQLString,
-      description: 'The email of the user.',
-    },
-    password: {
-      type: GraphQLString,
-      description: 'The password of the user.',
     }
   },
   outputFields: {
