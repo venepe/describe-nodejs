@@ -4,6 +4,7 @@ function forgotPasswordEmail(user) {
   let authenticate = user.authenticate || {};
   let token = authenticate.token;
   let userId = user.id;
+  let baseUrl = 'http://sumseti.com';
 
   return `<table class="yiv7718636575body-wrap" style="margin:0;padding:0;font-family:&quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;line-height:150%;border-spacing:0;background-color:#f5f5f5;width:100%;" id="yui_3_16_0_1_1448505976300_2206">
             <tbody id="yui_3_16_0_1_1448505976300_2205">
@@ -21,8 +22,8 @@ function forgotPasswordEmail(user) {
                                 <tbody id="yui_3_16_0_1_1448505976300_2261">
                                   <tr style="margin:0;padding:0;font-family:&quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;" id="yui_3_16_0_1_1448505976300_2260">
                                     <td style="margin:0;padding:0;font-family:&quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;text-align:center;" id="yui_3_16_0_1_1448505976300_2259">
-                                      <a rel="nofollow" target="_blank" href="http://localhost:8080/index.html" title="Sumseti" style="margin:0;padding:0;font-family:&quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;color:#ff4081;text-decoration:none;" id="yui_3_16_0_1_1448505976300_2297">
-                                        <img src="http://localhost:8000/assets/describe-email@255_50.png" border="0" alt="Describe on sumseti.com" width="250" height="50" style="margin:0;font-family:&quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;padding:0;max-width:100%;border:0;" id="yui_3_16_0_1_1448505976300_2296">
+                                      <a rel="nofollow" target="_blank" href="${baseUrl}/index.html" title="Sumseti" style="margin:0;padding:0;font-family:&quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;color:#ff4081;text-decoration:none;" id="yui_3_16_0_1_1448505976300_2297">
+                                        <img src="${baseUrl}/assets/describe-email@255_50.png" border="0" alt="Describe on sumseti.com" width="250" height="50" style="margin:0;font-family:&quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;padding:0;max-width:100%;border:0;" id="yui_3_16_0_1_1448505976300_2296">
                                       </a>
                                     </td>
                                   </tr>
@@ -42,7 +43,7 @@ function forgotPasswordEmail(user) {
                         We've received a request to reset your password. If you didn't make the request, just ignore this email. Otherwise, you can reset your password using this link:
                       </div>
                       <div class="yiv7718636575p " style="margin:0;font-family:&quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;padding:0;margin-top:1em;" id="yui_3_16_0_1_1448505976300_2230">
-                        <a rel="nofollow" target="_blank" href="http://localhost:8080/index.html#/reset?id=${userId}&amp;token=${token}" class="yiv7718636575btn yiv7718636575btn-primary" style="margin:0;font-family:&quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;cursor:pointer;display:block;padding:10px 16px;text-decoration:none;border-radius:2px;border:1px solid;text-align:center;vertical-align:middle;font-weight:bold;white-space:nowrap;background:#ffffff;border-color:#ff4081;background-color:#ff4081;color:#ffffff;border-top-width:1px;" id="yui_3_16_0_1_1448505976300_2229">
+                        <a rel="nofollow" target="_blank" href="${baseUrl}/index.html#/reset?id=${userId}&amp;token=${token}" class="yiv7718636575btn yiv7718636575btn-primary" style="margin:0;font-family:&quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;cursor:pointer;display:block;padding:10px 16px;text-decoration:none;border-radius:2px;border:1px solid;text-align:center;vertical-align:middle;font-weight:bold;white-space:nowrap;background:#ffffff;border-color:#ff4081;background-color:#ff4081;color:#ffffff;border-top-width:1px;" id="yui_3_16_0_1_1448505976300_2229">
                           Click here to reset your password
                         </a>
                       </div>
