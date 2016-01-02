@@ -1,10 +1,10 @@
 'use strict';
 
+const lex = require('letsencrypt-express');
 const express = require('express');
 const graphqlHTTP = require('express-graphql');
 const bodyParser = require('body-parser');
 const app = express();
-const server = require('http').Server(app);
 const jwt = require('express-jwt');
 const jwtRefreshToken = require('jwt-refresh-token');
 import {AppConfig, FileConfig} from './src/config';
@@ -19,7 +19,7 @@ const forgotPassword = require('./src/auth/forgot-password');
 const authenticate = require('./src/auth/authenticate');
 const passwordReset = require('./src/auth/password-reset');
 const upload = multer({ dest: __dirname + FileConfig.TempDir});
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 80;
 const baseImageUrl = FileConfig.BaseImageUrl;
 const fs = require('fs');
 const mmm = require('mmmagic');
@@ -235,4 +235,4 @@ app.use(function(err, req, res, next) {
   res.status(500).json({});
 });
 
-server.listen(port);
+lex.create(app).listen();
