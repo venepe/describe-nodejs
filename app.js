@@ -20,6 +20,7 @@ const authenticate = require('./src/auth/authenticate');
 const passwordReset = require('./src/auth/password-reset');
 const upload = multer({ dest: __dirname + FileConfig.TempDir});
 const port = process.env.PORT || 80;
+const sslPorts = (port === 80) ? [443, 5001] : [];
 const baseImageUrl = FileConfig.BaseImageUrl;
 const fs = require('fs');
 const mmm = require('mmmagic');
@@ -235,4 +236,9 @@ app.use(function(err, req, res, next) {
   res.status(500).json({});
 });
 
-lex.create(app).listen();
+lex.create({
+  configDir: './etc/letsencrypt'
+  onRequest: app
+}).listen([port], sslPorts, function () {
+  console.log("ENCRYPT __ALL__ THE DOMAINS!");
+});
