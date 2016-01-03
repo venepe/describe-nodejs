@@ -1,6 +1,8 @@
 'use strict';
 
-const lex = require('letsencrypt-express');
+const LE = require('letsencrypt');
+const http = require('http');
+const https = require('https');
 const express = require('express');
 const graphqlHTTP = require('express-graphql');
 const bodyParser = require('body-parser');
@@ -236,8 +238,6 @@ app.use(function(err, req, res, next) {
   res.status(500).json({});
 });
 
-var LE = require('letsencrypt');
-
 
 var config = {
   server: LE.productionServerUrl
@@ -288,24 +288,13 @@ le.register({                                                 // and either rene
   }
 });
 
-lex.create({
-  configDir: '/etc/letsencrypt',
-  onRequest: app,
-  letsencrypt: le
-}).listen([80, 443], sslPorts, function () {
-  console.log("ENCRYPT __ALL__ THE DOMAINS!");
-});
+// your express configuration here
 
-// // your express configuration here
-//
-// var http = require('http');
-// var https = require('https');
-// var privateKey  = fs.readFileSync('./etc/letsencrypt/live/sumseti.com/privkey.pem');
-// var certificate = fs.readFileSync('./etc/letsencrypt/live/sumseti.com/cert.pem');
-// var credentials = {key: privateKey, cert: certificate};
-//
-// var httpServer = http.createServer(app);
-// var httpsServer = https.createServer(credentials, app);
-//
-// httpServer.listen(80);
-// httpsServer.listen(443);
+const privateKey  = fs.readFileSync('./etc/letsencrypt/live/sumseti.com/privkey.pem');
+const certificate = fs.readFileSync('./etc/letsencrypt/live/sumseti.com/cert.pem');
+const credentials = {key: privateKey, cert: certificate};
+const httpServer = http.createServer(app);
+const httpsServer = https.createServer(credentials, app);
+
+httpServer.listen(80);
+httpsServer.listen(443);
