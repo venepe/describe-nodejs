@@ -22,6 +22,4 @@ RUN node -v
 ADD package.json /src/package.json
 RUN cd /src && npm install
 
-VOLUME ["/src/etc/letsencrypt"]
-
 CMD [ "npm", "start" ]
