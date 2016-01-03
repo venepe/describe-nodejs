@@ -241,15 +241,15 @@ lex.create({
   onRequest: app
 }).listen(
   // you can give just the port, or expand out to the full options
-  [80, { port: 8080, address: 'sumseti', onListening: function () { console.log('http://sumseti'); } }]
+  [80, { port: 8080, address: 'sumseti.com', onListening: function () { console.log('http://sumseti.com'); } }]
 
   // you can give just the port, or expand out to the full options
-, [443, 5001, { port: 8443, address: 'sumseti' }]
+, [443, 5001, { port: 8443, address: 'sumseti.com' }]
 
   // this is pretty much the default onListening handler
 , function onListening() {
     var server = this;
     var protocol = ('requestCert' in server) ? 'https': 'http';
-    console.log("Listening at " + protocol + '://sumseti:' + this.address().port);
+    console.log("Listening at " + protocol + '://sumseti.com:' + this.address().port);
   }
 );
