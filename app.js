@@ -279,8 +279,15 @@ if (port === 80) {
 
   const privateKey  = fs.readFileSync('./etc/letsencrypt/live/sumseti.com/privkey.pem');
   const certificate = fs.readFileSync('./etc/letsencrypt/live/sumseti.com/cert.pem');
-  const credentials = {key: privateKey, cert: certificate};
-  const httpsServer = https.createServer(credentials, app);
+  const intermediate = fs.readFileSync('./etc/letsencrypt/live/sumseti.com/fullchain.pem');
+  const sslOptions = {
+    key: privateKey,
+    cert: certificate,
+    requestCert: true,
+    ca: intermediate,
+    rejectUnauthorized: false
+  };
+  const httpsServer = https.createServer(sslOptions, app);
 
   httpServer.listen(80);
   httpsServer.listen(443);
