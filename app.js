@@ -240,7 +240,7 @@ var LE = require('letsencrypt');
 
 
 var config = {
-, server: LE.productionServerUrl                               // or LE.productionServerUrl
+  server: LE.productionServerUrl
 
 , configDir: __dirname + '/etc/letsencrypt'      // or /etc/letsencrypt or wherever
 
