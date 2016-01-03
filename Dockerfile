@@ -22,7 +22,6 @@ RUN node -v
 ADD package.json /src/package.json
 RUN cd /src && npm install
 
-CMD [ "npm", "start" ]
+VOLUME ["/src/etc/letsencrypt"]
 
-# Expose port
-EXPOSE  3000
+CMD [ "npm", "start" ]
