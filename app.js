@@ -236,20 +236,67 @@ app.use(function(err, req, res, next) {
   res.status(500).json({});
 });
 
+var LE = require('letsencrypt');
+
+
+var config = {
+, server: LE.productionServerUrl                               // or LE.productionServerUrl
+
+, configDir: __dirname + '/etc/letsencrypt'      // or /etc/letsencrypt or wherever
+
+, privkeyPath: ':config/live/:hostname/privkey.pem'         //
+, fullchainPath: ':config/live/:hostname/fullchain.pem'     // Note: both that :config and :hostname
+, certPath: ':config/live/:hostname/cert.pem'               //       will be templated as expected
+, chainPath: ':config/live/:hostname/chain.pem'             //
+
+, debug: false
+};
+
+
+var handlers = {
+  setChallenge: function (opts, hostname, key, val, cb) {}  // called during the ACME server handshake, before validation
+, removeChallenge: function (opts, hostname, key, cb) {}    // called after validation on both success and failure
+, getChallenge: function (opts, hostname, key, cb) {}       // this is special because it is called by the webserver
+                                                            // (see letsencrypt-cli/bin & letsencrypt-express/standalone),
+                                                            // not by the library itself
+
+, agreeToTerms: function (tosUrl, cb) {}                    // gives you an async way to expose the legal agreement
+                                                            // (terms of use) to your users before accepting
+};
+
+
+var le = LE.create(config, handlers);
+
+                                                              // checks :conf/renewal/:hostname.conf
+le.register({                                                 // and either renews or registers
+
+  domains: ['sumseti.com']                                    // CHANGE TO YOUR DOMAIN
+, email: 'admin@sumseti.com'                                     // CHANGE TO YOUR EMAIL
+, agreeTos: false                                             // set to true to automatically accept an agreement
+                                                              // which you have pre-approved (not recommended)
+}, function (err) {
+
+  if (err) {
+    // Note: you must have a webserver running
+    // and expose handlers.getChallenge to it
+    // in order to pass validation
+    // See letsencrypt-cli and or letsencrypt-express
+    console.error('[Error]: node-letsencrypt/examples/standalone');
+    console.error(err.stack);
+  } else {
+    console.log('success');
+  }
+});
+
 lex.create({
   configDir: '/etc/letsencrypt',
-  onRequest: app
-}).listen(
-  // you can give just the port, or expand out to the full options
-  [80, { port: 8080, address: 'sumseti.com', onListening: function () { console.log('http://sumseti.com'); } }]
-
-  // you can give just the port, or expand out to the full options
-, [443, 5001, { port: 8443, address: 'sumseti.com' }]
-
-  // this is pretty much the default onListening handler
-, function onListening() {
-    var server = this;
-    var protocol = ('requestCert' in server) ? 'https': 'http';
-    console.log("Listening at " + protocol + '://sumseti.com:' + this.address().port);
-  }
-);
+  onRequest: app,
+  letsencrypt: le
+}).listen([port], sslPorts, function () {
+  var server = this;
+  var protocol = ('requestCert' in server) ? 'https': 'http';
+  console.log(server);
+  console.log("Listening at " + protocol + '://localhost:' + this.address().port);
+  console.log("Listening at " + protocol + '://localhost:' + this.address());
+  console.log("ENCRYPT __ALL__ THE DOMAINS!");
+});
