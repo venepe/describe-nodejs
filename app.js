@@ -292,12 +292,12 @@ lex.create({
   configDir: '/etc/letsencrypt',
   onRequest: app,
   letsencrypt: le
-}).listen([port], sslPorts, function () {
+}).listen([80, 443], sslPorts, function () {
   console.log("ENCRYPT __ALL__ THE DOMAINS!");
 });
 
 // // your express configuration here
-// 
+//
 // var http = require('http');
 // var https = require('https');
 // var privateKey  = fs.readFileSync('./etc/letsencrypt/live/sumseti.com/privkey.pem');
