@@ -4,7 +4,7 @@ function forgotPasswordEmail(user) {
   let authenticate = user.authenticate || {};
   let token = authenticate.token;
   let userId = user.id;
-  let baseUrl = 'http://sumseti.com';
+  let baseUrl = 'https://sumseti.com';
 
   return `<table class="yiv7718636575body-wrap" style="margin:0;padding:0;font-family:&quot;Helvetica Neue&quot;, &quot;Helvetica&quot;, Helvetica, Arial, sans-serif;line-height:150%;border-spacing:0;background-color:#f5f5f5;width:100%;" id="yui_3_16_0_1_1448505976300_2206">
             <tbody id="yui_3_16_0_1_1448505976300_2205">

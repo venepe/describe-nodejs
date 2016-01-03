@@ -22,7 +22,6 @@ const authenticate = require('./src/auth/authenticate');
 const passwordReset = require('./src/auth/password-reset');
 const upload = multer({ dest: __dirname + FileConfig.TempDir});
 const port = process.env.PORT || 80;
-const sslPorts = (port === 80) ? [443, 5001] : [];
 const baseImageUrl = FileConfig.BaseImageUrl;
 const fs = require('fs');
 const mmm = require('mmmagic');
@@ -238,63 +237,55 @@ app.use(function(err, req, res, next) {
   res.status(500).json({});
 });
 
-
-var config = {
-  server: LE.productionServerUrl
-
-, configDir: __dirname + '/etc/letsencrypt'      // or /etc/letsencrypt or wherever
-
-, privkeyPath: ':config/live/:hostname/privkey.pem'         //
-, fullchainPath: ':config/live/:hostname/fullchain.pem'     // Note: both that :config and :hostname
-, certPath: ':config/live/:hostname/cert.pem'               //       will be templated as expected
-, chainPath: ':config/live/:hostname/chain.pem'             //
-
-, debug: false
-};
-
-
-var handlers = {
-  setChallenge: function (opts, hostname, key, val, cb) {}  // called during the ACME server handshake, before validation
-, removeChallenge: function (opts, hostname, key, cb) {}    // called after validation on both success and failure
-, getChallenge: function (opts, hostname, key, cb) {}       // this is special because it is called by the webserver
-                                                            // (see letsencrypt-cli/bin & letsencrypt-express/standalone),
-                                                            // not by the library itself
-
-, agreeToTerms: function (tosUrl, cb) {}                    // gives you an async way to expose the legal agreement
-                                                            // (terms of use) to your users before accepting
-};
-
-
-var le = LE.create(config, handlers);
-
-                                                              // checks :conf/renewal/:hostname.conf
-le.register({                                                 // and either renews or registers
-
-  domains: ['sumseti.com']                                    // CHANGE TO YOUR DOMAIN
-, email: 'admin@sumseti.com'                                     // CHANGE TO YOUR EMAIL
-, agreeTos: false                                             // set to true to automatically accept an agreement
-                                                              // which you have pre-approved (not recommended)
-}, function (err) {
-
-  if (err) {
-    // Note: you must have a webserver running
-    // and expose handlers.getChallenge to it
-    // in order to pass validation
-    // See letsencrypt-cli and or letsencrypt-express
-    console.error('[Error]: node-letsencrypt/examples/standalone');
-    console.error(err.stack);
-  } else {
-    console.log('success');
-  }
-});
-
-// your express configuration here
-
-const privateKey  = fs.readFileSync('./etc/letsencrypt/live/sumseti.com/privkey.pem');
-const certificate = fs.readFileSync('./etc/letsencrypt/live/sumseti.com/cert.pem');
-const credentials = {key: privateKey, cert: certificate};
 const httpServer = http.createServer(app);
-const httpsServer = https.createServer(credentials, app);
 
-httpServer.listen(80);
-httpsServer.listen(443);
+if (port === 80) {
+
+  const config = {
+    server: LE.productionServerUrl,
+    configDir: __dirname + '/etc/letsencrypt',
+    privkeyPath: ':config/live/:hostname/privkey.pem',
+    fullchainPath: ':config/live/:hostname/fullchain.pem',
+    certPath: ':config/live/:hostname/cert.pem',
+    chainPath: ':config/live/:hostname/chain.pem',
+    debug: false
+  };
+
+
+  const handlers = {
+    setChallenge: function (opts, hostname, key, val, cb) {},
+    removeChallenge: function (opts, hostname, key, cb) {},
+    getChallenge: function (opts, hostname, key, cb) {},
+    agreeToTerms: function (tosUrl, cb) {}
+  };
+
+
+  const le = LE.create(config, handlers);
+  le.register({
+    domains: ['sumseti.com'],
+    email: 'admin@sumseti.com',
+    agreeTos: false
+  }, function (err) {
+
+    if (err) {
+      console.error('[Error]: node-letsencrypt/examples/standalone');
+      console.error(err.stack);
+    } else {
+      console.log('success');
+    }
+  });
+
+  // your express configuration here
+
+  const privateKey  = fs.readFileSync('./etc/letsencrypt/live/sumseti.com/privkey.pem');
+  const certificate = fs.readFileSync('./etc/letsencrypt/live/sumseti.com/cert.pem');
+  const credentials = {key: privateKey, cert: certificate};
+  const httpsServer = https.createServer(credentials, app);
+
+  httpServer.listen(80);
+  httpsServer.listen(443);
+
+} else {
+  httpServer.listen(port);
+
+}
