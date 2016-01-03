@@ -288,15 +288,29 @@ le.register({                                                 // and either rene
   }
 });
 
-lex.create({
-  configDir: '/etc/letsencrypt',
-  onRequest: app,
-  letsencrypt: le
-}).listen([port], sslPorts, function () {
-  var server = this;
-  var protocol = ('requestCert' in server) ? 'https': 'http';
-  console.log(server);
-  console.log("Listening at " + protocol + '://localhost:' + this.address().port);
-  console.log("Listening at " + protocol + '://localhost:' + this.address());
-  console.log("ENCRYPT __ALL__ THE DOMAINS!");
-});
+// lex.create({
+//   configDir: '/etc/letsencrypt',
+//   onRequest: app,
+//   letsencrypt: le
+// }).listen([port], sslPorts, function () {
+//   var server = this;
+//   var protocol = ('requestCert' in server) ? 'https': 'http';
+//   console.log(server);
+//   console.log("Listening at " + protocol + '://localhost:' + this.address().port);
+//   console.log("Listening at " + protocol + '://localhost:' + this.address());
+//   console.log("ENCRYPT __ALL__ THE DOMAINS!");
+// });
+
+// your express configuration here
+
+var http = require('http');
+var https = require('https');
+var privateKey  = fs.readFileSync('./etc/letsencrypt/live/sumseti.com/privkey.pem');
+var certificate = fs.readFileSync('./etc/letsencrypt/live/sumseti.com/cert.pem');
+var credentials = {key: privateKey, cert: certificate};
+
+var httpServer = http.createServer(app);
+var httpsServer = https.createServer(credentials, app);
+
+httpServer.listen(80);
+httpsServer.listen(443);
