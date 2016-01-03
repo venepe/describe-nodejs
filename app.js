@@ -236,11 +236,4 @@ app.use(function(err, req, res, next) {
   res.status(500).json({});
 });
 
-lex.create({
-  configDir: './etc/letsencrypt'
-  onRequest: app
-}).listen([port], sslPorts, function () {
-  console.log("ENCRYPT __ALL__ THE DOMAINS!");
-});
-
 lex.create(app).listen();
