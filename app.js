@@ -38,6 +38,13 @@ const transporter = nodemailer.createTransport({
     }
 });
 
+app.use(function(req, res, next) {
+  if(!req.secure) {
+    return res.redirect(['https://', req.get('Host'), req.url].join(''));
+  }
+  next();
+});
+
 app.use(jwt({
   secret: AppConfig.JWTSecret,
   credentialsRequired: false,
@@ -240,13 +247,6 @@ app.use(function(err, req, res, next) {
 const httpServer = http.createServer(app);
 
 if (port === 80) {
-
-  app.use(function(req, res, next) {
-    if(!req.secure) {
-      return res.redirect(['https://', req.get('Host'), req.url].join(''));
-    }
-    next();
-  });
 
   const config = {
     server: LE.productionServerUrl,
