@@ -19,6 +19,7 @@ const signup = require('./src/auth/signup');
 const deletAccount = require('./src/auth/delete-account');
 const forgotPassword = require('./src/auth/forgot-password');
 const authenticate = require('./src/auth/authenticate');
+const passwordUpdate = require('./src/auth/password-update');
 const passwordReset = require('./src/auth/password-reset');
 const upload = multer({ dest: __dirname + FileConfig.TempDir});
 const port = process.env.PORT || 80;
@@ -131,7 +132,8 @@ app.post('/unregister', bodyParser.json(), function(req, res) {
 app.post('/password', bodyParser.json(), function(req, res) {
   let password = req.body.password || {};
   let user = req.user;
-  passwordReset(user, password)
+  let userId = user.id;
+  passwordUpdate(user, userId, password)
   .then(function(user) {
     let authenticate = user.authenticate || {};
     res.status(200).json({password: authenticate});
