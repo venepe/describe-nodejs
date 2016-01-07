@@ -158,16 +158,6 @@ let projectType = new GraphQLObjectType({
         ,
         args
       ),
-    },
-    examples: {
-      type: exampleConnection,
-      description: 'The files exemplifying the project.',
-      args: connectionArgs,
-      resolve: (project, args, context) => connectionFromPromisedArray(
-        dao(context.rootValue.user).File(project.id).getEdgeExemplifies(args)
-        ,
-        args
-      ),
     }
   }),
   interfaces: [nodeInterface],
