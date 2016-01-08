@@ -147,7 +147,8 @@ class TestCaseDAO {
           db
           .let('project', (s) => {
             s
-            .select()
+            .select('*')
+            .select('outE(\'Requires\').size() as numOfTestCases')
             .from('Project')
             .where({
               id: relationalId
@@ -186,13 +187,18 @@ class TestCaseDAO {
             .to('$testCase')
           })
           .commit()
-          .return('$testCase')
-          .transform((record) => {
-            return utilites.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
-          })
-          .one()
+          .return(['$testCase', '$project'])
+          .all()
           .then((result) => {
-            resolve(result);
+            let testCase = utilites.FilteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+            let project = utilites.FilteredObject(result[1], 'in_.*|out_.*|@.*|^_');
+            let numOfTestCases = project.numOfTestCases;
+            numOfTestCases++;
+            project.numOfTestCases = numOfTestCases;
+            resolve({
+              testCase,
+              project
+            });
           })
           .catch((e) => {
             console.log(`orientdb error: ${e}`);
@@ -273,16 +279,53 @@ class TestCaseDAO {
       let role = this.user.role;
 
       db
-      .delete('VERTEX', _class)
-      .where({
-        id: targetId
+      .let('testCase', (s) => {
+        s
+        .getTestCase()
+        .from(_class)
+        .where({
+          id: targetId
+        })
       })
-      .where(
-        '_allow CONTAINS "' + role + '"'
-      )
-      .one()
-      .then(() => {
-        resolve({id: targetId});
+      .let('project', (s) => {
+        s
+        .getProject()
+        .from(function (s) {
+          s
+          .select('expand(in("Requires"))')
+          .from('TestCase')
+          .where({
+            id: targetId
+          })
+          .limit(1)
+        })
+      })
+      .let('delete', (s) => {
+        s
+        .delete('VERTEX', _class)
+        .where({
+          id: targetId
+        })
+      })
+      .commit()
+      .return(['$testCase', '$project'])
+      .all()
+      .then((result) => {
+        let testCase = utilites.FilteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+        let project = utilites.FilteredObject(result[1], 'in_.*|out_.*|@.*|^_');
+        let numOfTestCases = project.numOfTestCases;
+        numOfTestCases--;
+        project.numOfTestCases = numOfTestCases;
+        if (testCase.isFulfilled.length > 0) {
+          let numOfTestCasesFulfilled = project.numOfTestCasesFulfilled;
+          numOfTestCasesFulfilled--;
+          project.numOfTestCasesFulfilled = numOfTestCasesFulfilled;
+        }
+        console.log(project);
+        resolve({
+          deletedTestCaseId: targetId,
+          project
+        });
       })
       .catch((e) => {
         console.log(`orientdb error: ${e}`);

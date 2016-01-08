@@ -31,9 +31,23 @@ class FulfillmentDAO {
           .let('testCase', (s) => {
             s
             .select()
+            .getTestCase()
             .from('TestCase')
             .where({
               id: relationalId
+            })
+          })
+          .let('project', (s) => {
+            s
+            .getProject()
+            .from(function (s) {
+              s
+              .select('expand(in("Requires"))')
+              .from('TestCase')
+              .where({
+                id: relationalId
+              })
+              .limit(1)
             })
           })
           .let('user', (s) => {
@@ -66,14 +80,26 @@ class FulfillmentDAO {
             .to('$testCase')
           })
           .commit()
-          .return('$file')
-          .transform((record) => {
-            return utilites.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
-          })
-          .one()
-          .then((record) => {
-            record.testCases = [];
-            resolve(record);
+          .return(['$file', '$testCase', '$project'])
+          .all()
+          .then((result) => {
+            let file = utilites.FilteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+            let testCase = utilites.FilteredObject(result[1], 'in_.*|out_.*|@.*|^_');
+            let project = utilites.FilteredObject(result[2], 'in_.*|out_.*|@.*|^_');
+
+            if (testCase.isFulfilled.length === 0) {
+              let numOfTestCasesFulfilled = project.numOfTestCasesFulfilled;
+              numOfTestCasesFulfilled++;
+              project.numOfTestCasesFulfilled = numOfTestCasesFulfilled;
+              console.log(numOfTestCasesFulfilled);
+            }
+
+            testCase.isFulfilled = true;
+            resolve({
+              file,
+              testCase,
+              project
+            });
           })
           .catch((e) => {
             console.log(`orientdb error: ${e}`);

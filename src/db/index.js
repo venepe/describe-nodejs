@@ -88,11 +88,11 @@ OrientDB.Statement.prototype.addFiles = function() {
 
 OrientDB.Db.prototype.getProject = function() {
   this.SMTINode = 'Project';
-  return this.select('id, title, createdAt, updatedAt')
+  return this.select('id, title, createdAt, updatedAt, outE(\'Requires\').size() as numOfTestCases, outE(\'Requires\').inV(\'TestCase\').inE(\'Fulfills\').size() as numOfTestCasesFulfilled')
 }
 
 OrientDB.Statement.prototype.getProject = function() {
-  return this.select('id, title, createdAt, updatedAt')
+  return this.select('id, title, createdAt, updatedAt, outE(\'Requires\').size() as numOfTestCases, outE(\'Requires\').inV(\'TestCase\').inE(\'Fulfills\').size() as numOfTestCasesFulfilled')
 }
 
 OrientDB.Statement.prototype.outCreatesFromNode = function(id) {

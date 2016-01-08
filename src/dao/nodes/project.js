@@ -85,6 +85,7 @@ class ProjectDAO {
       })
       .all()
       .then((records) => {
+        console.log(records);
         resolve(records);
       })
       .catch((e) => {

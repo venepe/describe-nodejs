@@ -131,6 +131,14 @@ let projectType = new GraphQLObjectType({
       type: GraphQLString,
       description: 'The title of the project.',
     },
+    numOfTestCases: {
+      type: GraphQLInt,
+      description: 'The total number of test cases for the project.',
+    },
+    numOfTestCasesFulfilled: {
+      type: GraphQLInt,
+      description: 'The total number of test cases fulfilled for the project.',
+    },
     createdAt: {
       type: GraphQLString,
       description: 'The timestamp when the project was created.',
@@ -357,39 +365,19 @@ var introduceFulfillment = mutationWithClientMutationId({
     testCase: {
       type: testCaseType,
       resolve: (payload) => {
-        return {
-          id: payload.testCaseId,
-          isFulfilled: true
-        }
+        return payload.testCase;
       },
     },
-    me: {
-      type: userType,
+    project: {
+      type: projectType,
       resolve: (payload) => {
-        return {
-          id: payload.user.id
-        }
+        return payload.project;
       },
     },
   },
   mutateAndGetPayload: ({testCaseId, uri}, context) => {
     var localId = fromGlobalId(testCaseId).id;
-    var user = context.rootValue.user
-    return new Promise((resolve, reject) => {
-      dao(user)
-        .Fulfillment(localId)
-        .create({uri})
-        .then(function(file) {
-          resolve({
-            file,
-            user,
-            testCaseId : localId
-          });
-        })
-        .catch(function(e) {
-          reject();
-        });
-    });
+    return dao(context.rootValue.user).Fulfillment(localId).create({uri});
   }
 });
 
@@ -456,15 +444,18 @@ var introduceTestCase = mutationWithClientMutationId({
     testCaseEdge: {
       type: GraphQLTestCaseEdge,
       resolve: (payload) => {
+        var testCase = payload.testCase;
         return {
-          cursor: cursorForObjectInConnection([payload], payload),
-          node: payload,
+          cursor: cursorForObjectInConnection([testCase], testCase),
+          node: testCase,
         };
       }
     },
     project: {
       type: projectType,
-      resolve: () => {},
+      resolve: (payload) => {
+        return payload.project;
+      },
     },
   },
   mutateAndGetPayload: ({targetId, it}, context) => {
@@ -506,18 +497,20 @@ var deleteTestCase = mutationWithClientMutationId({
   outputFields: {
     deletedTestCaseId: {
       type: GraphQLID,
-      resolve: ({id}) => id,
+      resolve: (payload) => {
+        return payload.deletedTestCaseId;
+      },
     },
     project: {
       type: projectType,
-      resolve: () => {},
+      resolve: (payload) => {
+        return payload.project;
+      },
     }
   },
   mutateAndGetPayload: ({id}, context) => {
     var localId = fromGlobalId(id).id;
-    return dao(context.rootValue.user).TestCase(localId).del().then(function (data) {
-      return {id};
-    });
+    return dao(context.rootValue.user).TestCase(localId).del();
   }
 });
 
