@@ -123,13 +123,6 @@ class FulfillmentDAO {
       var role = this.user.role;
 
       db
-      .let('deletes', (s) => {
-        s
-        .delete('VERTEX', _class)
-        .where({
-          id: targetId
-        })
-      })
       .let('testCase', (s) => {
         s
         .getTestCase()
@@ -138,17 +131,48 @@ class FulfillmentDAO {
           id: testCaseId
         })
       })
-      .commit()
-      .return('$testCase')
-      .transform((record) => {
-        let isFulfilled = record.isFulfilled;
-        record.isFulfilled = (isFulfilled.length > 0) ? true : false;
-        return utilites.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
+      .let('project', (s) => {
+        s
+        .getProject()
+        .from(function (s) {
+          s
+          .select('expand(in("Requires"))')
+          .from('TestCase')
+          .where({
+            id: testCaseId
+          })
+          .limit(1)
+        })
       })
-      .one()
-      .then((testCase) => {
-        let payload = {deletedFulfillmentId: targetId, testCase};
-        resolve(payload);
+      .let('deletes', (s) => {
+        s
+        .delete('VERTEX', _class)
+        .where({
+          id: targetId
+        })
+      })
+      .commit()
+      .return(['$testCase', '$project'])
+      .all()
+      .then((result) => {
+        let testCase = utilites.FilteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+        let project = utilites.FilteredObject(result[1], 'in_.*|out_.*|@.*|^_');
+        let numOfTestCasesFulfilled = project.numOfTestCasesFulfilled;
+        let isFulfilled = testCase.isFulfilled;
+
+        //Because the test case is pull before the fulfillment is deleted
+        testCase.isFulfilled = (isFulfilled.length > 1) ? true : false;
+        if (!testCase.isFulfilled) {
+          let numOfTestCasesFulfilled = project.numOfTestCasesFulfilled;
+          numOfTestCasesFulfilled--;
+          project.numOfTestCasesFulfilled = numOfTestCasesFulfilled;
+        }
+
+        resolve({
+          deletedFulfillmentId: targetId,
+          testCase,
+          project
+        });
       })
       .catch((e) => {
         console.log(`orientdb error: ${e}`);

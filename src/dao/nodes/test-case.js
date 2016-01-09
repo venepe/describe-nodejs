@@ -321,7 +321,6 @@ class TestCaseDAO {
           numOfTestCasesFulfilled--;
           project.numOfTestCasesFulfilled = numOfTestCasesFulfilled;
         }
-        console.log(project);
         resolve({
           deletedTestCaseId: targetId,
           project

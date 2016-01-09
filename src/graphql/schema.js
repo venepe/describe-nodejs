@@ -569,21 +569,17 @@ var deleteFulfillment = mutationWithClientMutationId({
         return payload.testCase;
       },
     },
+    project: {
+      type: projectType,
+      resolve: (payload) => {
+        return payload.project;
+      },
+    },
   },
   mutateAndGetPayload: ({id, testCaseId}, context) => {
     var localId = fromGlobalId(id).id;
     var localTestCaseId = fromGlobalId(testCaseId).id;
-    return new Promise((resolve, reject) => {
-      dao(context.rootValue.user)
-        .Fulfillment(localId)
-        .del(localTestCaseId)
-        .then(function(payload) {
-          resolve(payload);
-        })
-        .catch(function(e) {
-          reject();
-        });
-    });
+    return dao(context.rootValue.user).Fulfillment(localId).del(localTestCaseId);
   }
 });
 

@@ -141,6 +141,8 @@ class ProjectDAO {
           .one()
           .then((record) => {
             record.testCases = [];
+            record.numOfTestCases = 0;
+            record.numOfTestCasesFulfilled = 0;
             resolve(record);
           })
           .catch((e) => {
