@@ -5,6 +5,7 @@ module.exports = {
   FilteredObject: require('./lib/filtered-object.js'),
   Base64: require('./lib/base64.js'),
   CursorToOffset: require('./lib/cursor-to-offset.js'),
+  GraphQLHelper: require('./lib/graphql-helper.js'),
   Pagination: require('./lib/pagination.js'),
   Generate: require('./lib/generate.js'),
   IsValidPassword: require('./lib/is-valid-password.js'),

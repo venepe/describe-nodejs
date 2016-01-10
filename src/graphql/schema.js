@@ -19,7 +19,7 @@ import {
 import {
   connectionArgs,
   connectionDefinitions,
-  connectionFromArray,
+  connectionFromArraySlice,
   connectionFromPromisedArray,
   cursorForObjectInConnection,
   fromGlobalId,
@@ -112,11 +112,16 @@ let userType = new GraphQLObjectType({
       type: projectConnection,
       description: 'The projects created by the user.',
       args: connectionArgs,
-      resolve: (user, args, context) => connectionFromPromisedArray(
-        dao(context.rootValue.user).Project(user.id).getEdgeCreated(args)
-        ,
-        args
-      ),
+      resolve: (user, args, context) => {
+        return new Promise((resolve, reject) => {
+          dao(context.rootValue.user).Project(user.id).getEdgeCreated(args).then((result) => {
+            resolve(connectionFromArraySlice(result.payload, args, result.meta));
+          })
+          .catch((e) => {
+            reject(e);
+          })
+        });
+      }
     }
   }),
   interfaces: [nodeInterface],
@@ -151,11 +156,16 @@ let projectType = new GraphQLObjectType({
       type: testCaseConnection,
       description: 'The test cases of the project.',
       args: connectionArgs,
-      resolve: (project, args, context) => connectionFromPromisedArray(
-        dao(context.rootValue.user).TestCase(project.id).getEdgeRequired(args)
-        ,
-        args
-      ),
+      resolve: (project, args, context) => {
+        return new Promise((resolve, reject) => {
+          dao(context.rootValue.user).TestCase(project.id).getEdgeRequired(args).then((result) => {
+            resolve(connectionFromArraySlice(result.payload, args, result.meta));
+          })
+          .catch((e) => {
+            reject(e);
+          })
+        });
+      }
     },
     coverImages: {
       type: coverImageConnection,
@@ -196,21 +206,31 @@ let testCaseType = new GraphQLObjectType({
       type: exampleConnection,
       description: 'The files exemplifying the test case.',
       args: connectionArgs,
-      resolve: (testCase, args, context) => connectionFromPromisedArray(
-        dao(context.rootValue.user).File(testCase.id).getEdgeExemplifies(args)
-        ,
-        args
-      ),
+      resolve: (testCase, args, context) => {
+        return new Promise((resolve, reject) => {
+          dao(context.rootValue.user).File(testCase.id).getEdgeExemplifies(args).then((result) => {
+            resolve(connectionFromArraySlice(result.payload, args, result.meta));
+          })
+          .catch((e) => {
+            reject(e);
+          })
+        });
+      }
     },
     fulfillments: {
       type: fulfillConnection,
       description: 'The files fulfilling the test case.',
       args: connectionArgs,
-      resolve: (testCase, args, context) => connectionFromPromisedArray(
-        dao(context.rootValue.user).File(testCase.id).inEdgeFulfilled(args)
-        ,
-        args
-      ),
+      resolve: (testCase, args, context) => {
+        return new Promise((resolve, reject) => {
+          dao(context.rootValue.user).File(testCase.id).inEdgeFulfilled(args).then((result) => {
+            resolve(connectionFromArraySlice(result.payload, args, result.meta));
+          })
+          .catch((e) => {
+            reject(e);
+          })
+        });
+      }
     }
   }),
   interfaces: [nodeInterface],

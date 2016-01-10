@@ -2,7 +2,7 @@
 
 const _class = 'TestCase';
 const { SMTIValidator } = require('../validator');
-const utilites = require('../../utilities');
+const utilities = require('../../utilities');
 
 import {
   TestCase
@@ -29,7 +29,7 @@ class TestCaseDAO {
         let isFulfilled = record.isFulfilled;
         record.isFulfilled = (isFulfilled.length > 0) ? true : false;
         let testCase = new TestCase();
-        return utilites.FilteredObject(record, '@.*|rid', testCase);
+        return utilities.FilteredObject(record, '@.*|rid', testCase);
       })
       .one()
       .then((record) => {
@@ -44,7 +44,7 @@ class TestCaseDAO {
   }
 
   getEdgeCreated(args) {
-    let pageObject = utilites.Pagination.getOrientDBPageFromGraphQL(args);
+    let pageObject = utilities.Pagination.getOrientDBPageFromGraphQL(args);
 
     return new Promise((resolve, reject) => {
       let user = this.user;
@@ -60,11 +60,15 @@ class TestCaseDAO {
       .transform((record) => {
         let isFulfilled = record.isFulfilled;
         record.isFulfilled = (isFulfilled.length > 0) ? true : false;
-        return utilites.FilteredObject(record, '@.*|rid');
+        return utilities.FilteredObject(record, '@.*|rid');
       })
       .all()
-      .then((records) => {
-        resolve(records);
+      .then((payload) => {
+        let meta = utilities.GraphQLHelper.getMeta(pageObject, payload);
+        resolve({
+          payload,
+          meta
+        });
       })
       .catch((e) => {
         reject();
@@ -75,7 +79,7 @@ class TestCaseDAO {
   }
 
   getEdgeRequired(args) {
-    let pageObject = utilites.Pagination.getOrientDBPageFromGraphQL(args);
+    let pageObject = utilities.Pagination.getOrientDBPageFromGraphQL(args);
 
     return new Promise((resolve, reject) => {
       let user = this.user;
@@ -91,37 +95,15 @@ class TestCaseDAO {
       .transform((record) => {
         let isFulfilled = record.isFulfilled;
         record.isFulfilled = (isFulfilled.length > 0) ? true : false;
-        return utilites.FilteredObject(record, '@.*|rid');
+        return utilities.FilteredObject(record, '@.*|rid');
       })
       .all()
-      .then((records) => {
-        resolve(records);
-      })
-      .catch((e) => {
-        reject();
-
-      })
-      .done();
-    });
-  }
-
-  getEdgeTargeted() {
-    return new Promise((resolve, reject) => {
-      let user = this.user;
-      let db = this.db;
-      let id = this.targetId;
-
-      db
-      .getTestCase()
-      .outTargetsRequiresFromNode(id)
-      .transform((record) => {
-        let isFulfilled = record.isFulfilled;
-        record.isFulfilled = (isFulfilled.length > 0) ? true : false;
-        return utilites.FilteredObject(record, '@.*|rid');
-      })
-      .all()
-      .then((records) => {
-        resolve(records);
+      .then((payload) => {
+        let meta = utilities.GraphQLHelper.getMeta(pageObject, payload);
+        resolve({
+          payload,
+          meta
+        });
       })
       .catch((e) => {
         reject();
@@ -190,8 +172,8 @@ class TestCaseDAO {
           .return(['$testCase', '$project'])
           .all()
           .then((result) => {
-            let testCase = utilites.FilteredObject(result[0], 'in_.*|out_.*|@.*|^_');
-            let project = utilites.FilteredObject(result[1], 'in_.*|out_.*|@.*|^_');
+            let testCase = utilities.FilteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+            let project = utilities.FilteredObject(result[1], 'in_.*|out_.*|@.*|^_');
             let numOfTestCases = project.numOfTestCases;
             numOfTestCases++;
             project.numOfTestCases = numOfTestCases;
@@ -251,7 +233,7 @@ class TestCaseDAO {
           .commit()
           .return('$newTestCase')
           .transform((record) => {
-            return utilites.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
+            return utilities.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
           })
           .one()
           .then((record) => {
@@ -311,8 +293,8 @@ class TestCaseDAO {
       .return(['$testCase', '$project'])
       .all()
       .then((result) => {
-        let testCase = utilites.FilteredObject(result[0], 'in_.*|out_.*|@.*|^_');
-        let project = utilites.FilteredObject(result[1], 'in_.*|out_.*|@.*|^_');
+        let testCase = utilities.FilteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+        let project = utilities.FilteredObject(result[1], 'in_.*|out_.*|@.*|^_');
         let numOfTestCases = project.numOfTestCases;
         numOfTestCases--;
         project.numOfTestCases = numOfTestCases;

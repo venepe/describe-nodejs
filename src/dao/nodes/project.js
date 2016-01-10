@@ -2,7 +2,7 @@
 
 const _class = 'Project';
 const { SMTIValidator } = require('../validator');
-const utilites = require('../../utilities');
+const utilities = require('../../utilities');
 
 import {
   Project
@@ -27,7 +27,7 @@ class ProjectDAO {
       .limit(1)
       .transform((record) => {
         let project = new Project();
-        return utilites.FilteredObject(record, '@.*|rid', project);
+        return utilities.FilteredObject(record, '@.*|rid', project);
       })
       .one()
       .then((record) => {
@@ -41,33 +41,8 @@ class ProjectDAO {
     });
   }
 
-  inEdgeRequired() {
-    return new Promise((resolve, reject) => {
-      let user = this.user;
-      let db = this.db;
-      let id = this.targetId;
-
-      db
-      .getProject()
-      .inRequiresFromNode(id)
-      .limit(25)
-      .transform((record) => {
-        return utilites.FilteredObject(record, '@.*|rid');
-      })
-      .all()
-      .then((records) => {
-        resolve(records);
-      })
-      .catch((e) => {
-        reject();
-
-      })
-      .done();
-    });
-  }
-
   getEdgeCreated(args) {
-    let pageObject = utilites.Pagination.getOrientDBPageFromGraphQL(args);
+    let pageObject = utilities.Pagination.getOrientDBPageFromGraphQL(args);
 
     return new Promise((resolve, reject) => {
       let user = this.user;
@@ -81,12 +56,15 @@ class ProjectDAO {
       .limit(pageObject.limit)
       .order(pageObject.orderBy)
       .transform((record) => {
-        return utilites.FilteredObject(record, '@.*|rid');
+        return utilities.FilteredObject(record, '@.*|rid');
       })
       .all()
-      .then((records) => {
-        console.log(records);
-        resolve(records);
+      .then((payload) => {
+        let meta = utilities.GraphQLHelper.getMeta(pageObject, payload);
+        resolve({
+          payload,
+          meta
+        });
       })
       .catch((e) => {
         reject();
@@ -136,7 +114,7 @@ class ProjectDAO {
           .commit()
           .return('$project')
           .transform((record) => {
-            return utilites.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
+            return utilities.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
           })
           .one()
           .then((record) => {
@@ -195,7 +173,7 @@ class ProjectDAO {
           .commit()
           .return('$newProject')
           .transform((record) => {
-            return utilites.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
+            return utilities.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
           })
           .one()
           .then((record) => {
