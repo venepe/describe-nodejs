@@ -111,6 +111,7 @@ class SMTIValidator {
 
       isValid(obj, (errorCount, errors) => {
         if (errorCount === 0) {
+          obj.email = validator.normalizeEmail(obj.email);
           resolve(obj);
         } else {
           reject(errors);
