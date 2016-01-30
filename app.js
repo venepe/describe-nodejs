@@ -134,9 +134,8 @@ app.post('/password', bodyParser.json(), function(req, res) {
   let user = req.user;
   let userId = user.id;
   passwordUpdate(user, userId, password)
-  .then(function(user) {
-    let authenticate = user.authenticate || {};
-    res.status(200).json({password: authenticate});
+  .then(function() {
+    res.status(200).json({password: {}});
   })
   .catch(function(err) {
     let errors = [{message: 'Invalid password.'}]

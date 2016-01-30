@@ -233,20 +233,7 @@ class UserDAO {
             .scalar()
             .then((results) => {
               if (results > 0) {
-                let user = utilities.FilteredObject(userRecord, 'in_.*|out_.*|@.*|password|^_');
-                let email = user.email;
-                let uuid = user.id;
-                let graphQLID = utilities.Base64.base64('User:' + uuid);
-                let payload = {
-                  email: email,
-                  id: graphQLID,
-                  role: uuid
-                };
-                let authenticate = utilities.AuthToken(payload);
-
-                user.authenticate = authenticate;
-
-                resolve(user);
+                resolve();
               } else {
                 reject();
               }
