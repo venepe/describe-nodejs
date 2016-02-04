@@ -7,11 +7,11 @@ OrientDB.Statement.prototype.SMTINode = '';
 
 OrientDB.Db.prototype.getUser = function() {
   this.SMTINode = 'User';
-  return this.select('id, username, fullName, summary, email, createdAt, updatedAt');
+  return this.select('id, name, fullName, summary, email, createdAt, updatedAt');
 }
 
 OrientDB.Statement.prototype.getUser = function() {
-  return this.select('id, username, fullName, summary, email, createdAt, updatedAt');
+  return this.select('id, name, fullName, summary, email, createdAt, updatedAt');
 }
 
 OrientDB.Db.prototype.getTestCase = function() {
@@ -267,6 +267,38 @@ OrientDB.Statement.prototype.inCoversFromNode = function(id) {
   return this.from(function (s) {
     s
     .select('expand(in("Covers"))')
+    .from(function (s) {
+      s
+      .select()
+      .from('indexvalues:id')
+      .where({id: id})
+      .limit(1)
+    })
+    .order('createdAt DESC')
+  })
+  .where({'@class': this.db.SMTINode})
+}
+
+OrientDB.Statement.prototype.outCollaboratesOnFromNode = function(id) {
+  return this.from(function (s) {
+    s
+    .select('expand(out("CollaboratesOn"))')
+    .from(function (s) {
+      s
+      .select()
+      .from('indexvalues:id')
+      .where({id: id})
+      .limit(1)
+    })
+    .order('createdAt DESC')
+  })
+  .where({'@class': this.db.SMTINode})
+}
+
+OrientDB.Statement.prototype.inCollaboratesOnFromNode = function(id) {
+  return this.from(function (s) {
+    s
+    .select('expand(in("CollaboratesOn"))')
     .from(function (s) {
       s
       .select()

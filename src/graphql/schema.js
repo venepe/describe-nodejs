@@ -74,7 +74,7 @@ let userType = new GraphQLObjectType({
   description: 'User object',
   fields: () => ({
     id: globalIdField('User'),
-    username: {
+    name: {
       type: GraphQLString,
       description: 'The handle of the user.',
     },
@@ -115,6 +115,21 @@ let userType = new GraphQLObjectType({
       resolve: (user, args, context) => {
         return new Promise((resolve, reject) => {
           dao(context.rootValue.user).Project(user.id).getEdgeCreated(args).then((result) => {
+            resolve(connectionFromArraySlice(result.payload, args, result.meta));
+          })
+          .catch((e) => {
+            reject(e);
+          })
+        });
+      }
+    },
+    collaborations: {
+      type: projectConnection,
+      description: 'The projects the user is collaborating on.',
+      args: connectionArgs,
+      resolve: (user, args, context) => {
+        return new Promise((resolve, reject) => {
+          dao(context.rootValue.user).Project(user.id).getEdgeCollaborations(args).then((result) => {
             resolve(connectionFromArraySlice(result.payload, args, result.meta));
           })
           .catch((e) => {
@@ -176,7 +191,22 @@ let projectType = new GraphQLObjectType({
         ,
         args
       ),
-    }
+    },
+    collaborators: {
+      type: userConnection,
+      description: 'The collaborators of the project.',
+      args: connectionArgs,
+      resolve: (project, args, context) => {
+        return new Promise((resolve, reject) => {
+          dao(context.rootValue.user).User(project.id).getEdgeCollaborators(args).then((result) => {
+            resolve(connectionFromArraySlice(result.payload, args, result.meta));
+          })
+          .catch((e) => {
+            reject(e);
+          })
+        });
+      }
+    },
   }),
   interfaces: [nodeInterface],
 });
@@ -273,8 +303,8 @@ var {connectionType: coverImageConnection, edgeType: GraphQLCoverImageEdge} =
 var {connectionType: fulfillConnection, edgeType: GraphQLFulfillEdge} =
   connectionDefinitions({name: 'Fulfills', nodeType: fileType});
 
-// var {connectionType: searchProjectsConnection} =
-//   connectionDefinitions({name: 'SearchProjects', nodeType: projectType});
+var {connectionType: userConnection, edgeType: GraphQLUserEdge} =
+  connectionDefinitions({name: 'Users', nodeType: userType});
 
 var updateUser = mutationWithClientMutationId({
   name: 'UpdateUser',
@@ -282,7 +312,7 @@ var updateUser = mutationWithClientMutationId({
     id: {
       type: new GraphQLNonNull(GraphQLID)
     },
-    username: {
+    name: {
       type: GraphQLString,
       description: 'The handle of the user.',
     },
@@ -301,9 +331,9 @@ var updateUser = mutationWithClientMutationId({
       resolve: (payload) => payload
     }
   },
-  mutateAndGetPayload: ({id, username, fullName, summary}, context) => {
+  mutateAndGetPayload: ({id, name, fullName, summary}, context) => {
     var localId = fromGlobalId(id).id;
-    return dao(context.rootValue.user).User(localId).update({username, fullName, summary});
+    return dao(context.rootValue.user).User(localId).update({name, fullName, summary});
   }
 });
 
@@ -688,6 +718,69 @@ var deleteCoverImage = mutationWithClientMutationId({
   }
 });
 
+var introduceCollaborator = mutationWithClientMutationId({
+  name: 'IntroduceCollaborator',
+  inputFields: {
+    projectId: {
+      type: new GraphQLNonNull(GraphQLID)
+    },
+    email: {
+      type: new GraphQLNonNull(GraphQLString),
+      description: 'The email of the collaborator.',
+    }
+  },
+  outputFields: {
+    collaboratorEdge: {
+      type: GraphQLUserEdge,
+      resolve: (payload) => {
+        return {
+          cursor: cursorForObjectInConnection([payload], payload),
+          node: payload,
+        };
+      }
+    },
+    project: {
+      type: nodeInterface,
+      resolve: () => {},
+    }
+  },
+  mutateAndGetPayload: ({projectId, email}, context) => {
+    var localId = fromGlobalId(projectId).id;
+    return dao(context.rootValue.user).Collaboration(localId).create({email});
+  }
+});
+
+var deleteCollaborator = mutationWithClientMutationId({
+  name: 'DeleteCollaborator',
+  inputFields: {
+    id: {
+      type: new GraphQLNonNull(GraphQLID)
+    },
+    projectId: {
+      type: new GraphQLNonNull(GraphQLID)
+    }
+  },
+  outputFields: {
+    deletedCollaboratorId: {
+      type: GraphQLID,
+      resolve: (payload) => {
+        return payload.deletedCollaboratorId;
+      },
+    },
+    project: {
+      type: projectType,
+      resolve: (payload) => {
+        return payload.project;
+      },
+    },
+  },
+  mutateAndGetPayload: ({id, projectId}, context) => {
+    var localId = fromGlobalId(id).id;
+    var localProjectId = fromGlobalId(projectId).id;
+    return dao(context.rootValue.user).Collaborator(localId).del(localProjectId);
+  }
+});
+
 var schema = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: 'RootQueryType',
@@ -698,32 +791,6 @@ var schema = new GraphQLSchema({
         resolve: (root, {}) => {
           return dao(root.user).Me().get();
         }
-      },
-      searchProjects: {
-        type: projectConnection,
-        description: 'The projects from a query.',
-        args: {
-          query: {
-            type: new GraphQLNonNull(GraphQLString)
-          },
-          before: {
-            type: GraphQLString
-          },
-          after: {
-            type: GraphQLString
-          },
-          first: {
-            type: GraphQLInt
-          },
-          last: {
-            type: GraphQLInt
-          }
-        },
-        resolve: (root, {query, before, after, first, last}) => connectionFromPromisedArray(
-          dao(root.user).Search(query).findProject({before, after, first, last})
-          ,
-          {before, after, first, last}
-        ),
       },
       node: nodeField
     }
@@ -747,6 +814,8 @@ var schema = new GraphQLSchema({
       deleteFulfillment: deleteFulfillment,
       deleteCoverImage: deleteCoverImage,
       introduceCoverImage: introduceCoverImage,
+      deleteCollaborator: deleteCollaborator,
+      introduceCollaborator: introduceCollaborator,
     }
   })
 });

@@ -1,7 +1,6 @@
 'use strict';
 
-const _class = 'Project';
-const utilites = require('../../utilities');
+const utilities = require('../../utilities');
 
 class SearchDAO {
   constructor(targetId, params) {
@@ -9,8 +8,8 @@ class SearchDAO {
     this.params = params;
   }
 
-  findProject(args) {
-    let pageObject = utilites.Pagination.getOrientDBPageFromGraphQL(args);
+  findUser(args) {
+    let pageObject = utilities.Pagination.getOrientDBPageFromGraphQL(args);
 
     return new Promise((resolve, reject) => {
       let query = this.query;
@@ -20,24 +19,29 @@ class SearchDAO {
       query = query + '*';
 
       db
-      .select()
+      .getUser()
       .lucene({
-        title: query,
+        name: query,
       }
       )
-      .from(_class)
+      .from('User')
       .skip(pageObject.skip)
       .limit(pageObject.limit)
       .order(pageObject.orderBy)
       .transform((record) => {
-        return utilites.FilteredObject(record, '@.*|rid');
+        return utilities.FilteredObject(record, '@.*|rid');
       })
       .all()
-      .then((records) => {
-        resolve(records);
+      .then((payload) => {
+        let meta = utilities.GraphQLHelper.getMeta(pageObject, payload);
+        resolve({
+          payload,
+          meta
+        });
       })
       .catch((e) => {
         reject();
+
       })
       .done();
     });

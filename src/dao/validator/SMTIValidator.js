@@ -92,8 +92,8 @@ class SMTIValidator {
           if (!isOptional) {
             obj.id = uuid.v4();
             obj.email = validator.normalizeEmail(obj.email);
-            if (!obj.username || obj.username.length === 0) {
-              obj.username = utilities.Generate.getUsername();
+            if (!obj.name || obj.name.length === 0) {
+              obj.name = utilities.Generate.getUsername();
             }
           }
           resolve(obj);
@@ -139,6 +139,21 @@ class SMTIValidator {
     return new Promise((resolve, reject) => {
       let obj = this.obj;
       let isValid = require('./schema/reset.js');
+
+      isValid(obj, (errorCount, errors) => {
+        if (errorCount === 0) {
+          resolve(this.obj);
+        } else {
+          reject(errors);
+        }
+      });
+    });
+  }
+
+  isCollaborator() {
+    return new Promise((resolve, reject) => {
+      let obj = this.obj;
+      let isValid = require('./schema/collaborator.js');
 
       isValid(obj, (errorCount, errors) => {
         if (errorCount === 0) {

@@ -18,6 +18,14 @@ DAO.prototype.File = function(targetId, params) {
   return fl;
 }
 
+DAO.prototype.Collaboration = function(targetId, params) {
+  let Collaboration = require('./edges/collaboration.js');
+  let col = new Collaboration(targetId, params);
+  col.db = this.db;
+  col.user = this.user;
+  return col;
+}
+
 DAO.prototype.Cover = function(targetId, params) {
   let Cover = require('./edges/cover.js');
   let cv = new Cover(targetId, params);
