@@ -84,7 +84,7 @@ class ProjectDAO {
 
       db
       .getProject()
-      .inCollaboratesOnFromNode(id)
+      .outCollaboratesOnFromNode(id)
       .skip(pageObject.skip)
       .limit(pageObject.limit)
       .order(pageObject.orderBy)

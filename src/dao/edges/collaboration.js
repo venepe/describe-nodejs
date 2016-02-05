@@ -1,7 +1,7 @@
 'use strict';
 
 const { SMTIValidator } = require('../validator');
-const utilites = require('../../utilities');
+const utilities = require('../../utilities');
 
 import {
   Project
@@ -55,7 +55,7 @@ class CollaborationDAO {
             .create('edge', 'CollaboratesOn')
             .from('$collaborator')
             .to('$project')
-            .set({_allow: [role, collaboratorId]})
+            .set({_allow: [role]})
           })
           .commit()
           .return('$collaborator')
@@ -64,6 +64,7 @@ class CollaborationDAO {
           })
           .one()
           .then((record) => {
+            console.log(record);
             resolve(record);
           })
           .catch((e) => {
@@ -73,12 +74,14 @@ class CollaborationDAO {
           .done();
         })
         .catch((errors) => {
+          console.log(errors);
           reject(errors);
         });
     });
   }
 
   del(projectId) {
+    console.log('boom');
     return new Promise((resolve, reject) => {
       var del = require('del');
       var targetId = this.targetId;
@@ -87,9 +90,12 @@ class CollaborationDAO {
       var userId = this.user.id;
       var role = this.user.role;
 
+      console.log(targetId);
+
       db
       .let('project', (s) => {
         s
+        .select()
         .getProject()
         .from('Project')
         .where({
@@ -121,7 +127,7 @@ class CollaborationDAO {
       .one()
       .then((project) => {
         resolve({
-          deletedFulfillmentId: targetId,
+          deletedCollaboratorId: targetId,
           project
         });
       })

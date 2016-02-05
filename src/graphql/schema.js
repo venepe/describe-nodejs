@@ -130,6 +130,7 @@ let userType = new GraphQLObjectType({
       resolve: (user, args, context) => {
         return new Promise((resolve, reject) => {
           dao(context.rootValue.user).Project(user.id).getEdgeCollaborations(args).then((result) => {
+            console.log(result);
             resolve(connectionFromArraySlice(result.payload, args, result.meta));
           })
           .catch((e) => {
@@ -777,7 +778,7 @@ var deleteCollaborator = mutationWithClientMutationId({
   mutateAndGetPayload: ({id, projectId}, context) => {
     var localId = fromGlobalId(id).id;
     var localProjectId = fromGlobalId(projectId).id;
-    return dao(context.rootValue.user).Collaborator(localId).del(localProjectId);
+    return dao(context.rootValue.user).Collaboration(localId).del(localProjectId);
   }
 });
 

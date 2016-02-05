@@ -153,11 +153,12 @@ class SMTIValidator {
   isCollaborator() {
     return new Promise((resolve, reject) => {
       let obj = this.obj;
-      let isValid = require('./schema/collaborator.js');
+      let isValid = require('./schema/collaboration.js');
 
       isValid(obj, (errorCount, errors) => {
         if (errorCount === 0) {
-          resolve(this.obj);
+          obj.email = validator.normalizeEmail(obj.email);
+          resolve(obj);
         } else {
           reject(errors);
         }

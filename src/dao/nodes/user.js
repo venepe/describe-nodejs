@@ -401,7 +401,7 @@ class UserDAO {
 
       db
       .getUser()
-      .outCollaboratesOnFromNode(id)
+      .inCollaboratesOnFromNode(id)
       .skip(pageObject.skip)
       .limit(pageObject.limit)
       .order(pageObject.orderBy)
