@@ -65,7 +65,7 @@ class FulfillmentDAO {
             s
             .create('vertex', 'File')
             .set(object)
-            .set({_allow: [role]})
+            .set('_allow = [$testCase._allow]')
           })
           .let('creates', (s) => {
             s

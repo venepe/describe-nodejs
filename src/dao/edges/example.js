@@ -53,7 +53,7 @@ class ExampleDAO {
             s
             .create('vertex', 'File')
             .set(object)
-            .set({_allow: [role]})
+            .set('_allow = $target._allow')
           })
           .let('creates', (s) => {
             s

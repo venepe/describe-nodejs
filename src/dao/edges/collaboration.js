@@ -57,6 +57,22 @@ class CollaborationDAO {
             .to('$project')
             .set({_allow: [role]})
           })
+          .let('projectDescendants', (s) => {
+            s
+            .select('expand(outE(\'Requires\').inV(\'TestCase\').inE(\'Fulfills\',\'Exemplifies\').inV(\'File\'))')
+            .from('Project')
+            .where({
+              id: relationalId
+            })
+          })
+          .let('updateProjectDescendants', (s) => {
+            s
+            .update('$projectDescendants ADD _allow = $collaborator.id')
+          })
+          .let('updateCollaborateson', (s) => {
+            s
+            .update('$collaborateson ADD _allow = $collaborator.id')
+          })
           .commit()
           .return('$collaborator')
           .transform((record) => {

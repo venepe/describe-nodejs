@@ -154,7 +154,7 @@ class TestCaseDAO {
             s
             .create('vertex', 'TestCase')
             .set(object)
-            .set({_allow: [role]})
+            .set('_allow = $project._allow')
           })
           .let('creates', (s) => {
             s
