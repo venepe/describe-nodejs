@@ -782,6 +782,32 @@ var deleteCollaborator = mutationWithClientMutationId({
   }
 });
 
+var deleteCollaboration = mutationWithClientMutationId({
+  name: 'DeleteCollaboration',
+  inputFields: {
+    id: {
+      type: new GraphQLNonNull(GraphQLID)
+    }
+  },
+  outputFields: {
+    deletedCollaborationId: {
+      type: GraphQLID,
+      resolve: ({id}) => id,
+    },
+    me: {
+      type: userType,
+      resolve: () => {},
+    }
+  },
+  mutateAndGetPayload: ({id}, context) => {
+    var localId = context.rootValue.user.id;
+    var localProjectId = fromGlobalId(id).id;
+    return dao(context.rootValue.user).Collaboration(localId).del(localProjectId).then(function (data) {
+      return {id};
+    });
+  }
+});
+
 var schema = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: 'RootQueryType',
@@ -817,6 +843,7 @@ var schema = new GraphQLSchema({
       introduceCoverImage: introduceCoverImage,
       deleteCollaborator: deleteCollaborator,
       introduceCollaborator: introduceCollaborator,
+      deleteCollaboration: deleteCollaboration,
     }
   })
 });

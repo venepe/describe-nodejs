@@ -57,7 +57,15 @@ class CollaborationDAO {
             .to('$project')
             .set({_allow: [role]})
           })
-          .let('projectDescendants', (s) => {
+          .let('testCases', (s) => {
+            s
+            .select('expand(outE(\'Requires\').inV(\'TestCase\'))')
+            .from('Project')
+            .where({
+              id: relationalId
+            })
+          })
+          .let('files', (s) => {
             s
             .select('expand(outE(\'Requires\').inV(\'TestCase\').inE(\'Fulfills\',\'Exemplifies\').inV(\'File\'))')
             .from('Project')
@@ -65,13 +73,13 @@ class CollaborationDAO {
               id: relationalId
             })
           })
-          .let('updateProjectDescendants', (s) => {
+          .let('updateTestCases', (s) => {
             s
-            .update('$projectDescendants ADD _allow = $collaborator.id')
+            .update('$testCases ADD _allow = $collaborator.id')
           })
-          .let('updateCollaborateson', (s) => {
+          .let('updateFiles', (s) => {
             s
-            .update('$collaborateson ADD _allow = $collaborator.id')
+            .update('$files ADD _allow = $collaborator.id')
           })
           .commit()
           .return('$collaborator')

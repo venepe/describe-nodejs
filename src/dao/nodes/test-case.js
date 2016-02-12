@@ -136,7 +136,7 @@ class TestCaseDAO {
               id: relationalId
             })
             .where(
-              '_allow CONTAINS "' + role + '"'
+              '_allow CONTAINS "' + role + '%"'
             )
           })
           .let('user', (s) => {
@@ -147,7 +147,7 @@ class TestCaseDAO {
               id: userId
             })
             .where(
-              '_allow CONTAINS "' + role + '"'
+              '_allow CONTAINS "' + role + '%"'
             )
           })
           .let('testCase', (s) => {

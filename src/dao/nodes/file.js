@@ -179,36 +179,6 @@ class FileDAO {
       .done();
     });
   }
-
-  del() {
-    return new Promise((resolve, reject) => {
-      let del = require('del');
-      let targetId = this.targetId;
-      let db = this.db;
-      let user = this.user;
-      let userId = this.user.id;
-      let role = this.user.role;
-
-      db
-      .delete('VERTEX', _class)
-      .where({
-        id: targetId
-      })
-      .where(
-        '_allow CONTAINS "' + role + '"'
-      )
-      .one()
-      .then(() => {
-        resolve({id: targetId});
-      })
-      .catch((e) => {
-        console.log(e);
-        reject();
-
-      })
-      .done();
-    });
-  }
 }
 
 export default FileDAO;
