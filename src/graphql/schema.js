@@ -78,6 +78,10 @@ let userType = new GraphQLObjectType({
       type: GraphQLString,
       description: 'The handle of the user.',
     },
+    username: {
+      type: GraphQLString,
+      description: 'The handle of the user.',
+    },
     fullName: {
       type: GraphQLString,
       description: 'The full name of the user.',
