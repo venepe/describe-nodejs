@@ -69,7 +69,7 @@ class FulfillmentDAO {
             s
             .create('vertex', 'File')
             .set(object)
-            .set('_allow = [$testCase._allow]')
+            .set('_allow = $testCase._allow[0]')
           })
           .let('creates', (s) => {
             s

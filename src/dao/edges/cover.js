@@ -55,7 +55,7 @@ class CoverDAO {
             s
             .create('vertex', 'File')
             .set(object)
-            .set('_allow = $target._allow')
+            .set('_allow = $target._allow[0]')
           })
           .let('creates', (s) => {
             s
