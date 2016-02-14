@@ -23,22 +23,22 @@ class UserAuthenticateDAO {
           })
           .limit(1)
           .one()
-          .then((record) => {
+          .then((user) => {
             let password = object.password;
-            let hash = record.password;
+            let hash = user.password;
             utilities.SMTICrypt.compare(password, hash)
               .then(() => {
-                let email = record.email;
-                let uuid = record.id;
-                let graphQLID = utilities.Base64.base64('User:' + uuid);
+                let email = user.email;
+                let uuid = user.id;
+                let role = user.role;
+                let id = utilities.Base64.base64('User:' + uuid);
                 let payload = {
-                  email: email,
-                  id: graphQLID,
-                  role: uuid
+                  email,
+                  id,
+                  role
                 };
                 let authenticate = utilities.AuthToken(payload);
                 authenticate.email = email;
-                console.log(authenticate);
                 resolve(authenticate);
               })
               .catch((e) => {

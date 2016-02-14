@@ -3,6 +3,7 @@
 const _class = 'Project';
 const { SMTIValidator } = require('../validator');
 const utilities = require('../../utilities');
+import { roles, permissions, regExRoles } from '../permissions';
 
 import {
   Project
@@ -114,6 +115,8 @@ class ProjectDAO {
       let user = this.user;
       let userId = this.user.id;
       let role = this.user.role;
+      let _allow = {};
+      _allow[role] = roles.owner;
 
       let validator = new SMTIValidator(object);
 
@@ -129,14 +132,14 @@ class ProjectDAO {
               id: relationalId
             })
             .where(
-              '_allow CONTAINS "' + role + '"'
+              `_allow["${role}"] = ${roles.owner}`
             )
           })
           .let('project', (s) => {
             s
             .create('vertex', 'Project')
             .set(object)
-            .set({_allow: [role]})
+            .set({ _allow })
           })
           .let('creates', (s) => {
             s
@@ -190,7 +193,7 @@ class ProjectDAO {
               id: targetId
             })
             .where(
-              '_allow CONTAINS "' + role + '"'
+              `_allow["${role}"].asString() MATCHES "${regExRoles.updateNode}"`
             )
           })
           .let('update', (s) => {
@@ -238,7 +241,7 @@ class ProjectDAO {
         id: targetId
       })
       .where(
-        '_allow CONTAINS "' + role + '"'
+        `_allow["${role}"].asString() MATCHES "${regExRoles.deleteNode}"`
       )
       .one()
       .then(() => {

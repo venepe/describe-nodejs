@@ -2,6 +2,7 @@
 
 const { SMTIValidator } = require('../validator');
 const utilities = require('../../utilities');
+import { roles, permissions, regExRoles } from '../permissions';
 
 import {
   Project
@@ -20,6 +21,8 @@ class CollaborationDAO {
       var user = this.user;
       var userId = this.user.id;
       var role = this.user.role;
+      let _allow = {};
+      _allow[role] = permissions.DELETE_NODE;
 
       let validator = new SMTIValidator(object);
 
@@ -27,75 +30,107 @@ class CollaborationDAO {
         .isCollaborator()
         .then((object) => {
           let email = object.email;
+
           db
-          .let('collaborator', (s) => {
-            s
-            .select()
-            .from('User')
-            .where({
-              email
-            })
-            .where(
-              'not ( id = "' + userId + '")'
-            )
+          .select('id, role')
+          .from('User')
+          .where({
+            email
           })
-          .let('project', (s) => {
-            s
-            .select()
-            .from('Project')
-            .where({
-              id: relationalId
-            })
-            .where(
-              '_allow CONTAINS "' + role + '"'
-            )
-          })
-          .let('collaborateson', (s) => {
-            s
-            .create('edge', 'CollaboratesOn')
-            .from('$collaborator')
-            .to('$project')
-            .set({_allow: [role]})
-          })
-          .let('testCases', (s) => {
-            s
-            .select('expand(outE(\'Requires\').inV(\'TestCase\'))')
-            .from('Project')
-            .where({
-              id: relationalId
-            })
-          })
-          .let('files', (s) => {
-            s
-            .select('expand(outE(\'Requires\').inV(\'TestCase\').inE(\'Fulfills\',\'Exemplifies\').inV(\'File\'))')
-            .from('Project')
-            .where({
-              id: relationalId
-            })
-          })
-          .let('updateTestCases', (s) => {
-            s
-            .update('$testCases ADD _allow = $collaborator.id')
-          })
-          .let('updateFiles', (s) => {
-            s
-            .update('$files ADD _allow = $collaborator.id')
-          })
-          .commit()
-          .return('$collaborator')
-          .transform((record) => {
-            return utilities.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
-          })
+          .where(
+            `not ( id = "${userId}" )`
+          )
+          .limit(1)
           .one()
           .then((record) => {
-            console.log(record);
-            resolve(record);
+            let collaboratorId = record.id
+            let collaboratorRole = record.role
+
+            db
+            .let('collaborator', (s) => {
+              s
+              .select()
+              .from('User')
+              .where({
+                email
+              })
+              .where(
+                `not ( id = "${userId}" )`
+              )
+            })
+            .let('project', (s) => {
+              s
+              .select()
+              .from('Project')
+              .where({
+                id: relationalId
+              })
+              .where(
+                `_allow["${role}"] = ${roles.owner}`
+              )
+            })
+            .let('collaborateson', (s) => {
+              s
+              .create('edge', 'CollaboratesOn')
+              .from('$collaborator')
+              .to('$project')
+              .set({_allow})
+            })
+            .let('testCases', (s) => {
+              s
+              .select('expand(outE(\'Requires\').inV(\'TestCase\'))')
+              .from('Project')
+              .where({
+                id: relationalId
+              })
+            })
+            .let('files', (s) => {
+              s
+              .select('expand(outE(\'Requires\').inV(\'TestCase\').inE(\'Fulfills\',\'Exemplifies\').inV(\'File\'))')
+              .from('Project')
+              .where({
+                id: relationalId
+              })
+            })
+            .let('updateTestCases', (s) => {
+              s
+              .update(`$testCases PUT _allow = "${collaboratorRole}", ${roles.owner}`)
+            })
+            .let('updateFiles', (s) => {
+              s
+              .update(`$files PUT _allow = "${collaboratorRole}", ${roles.owner}`)
+            })
+            .let('updateProject', (s) => {
+              s
+              .update(`$project PUT _allow = "${collaboratorRole}", ${permissions.ADD_EDGE}`)
+            })
+            .let('updateCollaboratesOn', (s) => {
+              s
+              .update(`$collaborateson PUT _allow = "${collaboratorRole}", ${permissions.DELETE_NODE}`)
+            })
+            .commit()
+            .return('$collaborator')
+            .transform((record) => {
+              return utilities.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
+            })
+            .one()
+            .then((record) => {
+              console.log(record);
+              resolve(record);
+            })
+            .catch((e) => {
+              console.log(`orientdb error: ${e}`);
+              reject();
+            })
+            .done();
+
           })
           .catch((e) => {
             console.log(`orientdb error: ${e}`);
             reject();
           })
           .done();
+
         })
         .catch((errors) => {
           console.log(errors);
@@ -113,8 +148,7 @@ class CollaborationDAO {
       var user = this.user;
       var userId = this.user.id;
       var role = this.user.role;
-
-      console.log(targetId);
+      let collaboratorRole = targetId.replace(/[-]/g, '_');
 
       db
       .let('project', (s) => {
@@ -140,8 +174,36 @@ class CollaborationDAO {
         .from('$collaborator')
         .to('$project')
         .where(
-          '_allow CONTAINS "' + role + '"'
+          `_allow["${role}"].asString() MATCHES "${regExRoles.deleteNode}"`
         )
+      })
+      .let('testCases', (s) => {
+        s
+        .select('expand(outE(\'Requires\').inV(\'TestCase\'))')
+        .from('Project')
+        .where({
+          id: projectId
+        })
+      })
+      .let('files', (s) => {
+        s
+        .select('expand(outE(\'Requires\').inV(\'TestCase\').inE(\'Fulfills\',\'Exemplifies\').inV(\'File\'))')
+        .from('Project')
+        .where({
+          id: projectId
+        })
+      })
+      .let('updateTestCases', (s) => {
+        s
+        .update(`$testCases REMOVE _allow = "${collaboratorRole}"`)
+      })
+      .let('updateFiles', (s) => {
+        s
+        .update(`$files REMOVE _allow = "${collaboratorRole}"`)
+      })
+      .let('updateProject', (s) => {
+        s
+        .update(`$project REMOVE _allow = "${collaboratorRole}"`)
       })
       .commit()
       .return('$project')

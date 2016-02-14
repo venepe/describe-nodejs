@@ -3,6 +3,7 @@
 const _class = 'TestCase';
 const { SMTIValidator } = require('../validator');
 const utilities = require('../../utilities');
+import { roles, regExRoles } from '../permissions';
 
 import {
   TestCase
@@ -136,7 +137,7 @@ class TestCaseDAO {
               id: relationalId
             })
             .where(
-              '_allow CONTAINS "' + role + '%"'
+              `_allow["${role}"].asString() MATCHES "${regExRoles.addEdge}"`
             )
           })
           .let('user', (s) => {
@@ -147,14 +148,14 @@ class TestCaseDAO {
               id: userId
             })
             .where(
-              '_allow CONTAINS "' + role + '%"'
+              `_allow["${role}"] = ${roles.owner}`
             )
           })
           .let('testCase', (s) => {
             s
             .create('vertex', 'TestCase')
             .set(object)
-            .set('_allow = $project._allow')
+            .set('_allow = $project._allow[0]')
           })
           .let('creates', (s) => {
             s
@@ -190,6 +191,7 @@ class TestCaseDAO {
           .done();
         })
         .catch((errors) => {
+          console.log(errors);
           reject(errors);
         });
     });
@@ -217,7 +219,7 @@ class TestCaseDAO {
               id: targetId
             })
             .where(
-              '_allow CONTAINS "' + role + '"'
+              `_allow["${role}"].asString() MATCHES "${regExRoles.updateNode}"`
             )
           })
           .let('update', (s) => {
@@ -288,6 +290,9 @@ class TestCaseDAO {
         .where({
           id: targetId
         })
+        .where(
+          `_allow["${role}"].asString() MATCHES "${regExRoles.deleteNode}"`
+        )
       })
       .commit()
       .return(['$testCase', '$project'])

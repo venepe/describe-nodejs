@@ -3,6 +3,7 @@
 const _class = 'File';
 const { SMTIValidator } = require('../validator');
 const utilites = require('../../utilities');
+import { roles, regExRoles } from '../permissions';
 
 import {
   File
@@ -36,6 +37,9 @@ class FulfillmentDAO {
             .where({
               id: relationalId
             })
+            .where(
+              `_allow["${role}"].asString() MATCHES "${regExRoles.addEdge}"`
+            )
           })
           .let('project', (s) => {
             s
@@ -58,7 +62,7 @@ class FulfillmentDAO {
               id: userId
             })
             .where(
-              '_allow CONTAINS "' + role + '"'
+              `_allow["${role}"] = ${roles.owner}`
             )
           })
           .let('file', (s) => {
@@ -150,6 +154,9 @@ class FulfillmentDAO {
         .where({
           id: targetId
         })
+        .where(
+          `_allow["${role}"].asString() MATCHES "${regExRoles.deleteNode}"`
+        )
       })
       .commit()
       .return(['$testCase', '$project'])

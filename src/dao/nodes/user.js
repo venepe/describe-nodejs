@@ -3,6 +3,7 @@
 const _class = 'User';
 const { SMTIValidator } = require('../validator');
 const utilities = require('../../utilities');
+import { roles } from '../permissions';
 
 import {
   User
@@ -87,11 +88,15 @@ class UserDAO {
           });
         })
         .then((object) => {
+          let _allow = {};
+          let role = object.id.replace(/[-]/g, '_');
+          _allow[role] = roles.owner;
+          object.role = role;
 
           db
           .create('vertex', 'User')
           .set(object)
-          .set({_allow: [object.id]})
+          .set({ _allow })
           .transform((record) => {
             return utilities.FilteredObject(record, 'in_.*|out_.*|@.*|password|^_');
           })
@@ -100,11 +105,12 @@ class UserDAO {
             if(user) {
               let email = user.email;
               let uuid = user.id;
-              let graphQLID = utilities.Base64.base64('User:' + uuid);
+              let role = user.role;
+              let id = utilities.Base64.base64('User:' + uuid);
               let payload = {
-                email: email,
-                id: graphQLID,
-                role: uuid
+                email,
+                id,
+                role
               };
               let authenticate = utilities.AuthToken(payload);
 
@@ -150,7 +156,7 @@ class UserDAO {
               .set(object)
               .where({id: targetId})
               .where(
-                '_allow CONTAINS "' + role + '"'
+                `_allow["${role}"] = ${roles.owner}`
               )
             })
             .let('user', (s) => {
@@ -228,7 +234,7 @@ class UserDAO {
               id: targetId
             })
             .where(
-              '_allow CONTAINS "' + role + '"'
+              `_allow["${role}"] = ${roles.owner}`
             )
             .scalar()
             .then((results) => {
@@ -283,7 +289,7 @@ class UserDAO {
               id: targetId
             })
             .where(
-              '_allow CONTAINS "' + role + '"'
+              `_allow["${role}"] = ${roles.owner}`
             )
             .scalar()
             .then((results) => {
@@ -291,11 +297,12 @@ class UserDAO {
                 let user = utilities.FilteredObject(userRecord, 'in_.*|out_.*|@.*|password|^_');
                 let email = user.email;
                 let uuid = user.id;
-                let graphQLID = utilities.Base64.base64('User:' + uuid);
+                let role = user.role;
+                let id = utilities.Base64.base64('User:' + uuid);
                 let payload = {
-                  email: email,
-                  id: graphQLID,
-                  role: uuid
+                  email,
+                  id,
+                  role
                 };
                 let authenticate = utilities.AuthToken(payload);
 
@@ -341,11 +348,12 @@ class UserDAO {
         let user = utilities.FilteredObject(record, 'in_.*|out_.*|@.*|password|^_');
         let email = user.email;
         let uuid = user.id;
-        let graphQLID = utilities.Base64.base64('User:' + uuid);
+        let role = user.role;
+        let id = utilities.Base64.base64('User:' + uuid);
         let payload = {
-          email: email,
-          id: graphQLID,
-          role: uuid
+          email,
+          id,
+          role
         };
         let authenticate = utilities.AuthToken(payload);
 
@@ -373,7 +381,7 @@ class UserDAO {
         id: targetId
       })
       .where(
-        '_allow CONTAINS "' + role + '"'
+        `_allow["${role}"] = ${roles.owner}`
       )
       .one()
       .then((result) => {
