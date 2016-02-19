@@ -147,6 +147,12 @@ class ProjectDAO {
             .from('$user')
             .to('$project')
           })
+          .let('leads', (s) => {
+            s
+            .create('edge', 'Leads')
+            .from('$user')
+            .to('$project')
+          })
           .commit()
           .return('$project')
           .transform((record) => {

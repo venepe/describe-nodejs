@@ -78,10 +78,6 @@ let userType = new GraphQLObjectType({
       type: GraphQLString,
       description: 'The handle of the user.',
     },
-    username: {
-      type: GraphQLString,
-      description: 'The handle of the user.',
-    },
     fullName: {
       type: GraphQLString,
       description: 'The full name of the user.',
@@ -204,6 +200,21 @@ let projectType = new GraphQLObjectType({
       resolve: (project, args, context) => {
         return new Promise((resolve, reject) => {
           dao(context.rootValue.user).User(project.id).getEdgeCollaborators(args).then((result) => {
+            resolve(connectionFromArraySlice(result.payload, args, result.meta));
+          })
+          .catch((e) => {
+            reject(e);
+          })
+        });
+      }
+    },
+    leaders: {
+      type: userConnection,
+      description: 'The leaders of the project.',
+      args: connectionArgs,
+      resolve: (project, args, context) => {
+        return new Promise((resolve, reject) => {
+          dao(context.rootValue.user).User(project.id).getEdgeLeaders(args).then((result) => {
             resolve(connectionFromArraySlice(result.payload, args, result.meta));
           })
           .catch((e) => {

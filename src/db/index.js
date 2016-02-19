@@ -151,6 +151,38 @@ OrientDB.Statement.prototype.inCreatesFromNode = function(id) {
   .where({'@class': this.db.SMTINode})
 }
 
+OrientDB.Statement.prototype.outLeadsFromNode = function(id) {
+  return this.from(function (s) {
+    s
+    .select('expand(out("Leads"))')
+    .from(function (s) {
+      s
+      .select()
+      .from('indexvalues:id')
+      .where({id: id})
+      .limit(1)
+    })
+    .order('createdAt DESC')
+  })
+  .where({'@class': this.db.SMTINode})
+}
+
+OrientDB.Statement.prototype.inLeadsFromNode = function(id) {
+  return this.from(function (s) {
+    s
+    .select('expand(in("Leads"))')
+    .from(function (s) {
+      s
+      .select()
+      .from('indexvalues:id')
+      .where({id: id})
+      .limit(1)
+    })
+    .order('createdAt DESC')
+  })
+  .where({'@class': this.db.SMTINode})
+}
+
 OrientDB.Statement.prototype.outExemplifiesFromNode = function(id) {
   return this.from(function (s) {
     s

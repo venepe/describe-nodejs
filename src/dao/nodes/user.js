@@ -27,7 +27,6 @@ class UserDAO {
       .where({id: id})
       .limit(1)
       .transform((record) => {
-        record.username = record.name;
         let user = new User ();
         return utilities.FilteredObject(record, '@.*|rid', user);
       })
@@ -405,12 +404,53 @@ class UserDAO {
 
     return new Promise((resolve, reject) => {
       let user = this.user;
+      let userId = this.user.id;
       let db = this.db;
       let id = this.targetId;
 
       db
       .getUser()
       .inCollaboratesOnFromNode(id)
+      .where(
+        `not ( id = "${userId}" )`
+      )
+      .skip(pageObject.skip)
+      .limit(pageObject.limit)
+      .order(pageObject.orderBy)
+      .transform((record) => {
+        return utilities.FilteredObject(record, '@.*|rid');
+      })
+      .all()
+      .then((payload) => {
+        let meta = utilities.GraphQLHelper.getMeta(pageObject, payload);
+        resolve({
+          payload,
+          meta
+        });
+      })
+      .catch((e) => {
+        reject();
+
+      })
+      .done();
+    });
+  }
+
+  getEdgeLeaders(args) {
+    let pageObject = utilities.Pagination.getOrientDBPageFromGraphQL(args);
+
+    return new Promise((resolve, reject) => {
+      let user = this.user;
+      let userId = this.user.id;
+      let db = this.db;
+      let id = this.targetId;
+
+      db
+      .getUser()
+      .inLeadsFromNode(id)
+      .where(
+        `not ( id = "${userId}" )`
+      )
       .skip(pageObject.skip)
       .limit(pageObject.limit)
       .order(pageObject.orderBy)
