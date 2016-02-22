@@ -564,7 +564,7 @@ var deleteTestCase = mutationWithClientMutationId({
     deletedTestCaseId: {
       type: GraphQLID,
       resolve: (payload) => {
-        return payload.deletedTestCaseId;
+        return toGlobalId('TestCase', payload.deletedTestCaseId);
       },
     },
     project: {
@@ -626,7 +626,7 @@ var deleteFulfillment = mutationWithClientMutationId({
     deletedFulfillmentId: {
       type: GraphQLID,
       resolve: (payload) => {
-        return payload.deletedFulfillmentId;
+        return toGlobalId('File', payload.deletedFulfillmentId);
       },
     },
     testCase: {
