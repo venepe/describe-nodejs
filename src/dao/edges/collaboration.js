@@ -115,7 +115,6 @@ class CollaborationDAO {
             })
             .one()
             .then((record) => {
-              console.log(record);
               resolve(record);
             })
             .catch((e) => {
@@ -140,7 +139,6 @@ class CollaborationDAO {
   }
 
   del(projectId) {
-    console.log('boom');
     return new Promise((resolve, reject) => {
       var del = require('del');
       var targetId = this.targetId;
