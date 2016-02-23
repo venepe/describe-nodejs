@@ -2,8 +2,9 @@
 
 const _class = 'File';
 const { SMTIValidator } = require('../validator');
-const utilites = require('../../utilities');
+const utilities = require('../../utilities');
 import { roles, regExRoles } from '../permissions';
+import { FileConfig } from '../../config';
 
 import {
   File
@@ -72,7 +73,7 @@ class CoverDAO {
           .commit()
           .return('$file')
           .transform((record) => {
-            return utilites.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
+            return utilities.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
           })
           .one()
           .then((record) => {
@@ -102,21 +103,65 @@ class CoverDAO {
       var role = this.user.role;
 
       db
-      .delete('VERTEX', _class)
-      .where({
-        id: targetId
+      .let('target', (s) => {
+        s
+        .select('*')
+        .from(function (s) {
+          s
+          .select('expand(outE(\'Covers\').inV(\'Project|User\'))')
+          .from('File')
+          .where({
+            id: targetId
+          })
+          .limit(1)
+        })
+        .limit(1)
       })
-      .where(
-        `_allow["${role}"].asString() MATCHES "${regExRoles.deleteNode}"`
-      )
+      .let('deletes', (s) => {
+        s
+        .delete('VERTEX', _class)
+        .where({
+          id: targetId
+        })
+        .where(
+          `_allow["${role}"].asString() MATCHES "${regExRoles.deleteNode}"`
+        )
+      })
+      .let('coverImages', (s) => {
+        s
+        .select('expand(inE(\'Covers\').outV(\'File\'))')
+        .from('$target')
+        .order('createdAt DESC')
+      })
+      .let('coverImage', (s) => {
+        s
+        .getFile()
+        .from('$coverImages')
+        .limit(1)
+      })
+      .commit()
+      .return('$coverImage')
       .one()
-      .then(() => {
-        resolve({id: targetId});
+      .then((result) => {
+        if (result) {
+          resolve({
+            deletedCoverImageId: targetId,
+            coverImageEdge: result
+          });
+        } else {
+          let defaultCoverFile = {
+            id: targetId,
+            uri: FileConfig.DefaultImageUrl + targetId
+          };
+          resolve({
+            deletedCoverImageId: targetId,
+            coverImageEdge: defaultCoverFile
+          });
+        }
       })
       .catch((e) => {
-        console.log(e);
+        console.log(`orientdb error: ${e}`);
         reject();
-
       })
       .done();
     });

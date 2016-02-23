@@ -719,7 +719,19 @@ var deleteCoverImage = mutationWithClientMutationId({
   outputFields: {
     deletedCoverImageId: {
       type: GraphQLID,
-      resolve: ({id}) => id,
+      resolve: (payload) => {
+        return toGlobalId('File', payload.deletedCoverImageId);
+      },
+    },
+    coverImageEdge: {
+      type: GraphQLCoverImageEdge,
+      resolve: (payload) => {
+        let coverImage = payload.coverImageEdge;
+        return {
+          cursor: cursorForObjectInConnection([coverImage], coverImage),
+          node: coverImage,
+        };
+      }
     },
     target: {
       type: nodeInterface,
@@ -728,9 +740,7 @@ var deleteCoverImage = mutationWithClientMutationId({
   },
   mutateAndGetPayload: ({id}, context) => {
     var localId = fromGlobalId(id).id;
-    return dao(context.rootValue.user).Cover(localId).del().then(function (data) {
-      return {id};
-    });
+    return dao(context.rootValue.user).Cover(localId).del();
   }
 });
 
