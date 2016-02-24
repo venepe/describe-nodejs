@@ -498,7 +498,7 @@ var deleteProject = mutationWithClientMutationId({
 var introduceTestCase = mutationWithClientMutationId({
   name: 'IntroduceTestCase',
   inputFields: {
-    targetId: {
+    projectId: {
       type: new GraphQLNonNull(GraphQLID)
     },
     it: {
@@ -524,8 +524,8 @@ var introduceTestCase = mutationWithClientMutationId({
       },
     },
   },
-  mutateAndGetPayload: ({targetId, it}, context) => {
-    var localId = fromGlobalId(targetId).id;
+  mutateAndGetPayload: ({projectId, it}, context) => {
+    var localId = fromGlobalId(projectId).id;
     return dao(context.rootValue.user).TestCase(localId).create({it});
   }
 });
