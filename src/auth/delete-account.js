@@ -1,9 +1,9 @@
 'use strict';
 
-const dao = require('../dao');
+import DAO from '../dao';
 
 function deleteAccount(user, userId) {
-  return dao(user).User(userId).del();
+  return new DAO(user).User(userId).del();
 }
 
 module.exports = deleteAccount;

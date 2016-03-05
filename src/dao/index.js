@@ -2,91 +2,93 @@
 
 const OrientDB = require('../db');
 import { OrientDbConfig, SumsetiDbConfig } from '../config';
+
+import File from './nodes/file.js';
+import Collaboration from './edges/collaboration.js';
+import Cover from './edges/cover.js';
+import Example from './edges/example.js';
+import Fulfillment from './edges/fulfillment.js';
+import Project from './nodes/project.js';
+import Search from './nodes/search.js';
+import TestCase from './nodes/test-case.js';
+import User from './nodes/user.js';
+import UserAuthenticate from './nodes/user-authenticate.js';
 const server = OrientDB(OrientDbConfig);
 
-function DAO(user) {
-  if (!(this instanceof DAO)) return new DAO(user);
-  this.user = user || {};
-  this.db = server.use(SumsetiDbConfig);
-}
+class DAO {
+  constructor(user = {}) {
+    this.user = user;
+    this.db = server.use(SumsetiDbConfig);
+  }
 
-DAO.prototype.File = function(targetId, params) {
-  let File = require('./nodes/file.js');
-  let fl = new File(targetId, params);
-  fl.db = this.db;
-  fl.user = this.user;
-  return fl;
-}
+  File(targetId, params) {
+    const fl = new File(targetId, params);
+    fl.db = this.db;
+    fl.user = this.user;
+    return fl;
+  }
 
-DAO.prototype.Collaboration = function(targetId, params) {
-  let Collaboration = require('./edges/collaboration.js');
-  let col = new Collaboration(targetId, params);
-  col.db = this.db;
-  col.user = this.user;
-  return col;
-}
+  Collaboration(targetId, params) {
+    const col = new Collaboration(targetId, params);
+    col.db = this.db;
+    col.user = this.user;
+    return col;
+  }
 
-DAO.prototype.Cover = function(targetId, params) {
-  let Cover = require('./edges/cover.js');
-  let cv = new Cover(targetId, params);
-  cv.db = this.db;
-  cv.user = this.user;
-  return cv;
-}
+  Cover(targetId, params) {
+    const cv = new Cover(targetId, params);
+    cv.db = this.db;
+    cv.user = this.user;
+    return cv;
+  }
 
-DAO.prototype.Example = function(targetId, params) {
-  let Example = require('./edges/example.js');
-  let ex = new Example(targetId, params);
-  ex.db = this.db;
-  ex.user = this.user;
-  return ex;
-}
+  Example(targetId, params) {
+    const ex = new Example(targetId, params);
+    ex.db = this.db;
+    ex.user = this.user;
+    return ex;
+  }
 
-DAO.prototype.Fulfillment = function(targetId, params) {
-  let Fulfillment = require('./edges/fulfillment.js');
-  let ful = new Fulfillment(targetId, params);
-  ful.db = this.db;
-  ful.user = this.user;
-  return ful;
-}
+  Fulfillment(targetId, params) {
+    const ful = new Fulfillment(targetId, params);
+    ful.db = this.db;
+    ful.user = this.user;
+    return ful;
+  }
 
-DAO.prototype.Project = function(targetId, params) {
-  let Project = require('./nodes/project.js');
-  let pjt = new Project(targetId, params);
-  pjt.db = this.db;
-  pjt.user = this.user;
-  return pjt;
-}
+  Project(targetId, params) {
+    const pjt = new Project(targetId, params);
+    pjt.db = this.db;
+    pjt.user = this.user;
+    return pjt;
+  }
 
-DAO.prototype.Search = function(query, params) {
-  let Search = require('./nodes/search.js');
-  let srch = new Search(query, params);
-  srch.db = this.db;
-  srch.user = this.user;
-  return srch;
-}
+  Search(query, params) {
+    const srch = new Search(query, params);
+    srch.db = this.db;
+    srch.user = this.user;
+    return srch;
+  }
 
-DAO.prototype.TestCase = function(targetId, params) {
-  let TestCase = require('./nodes/test-case.js');
-  let tc = new TestCase(targetId, params);
-  tc.db = this.db;
-  tc.user = this.user;
-  return tc;
-}
+  TestCase(targetId, params) {
+    const tc = new TestCase(targetId, params);
+    tc.db = this.db;
+    tc.user = this.user;
+    return tc;
+  }
 
-DAO.prototype.UserAuthenticate = function() {
-  let UserAuthenticate = require('./nodes/user-authenticate.js')
-  let userAuth = new UserAuthenticate();
-  userAuth.db = this.db;
-  return userAuth;
-}
+  UserAuthenticate() {
+    const userAuth = new UserAuthenticate();
+    userAuth.db = this.db;
+    return userAuth;
+  }
 
-DAO.prototype.User = function(targetId, params) {
-  let User = require('./nodes/user.js')
-  let user = new User(targetId, params);
-  user.db = this.db;
-  user.user = this.user;;
-  return user;
-}
+  User(targetId, params) {
+    const user = new User(targetId, params);
+    user.db = this.db;
+    user.user = this.user;;
+    return user;
+  }
 
-module.exports = DAO;
+}
+export default DAO;

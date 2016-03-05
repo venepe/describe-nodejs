@@ -1,9 +1,9 @@
 'use strict';
 
-const dao = require('../dao');
+import DAO from '../dao';
 
 function signUp(user) {
-  return dao().User().create(user)
+  return new DAO().User().create(user)
 }
 
 module.exports = signUp;

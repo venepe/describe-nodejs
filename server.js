@@ -1,5 +1,11 @@
-// only ES5 is allowed in this file
-require("babel/register");
+require("babel-register")({
+  "presets": [
+    "es2015",
+    "stage-0"
+  ],
+  "plugins": ["transform-async-to-generator"]
+});
+require("babel-polyfill");
 
 // other babel configuration, if necessary
 

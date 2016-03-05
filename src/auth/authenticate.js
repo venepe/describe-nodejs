@@ -1,9 +1,9 @@
 'use strict';
 
-const dao = require('../dao');
+import DAO from '../dao';
 
 function authenticate(authenticate) {
-  return dao().UserAuthenticate().authenticate(authenticate)
+  return new DAO().UserAuthenticate().authenticate(authenticate)
 }
 
 module.exports = authenticate;

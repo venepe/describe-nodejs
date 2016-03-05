@@ -27,7 +27,7 @@ class UserDAO {
       .where({id: id})
       .limit(1)
       .transform((record) => {
-        let user = new User ();
+        let user = new User();
         return utilities.FilteredObject(record, '@.*|rid', user);
       })
       .one()

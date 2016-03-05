@@ -1,9 +1,9 @@
 'use strict';
 
-const dao = require('../dao');
+import DAO from '../dao';
 
 function forgotPassword(payload) {
-  return dao().User().forgotPassword(payload)
+  return new DAO().User().forgotPassword(payload)
 }
 
 module.exports = forgotPassword;

@@ -1,9 +1,9 @@
 'use strict';
 
-const dao = require('../dao');
+import DAO from '../dao';
 
 function passwordReset(user, payload) {
-  return dao(user).User(user.id).resetPassword(payload)
+  return new DAO(user).User(user.id).resetPassword(payload)
 }
 
 module.exports = passwordReset;

@@ -1,6 +1,6 @@
 'use strict';
 
-const dao = require('../dao');
+import DAO from '../dao';
 
 import {
   graphql,
@@ -25,6 +25,7 @@ import {
   fromGlobalId,
   globalIdField,
   mutationWithClientMutationId,
+  subscriptionWithClientSubscriptionId,
   nodeDefinitions,
   toGlobalId,
 } from 'graphql-relay';
@@ -42,13 +43,13 @@ var {nodeInterface, nodeField} = nodeDefinitions(
     var user = context.rootValue.user;
 
     if (type === 'Project') {
-      return dao(user).Project(id).get();
+      return new DAO(user).Project(id).get();
     } else if (type === 'TestCase') {
-      return dao(user).TestCase(id).get();
+      return new DAO(user).TestCase(id).get();
     } else if (type === 'File') {
-      return dao(user).File(id).get();
+      return new DAO(user).File(id).get();
     } else if (type === 'User') {
-      return dao(user).User(id).get();
+      return new DAO(user).User(id).get();
     } else {
       return null;
     }
@@ -103,7 +104,7 @@ let userType = new GraphQLObjectType({
       description: 'The cover images of the user.',
       args: connectionArgs,
       resolve: (user, args, context) => connectionFromPromisedArray(
-        dao(context.rootValue.user).File(user.id).getEdgeCovered(args)
+        new DAO(context.rootValue.user).File(user.id).getEdgeCovered(args)
         ,
         args
       ),
@@ -114,7 +115,7 @@ let userType = new GraphQLObjectType({
       args: connectionArgs,
       resolve: (user, args, context) => {
         return new Promise((resolve, reject) => {
-          dao(context.rootValue.user).Project(user.id).getEdgeCreated(args).then((result) => {
+          new DAO(context.rootValue.user).Project(user.id).getEdgeCreated(args).then((result) => {
             resolve(connectionFromArraySlice(result.payload, args, result.meta));
           })
           .catch((e) => {
@@ -129,8 +130,7 @@ let userType = new GraphQLObjectType({
       args: connectionArgs,
       resolve: (user, args, context) => {
         return new Promise((resolve, reject) => {
-          dao(context.rootValue.user).Project(user.id).getEdgeCollaborations(args).then((result) => {
-            console.log(result);
+          new DAO(context.rootValue.user).Project(user.id).getEdgeCollaborations(args).then((result) => {
             resolve(connectionFromArraySlice(result.payload, args, result.meta));
           })
           .catch((e) => {
@@ -174,7 +174,7 @@ let projectType = new GraphQLObjectType({
       args: connectionArgs,
       resolve: (project, args, context) => {
         return new Promise((resolve, reject) => {
-          dao(context.rootValue.user).TestCase(project.id).getEdgeRequired(args).then((result) => {
+          new DAO(context.rootValue.user).TestCase(project.id).getEdgeRequired(args).then((result) => {
             resolve(connectionFromArraySlice(result.payload, args, result.meta));
           })
           .catch((e) => {
@@ -188,7 +188,7 @@ let projectType = new GraphQLObjectType({
       description: 'The cover images of the project.',
       args: connectionArgs,
       resolve: (project, args, context) => connectionFromPromisedArray(
-        dao(context.rootValue.user).File(project.id).getEdgeCovered(args)
+        new DAO(context.rootValue.user).File(project.id).getEdgeCovered(args)
         ,
         args
       ),
@@ -199,7 +199,7 @@ let projectType = new GraphQLObjectType({
       args: connectionArgs,
       resolve: (project, args, context) => {
         return new Promise((resolve, reject) => {
-          dao(context.rootValue.user).User(project.id).getEdgeCollaborators(args).then((result) => {
+          new DAO(context.rootValue.user).User(project.id).getEdgeCollaborators(args).then((result) => {
             resolve(connectionFromArraySlice(result.payload, args, result.meta));
           })
           .catch((e) => {
@@ -214,7 +214,7 @@ let projectType = new GraphQLObjectType({
       args: connectionArgs,
       resolve: (project, args, context) => {
         return new Promise((resolve, reject) => {
-          dao(context.rootValue.user).User(project.id).getEdgeLeaders(args).then((result) => {
+          new DAO(context.rootValue.user).User(project.id).getEdgeLeaders(args).then((result) => {
             resolve(connectionFromArraySlice(result.payload, args, result.meta));
           })
           .catch((e) => {
@@ -254,7 +254,7 @@ let testCaseType = new GraphQLObjectType({
       args: connectionArgs,
       resolve: (testCase, args, context) => {
         return new Promise((resolve, reject) => {
-          dao(context.rootValue.user).File(testCase.id).getEdgeExemplifies(args).then((result) => {
+          new DAO(context.rootValue.user).File(testCase.id).getEdgeExemplifies(args).then((result) => {
             resolve(connectionFromArraySlice(result.payload, args, result.meta));
           })
           .catch((e) => {
@@ -269,7 +269,7 @@ let testCaseType = new GraphQLObjectType({
       args: connectionArgs,
       resolve: (testCase, args, context) => {
         return new Promise((resolve, reject) => {
-          dao(context.rootValue.user).File(testCase.id).inEdgeFulfilled(args).then((result) => {
+          new DAO(context.rootValue.user).File(testCase.id).inEdgeFulfilled(args).then((result) => {
             resolve(connectionFromArraySlice(result.payload, args, result.meta));
           })
           .catch((e) => {
@@ -349,7 +349,7 @@ var updateUser = mutationWithClientMutationId({
   },
   mutateAndGetPayload: ({id, name, fullName, summary}, context) => {
     var localId = fromGlobalId(id).id;
-    return dao(context.rootValue.user).User(localId).update({name, fullName, summary});
+    return new DAO(context.rootValue.user).User(localId).update({name, fullName, summary});
   }
 });
 
@@ -368,7 +368,7 @@ var deleteUser = mutationWithClientMutationId({
   },
   mutateAndGetPayload: ({id}, context) => {
     var localId = fromGlobalId(id).id;
-    return dao(context.rootValue.user).User(localId).del().then(function (data) {
+    return new DAO(context.rootValue.user).User(localId).del().then(function (data) {
       return {id};
     });
   }
@@ -402,7 +402,7 @@ var introduceProject = mutationWithClientMutationId({
   },
   mutateAndGetPayload: ({targetId, title}, context) => {
     var localId = fromGlobalId(targetId).id;
-    return dao(context.rootValue.user).Project(localId).create({title});
+    return new DAO(context.rootValue.user).Project(localId).create({title});
   }
 });
 
@@ -443,7 +443,7 @@ var introduceFulfillment = mutationWithClientMutationId({
   },
   mutateAndGetPayload: ({testCaseId, uri}, context) => {
     var localId = fromGlobalId(testCaseId).id;
-    return dao(context.rootValue.user).Fulfillment(localId).create({uri});
+    return new DAO(context.rootValue.user).Fulfillment(localId).create({uri});
   }
 });
 
@@ -466,7 +466,7 @@ var updateProject = mutationWithClientMutationId({
   },
   mutateAndGetPayload: ({id, title}, context) => {
     var localId = fromGlobalId(id).id;
-    return dao(context.rootValue.user).Project(localId).update({title});
+    return new DAO(context.rootValue.user).Project(localId).update({title});
   }
 });
 
@@ -489,7 +489,7 @@ var deleteProject = mutationWithClientMutationId({
   },
   mutateAndGetPayload: ({id}, context) => {
     var localId = fromGlobalId(id).id;
-    return dao(context.rootValue.user).Project(localId).del().then(function (data) {
+    return new DAO(context.rootValue.user).Project(localId).del().then(function (data) {
       return {id};
     });
   }
@@ -526,7 +526,7 @@ var introduceTestCase = mutationWithClientMutationId({
   },
   mutateAndGetPayload: ({projectId, it}, context) => {
     var localId = fromGlobalId(projectId).id;
-    return dao(context.rootValue.user).TestCase(localId).create({it});
+    return new DAO(context.rootValue.user).TestCase(localId).create({it});
   }
 });
 
@@ -549,7 +549,7 @@ var updateTestCase = mutationWithClientMutationId({
   },
   mutateAndGetPayload: ({id, it}, context) => {
     var localId = fromGlobalId(id).id;
-    return dao(context.rootValue.user).TestCase(localId).update({it});
+    return new DAO(context.rootValue.user).TestCase(localId).update({it});
   }
 });
 
@@ -576,7 +576,7 @@ var deleteTestCase = mutationWithClientMutationId({
   },
   mutateAndGetPayload: ({id}, context) => {
     var localId = fromGlobalId(id).id;
-    return dao(context.rootValue.user).TestCase(localId).del();
+    return new DAO(context.rootValue.user).TestCase(localId).del();
   }
 });
 
@@ -608,7 +608,7 @@ var introduceExample = mutationWithClientMutationId({
   },
   mutateAndGetPayload: ({targetId, uri}, context) => {
     var localId = fromGlobalId(targetId).id;
-    return dao(context.rootValue.user).Example(localId).create({uri});
+    return new DAO(context.rootValue.user).Example(localId).create({uri});
   }
 });
 
@@ -645,7 +645,7 @@ var deleteFulfillment = mutationWithClientMutationId({
   mutateAndGetPayload: ({id, testCaseId}, context) => {
     var localId = fromGlobalId(id).id;
     var localTestCaseId = fromGlobalId(testCaseId).id;
-    return dao(context.rootValue.user).Fulfillment(localId).del(localTestCaseId);
+    return new DAO(context.rootValue.user).Fulfillment(localId).del(localTestCaseId);
   }
 });
 
@@ -671,7 +671,7 @@ var deleteExample = mutationWithClientMutationId({
   },
   mutateAndGetPayload: ({id}, context) => {
     var localId = fromGlobalId(id).id;
-    return dao(context.rootValue.user).Example(localId).del().then(function (data) {
+    return new DAO(context.rootValue.user).Example(localId).del().then(function (data) {
       return {id};
     });
   }
@@ -705,7 +705,7 @@ var introduceCoverImage = mutationWithClientMutationId({
   },
   mutateAndGetPayload: ({targetId, uri}, context) => {
     var localId = fromGlobalId(targetId).id;
-    return dao(context.rootValue.user).Cover(localId).create({uri});
+    return new DAO(context.rootValue.user).Cover(localId).create({uri});
   }
 });
 
@@ -740,7 +740,7 @@ var deleteCoverImage = mutationWithClientMutationId({
   },
   mutateAndGetPayload: ({id}, context) => {
     var localId = fromGlobalId(id).id;
-    return dao(context.rootValue.user).Cover(localId).del();
+    return new DAO(context.rootValue.user).Cover(localId).del();
   }
 });
 
@@ -772,7 +772,7 @@ var introduceCollaborator = mutationWithClientMutationId({
   },
   mutateAndGetPayload: ({projectId, email}, context) => {
     var localId = fromGlobalId(projectId).id;
-    return dao(context.rootValue.user).Collaboration(localId).create({email});
+    return new DAO(context.rootValue.user).Collaboration(localId).create({email});
   }
 });
 
@@ -803,7 +803,7 @@ var deleteCollaborator = mutationWithClientMutationId({
   mutateAndGetPayload: ({id, projectId}, context) => {
     var localId = fromGlobalId(id).id;
     var localProjectId = fromGlobalId(projectId).id;
-    return dao(context.rootValue.user).Collaboration(localId).del(localProjectId);
+    return new DAO(context.rootValue.user).Collaboration(localId).del(localProjectId);
   }
 });
 
@@ -827,9 +827,64 @@ var deleteCollaboration = mutationWithClientMutationId({
   mutateAndGetPayload: ({id}, context) => {
     var localId = context.rootValue.user.id;
     var localProjectId = fromGlobalId(id).id;
-    return dao(context.rootValue.user).Collaboration(localId).del(localProjectId).then(function (data) {
+    return new DAO(context.rootValue.user).Collaboration(localId).del(localProjectId).then(function (data) {
       return {id};
     });
+  }
+});
+
+var didIntroduceCollaboration = subscriptionWithClientSubscriptionId({
+  name: 'DidIntroduceCollaboration',
+  inputFields: {
+    targetId: {
+      type: new GraphQLNonNull(GraphQLID)
+    },
+    title: {
+      type: new GraphQLNonNull(GraphQLString),
+      description: 'The title of the project.',
+    }
+  },
+  outputFields: {
+    collaborationEdge: {
+      type: GraphQLProjectEdge,
+      resolve: (payload) => {
+        return {
+          cursor: cursorForObjectInConnection([payload], payload),
+          node: payload,
+        };
+      }
+    },
+    me: {
+      type: userType,
+      resolve: () => {},
+    },
+  },
+  mutateAndGetPayload: ({targetId, title}, context) => {
+    var localId = fromGlobalId(targetId).id;
+    return new DAO(context.rootValue.user).Project(localId).create({title});
+  }
+});
+
+var didUpdateProject = subscriptionWithClientSubscriptionId({
+  name: 'DidUpdateProject',
+  inputFields: {
+    id: {
+      type: new GraphQLNonNull(GraphQLID)
+    },
+    title: {
+      type: new GraphQLNonNull(GraphQLString),
+      description: 'The title of the project.',
+    }
+  },
+  outputFields: {
+    project: {
+      type: projectType,
+      resolve: (payload) => payload
+    }
+  },
+  mutateAndGetPayload: ({id, title}, context) => {
+    var localId = fromGlobalId(id).id;
+    return new DAO(context.rootValue.user).Project(localId).update({title});
   }
 });
 
@@ -841,7 +896,7 @@ var schema = new GraphQLSchema({
         type: userType,
         args: {},
         resolve: (root, {}) => {
-          return dao(root.user).Me().get();
+          return new DAO(root.user).Me().get();
         }
       },
       node: nodeField
@@ -869,6 +924,15 @@ var schema = new GraphQLSchema({
       deleteCollaborator: deleteCollaborator,
       introduceCollaborator: introduceCollaborator,
       deleteCollaboration: deleteCollaboration,
+    }
+  }),
+
+  // subscription
+  subscription: new GraphQLObjectType({
+    name: 'Subscription',
+    fields: {
+      didIntroduceCollaboration: didIntroduceCollaboration,
+      didUpdateProject: didUpdateProject
     }
   })
 });
