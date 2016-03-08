@@ -4,6 +4,7 @@ const _class = 'Project';
 const { SMTIValidator } = require('../validator');
 const utilities = require('../../utilities');
 import { roles, permissions, regExRoles } from '../permissions';
+import * as events from '../../events';
 
 import {
   Project
@@ -219,6 +220,10 @@ class ProjectDAO {
           })
           .one()
           .then((record) => {
+            events.publish(`/projects/${targetId}`, {
+              id: targetId,
+              ...object
+            });
             resolve(record);
           })
           .catch((e) => {

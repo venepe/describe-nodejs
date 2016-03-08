@@ -662,18 +662,21 @@ var deleteExample = mutationWithClientMutationId({
   outputFields: {
     deletedExampleId: {
       type: GraphQLID,
-      resolve: ({id}) => id,
+      resolve: (payload) => {
+        return toGlobalId('File', payload.deletedExampleId);
+      },
     },
     target: {
       type: nodeInterface,
-      resolve: () => {},
+      resolve: (payload) => {
+        payload.target.id = toGlobalId('TestCase', payload.target.id);
+        return payload.target;
+      },
     }
   },
-  mutateAndGetPayload: ({id}, context) => {
+  mutateAndGetPayload: ({id, targetId}, context) => {
     var localId = fromGlobalId(id).id;
-    return new DAO(context.rootValue.user).Example(localId).del().then(function (data) {
-      return {id};
-    });
+    return new DAO(context.rootValue.user).Example(localId).del()
   }
 });
 
@@ -870,10 +873,6 @@ var didUpdateProject = subscriptionWithClientSubscriptionId({
   inputFields: {
     id: {
       type: new GraphQLNonNull(GraphQLID)
-    },
-    title: {
-      type: new GraphQLNonNull(GraphQLString),
-      description: 'The title of the project.',
     }
   },
   outputFields: {
@@ -882,9 +881,260 @@ var didUpdateProject = subscriptionWithClientSubscriptionId({
       resolve: (payload) => payload
     }
   },
-  mutateAndGetPayload: ({id, title}, context) => {
-    var localId = fromGlobalId(id).id;
-    return new DAO(context.rootValue.user).Project(localId).update({title});
+  mutateAndGetPayload: ({id}, {rootValue}) => {
+    if (rootValue.event) {
+      return rootValue.event;
+    } else {
+      var localId = fromGlobalId(id).id;
+      rootValue.channel = `/projects/${localId}`;
+      return {id};
+    }
+  }
+});
+
+var didIntroduceTestCase = subscriptionWithClientSubscriptionId({
+  name: 'DidIntroduceTestCase',
+  inputFields: {
+    projectId: {
+      type: new GraphQLNonNull(GraphQLID)
+    }
+  },
+  outputFields: {
+    testCaseEdge: {
+      type: GraphQLTestCaseEdge,
+      resolve: (payload) => {
+        var testCase = payload.testCase;
+        return {
+          cursor: cursorForObjectInConnection([testCase], testCase),
+          node: testCase,
+        };
+      }
+    },
+    project: {
+      type: projectType,
+      resolve: (payload) => {
+        return payload.project;
+      },
+    },
+  },
+  mutateAndGetPayload: ({projectId}, {rootValue}) => {
+    if (rootValue.event) {
+      return rootValue.event;
+    } else {
+      var localId = fromGlobalId(projectId).id;
+      rootValue.channel = `/projects/${localId}/testcases`;
+      return {projectId};
+    }
+  }
+});
+
+var didIntroduceFulfillment = subscriptionWithClientSubscriptionId({
+  name: 'DidIntroduceFulfillment',
+  inputFields: {
+    testCaseId: {
+      type: new GraphQLNonNull(GraphQLID)
+    }
+  },
+  outputFields: {
+    fulfillmentEdge: {
+      type: GraphQLFulfillEdge,
+      resolve: (payload) => {
+        var file = payload.file;
+        return {
+          cursor: cursorForObjectInConnection([file], file),
+          node: file,
+        };
+      }
+    },
+    testCase: {
+      type: testCaseType,
+      resolve: (payload) => {
+        return payload.testCase;
+      },
+    },
+    project: {
+      type: projectType,
+      resolve: (payload) => {
+        return payload.project;
+      },
+    },
+  },
+  mutateAndGetPayload: ({testCaseId}, {rootValue}) => {
+    if (rootValue.event) {
+      return rootValue.event;
+    } else {
+      var localId = fromGlobalId(testCaseId).id;
+      rootValue.channel = `/testcases/${localId}/fulfillments`;
+      return {testCaseId};
+    }
+  }
+});
+
+var didDeleteFulfillment = subscriptionWithClientSubscriptionId({
+  name: 'DidDeleteFulfillment',
+  inputFields: {
+    id: {
+      type: new GraphQLNonNull(GraphQLID)
+    },
+    testCaseId: {
+      type: new GraphQLNonNull(GraphQLID)
+    }
+  },
+  outputFields: {
+    deletedFulfillmentId: {
+      type: GraphQLID,
+      resolve: (payload) => {
+        return toGlobalId('File', payload.deletedFulfillmentId);
+      },
+    },
+    testCase: {
+      type: testCaseType,
+      resolve: (payload) => {
+        return payload.testCase;
+      },
+    },
+    project: {
+      type: projectType,
+      resolve: (payload) => {
+        return payload.project;
+      },
+    },
+  },
+  mutateAndGetPayload: ({id, testCaseId}, {rootValue}) => {
+    if (rootValue.event) {
+      return rootValue.event;
+    } else {
+      var localId = fromGlobalId(id).id;
+      var localTestCaseId = fromGlobalId(testCaseId).id;
+      rootValue.channel = `/testcases/${localTestCaseId}/fulfillments/${localId}`;
+      return {testCaseId};
+    }
+  }
+});
+
+var didDeleteTestCase = subscriptionWithClientSubscriptionId({
+  name: 'DidDeleteTestCase',
+  inputFields: {
+    id: {
+      type: new GraphQLNonNull(GraphQLID)
+    }
+  },
+  outputFields: {
+    deletedTestCaseId: {
+      type: GraphQLID,
+      resolve: (payload) => {
+        return toGlobalId('TestCase', payload.deletedTestCaseId);
+      },
+    },
+    project: {
+      type: projectType,
+      resolve: (payload) => {
+        return payload.project;
+      },
+    }
+  },
+  mutateAndGetPayload: ({id}, {rootValue}) => {
+    if (rootValue.event) {
+      return rootValue.event;
+    } else {
+      var localId = fromGlobalId(id).id;
+      rootValue.channel = `/testcases/${localId}/delete`;
+      return {id};
+    }
+  }
+});
+
+var didUpdateTestCase = subscriptionWithClientSubscriptionId({
+  name: 'DidUpdateTestCase',
+  inputFields: {
+    id: {
+      type: new GraphQLNonNull(GraphQLID)
+    }
+  },
+  outputFields: {
+    testCase: {
+      type: testCaseType,
+      resolve: (payload) => payload
+    }
+  },
+  mutateAndGetPayload: ({id}, {rootValue}) => {
+    if (rootValue.event) {
+      return rootValue.event;
+    } else {
+      var localId = fromGlobalId(id).id;
+      rootValue.channel = `/testcases/${localId}/update`;
+      return {id};
+    }
+  }
+});
+
+var didIntroduceExample = subscriptionWithClientSubscriptionId({
+  name: 'DidIntroduceExample',
+  inputFields: {
+    targetId: {
+      type: new GraphQLNonNull(GraphQLID)
+    },
+  },
+  outputFields: {
+    exampleEdge: {
+      type: GraphQLExampleEdge,
+      resolve: (payload) => {
+        return {
+          cursor: cursorForObjectInConnection([payload], payload),
+          node: payload,
+        };
+      }
+    },
+    target: {
+      type: nodeInterface,
+      resolve: () => {},
+    }
+  },
+  mutateAndGetPayload: ({targetId}, {rootValue}) => {
+    if (rootValue.event) {
+      return rootValue.event;
+    } else {
+      var localId = fromGlobalId(targetId).id;
+      rootValue.channel = `/target/${localId}/examples`;
+      return {targetId};
+    }
+  }
+});
+
+var didDeleteExample = subscriptionWithClientSubscriptionId({
+  name: 'DidDeleteExample',
+  inputFields: {
+    id: {
+      type: new GraphQLNonNull(GraphQLID)
+    },
+    targetId: {
+      type: new GraphQLNonNull(GraphQLID)
+    }
+  },
+  outputFields: {
+    deletedExampleId: {
+      type: GraphQLID,
+      resolve: (payload) => {
+        return toGlobalId('File', payload.deletedExampleId);
+      },
+    },
+    target: {
+      type: nodeInterface,
+      resolve: (payload) => {
+        payload.target.id = toGlobalId('TestCase', payload.target.id);
+        console.log(payload.target);
+        return payload.target;
+      },
+    }
+  },
+  mutateAndGetPayload: ({id, targetId}, {rootValue}) => {
+    if (rootValue.event) {
+      return rootValue.event;
+    } else {
+      var localId = fromGlobalId(id).id;
+      rootValue.channel = `/examples/${localId}/delete`;
+      return {id};
+    }
   }
 });
 
@@ -932,7 +1182,14 @@ var schema = new GraphQLSchema({
     name: 'Subscription',
     fields: {
       didIntroduceCollaboration: didIntroduceCollaboration,
-      didUpdateProject: didUpdateProject
+      didUpdateProject: didUpdateProject,
+      didIntroduceTestCase: didIntroduceTestCase,
+      didIntroduceFulfillment: didIntroduceFulfillment,
+      didDeleteFulfillment: didDeleteFulfillment,
+      didDeleteTestCase: didDeleteTestCase,
+      didUpdateTestCase: didUpdateTestCase,
+      didIntroduceExample: didIntroduceExample,
+      didDeleteExample: didDeleteExample
     }
   })
 });

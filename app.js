@@ -13,7 +13,8 @@ import {AppConfig, FileConfig} from './src/config';
 import {graphql} from 'graphql';
 import {fromGlobalId} from 'graphql-relay';
 const client = require('./src/client');
-const schema = require('./src/graphql/schema');
+import schema from './src/graphql/schema';
+import {connect} from './socket';
 const multer  = require('multer');
 const signup = require('./src/auth/signup');
 const deletAccount = require('./src/auth/delete-account');
@@ -246,6 +247,9 @@ app.use(function(err, req, res, next) {
 });
 
 const httpServer = http.createServer(app);
+const IO = require('socket.io')(httpServer);
+
+IO.on('connect', connect);
 
 if (port === 80) {
 

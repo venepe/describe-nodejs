@@ -1,5 +1,5 @@
 import {graphql} from 'graphql';
-import {schema} from '../graphql/schema';
+import schema from '../graphql/schema';
 
 export const channelForSubscription = async ({query, variables}) => {
   let rootValue = {};

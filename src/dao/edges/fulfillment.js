@@ -4,6 +4,7 @@ const _class = 'File';
 const { SMTIValidator } = require('../validator');
 const utilites = require('../../utilities');
 import { roles, regExRoles } from '../permissions';
+import * as events from '../../events';
 
 import {
   File
@@ -95,10 +96,17 @@ class FulfillmentDAO {
               let numOfTestCasesFulfilled = project.numOfTestCasesFulfilled;
               numOfTestCasesFulfilled++;
               project.numOfTestCasesFulfilled = numOfTestCasesFulfilled;
-              console.log(numOfTestCasesFulfilled);
             }
 
             testCase.isFulfilled = true;
+
+            events.publish(`/testcases/${relationalId}/fulfillments`, {
+              id: relationalId,
+              file,
+              testCase,
+              project
+            });
+
             resolve({
               file,
               testCase,
@@ -174,6 +182,13 @@ class FulfillmentDAO {
           numOfTestCasesFulfilled--;
           project.numOfTestCasesFulfilled = numOfTestCasesFulfilled;
         }
+
+        events.publish(`/testcases/${testCaseId}/fulfillments/${targetId}`, {
+          id: targetId,
+          deletedFulfillmentId: targetId,
+          testCase,
+          project
+        });
 
         resolve({
           deletedFulfillmentId: targetId,

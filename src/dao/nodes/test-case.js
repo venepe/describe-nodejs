@@ -4,6 +4,7 @@ const _class = 'TestCase';
 const { SMTIValidator } = require('../validator');
 const utilities = require('../../utilities');
 import { roles, regExRoles } from '../permissions';
+import * as events from '../../events';
 
 import {
   TestCase
@@ -178,6 +179,13 @@ class TestCaseDAO {
             let numOfTestCases = project.numOfTestCases;
             numOfTestCases++;
             project.numOfTestCases = numOfTestCases;
+
+            events.publish(`/projects/${relationalId}/testcases`, {
+              id: relationalId,
+              testCase,
+              project
+            });
+
             resolve({
               testCase,
               project
@@ -239,6 +247,12 @@ class TestCaseDAO {
           })
           .one()
           .then((record) => {
+
+            events.publish(`/testcases/${targetId}/update`, {
+              id: targetId,
+              ...object
+            });
+
             resolve(record);
           })
           .catch((e) => {
@@ -308,6 +322,13 @@ class TestCaseDAO {
           numOfTestCasesFulfilled--;
           project.numOfTestCasesFulfilled = numOfTestCasesFulfilled;
         }
+
+        events.publish(`/testcases/${targetId}/delete`, {
+          id: targetId,
+          deletedTestCaseId: targetId,
+          project
+        });
+
         resolve({
           deletedTestCaseId: targetId,
           project

@@ -4,6 +4,7 @@ const _class = 'File';
 const { SMTIValidator } = require('../validator');
 const utilites = require('../../utilities');
 import { roles, regExRoles } from '../permissions';
+import * as events from '../../events';
 
 import {
   File
@@ -75,6 +76,11 @@ class ExampleDAO {
           })
           .one()
           .then((record) => {
+
+            events.publish(`/target/${relationalId}/examples`, {
+              ...record
+            });
+
             resolve(record);
           })
           .catch((e) => {
@@ -99,16 +105,47 @@ class ExampleDAO {
       let role = this.user.role;
 
       db
-      .delete('VERTEX', _class)
-      .where({
-        id: targetId
+      .let('targetId', (s) => {
+        s
+        .select('id')
+        .from(function (s) {
+          s
+          .select('expand(out("Exemplifies"))')
+          .from('File')
+          .where({
+            id: targetId
+          })
+          .limit(1)
+        })
       })
-      .where(
-        `_allow["${role}"].asString() MATCHES "${regExRoles.deleteNode}"`
-      )
+      .let('deletes', (s) => {
+        s
+        .delete('VERTEX', _class)
+        .where({
+          id: targetId
+        })
+        .where(
+          `_allow["${role}"].asString() MATCHES "${regExRoles.deleteNode}"`
+        )
+      })
+      .commit()
+      .return('$targetId')
       .one()
-      .then(() => {
-        resolve({id: targetId});
+      .then((result) => {
+        let id = result.id;
+        console.log('id');
+        console.log(id);
+        console.log('id');
+
+        events.publish(`/examples/${targetId}/delete`, {
+          deletedExampleId: targetId,
+          target: {id}
+        });
+
+        resolve({
+          deletedExampleId: targetId,
+          target: {id}
+        });
       })
       .catch((e) => {
         console.log(`orientdb error: ${e}`);
