@@ -3,6 +3,7 @@
 const { SMTIValidator } = require('../validator');
 const utilities = require('../../utilities');
 import { roles, permissions, regExRoles } from '../permissions';
+import * as events from '../../events';
 
 import {
   Project
@@ -115,7 +116,16 @@ class CollaborationDAO {
             })
             .one()
             .then((record) => {
-              resolve(record);
+
+              events.publish(`/projects/${relationalId}/collaborators`, {
+                collaboratorEdge: record,
+                project: {id: relationalId}
+              });
+
+              resolve({
+                collaboratorEdge: record,
+                project: {id: relationalId}
+              });
             })
             .catch((e) => {
               console.log(`orientdb error: ${e}`);
@@ -210,6 +220,12 @@ class CollaborationDAO {
       })
       .one()
       .then((project) => {
+
+        events.publish(`/projects/${projectId}/collaborators/${targetId}/delete`, {
+          deletedCollaboratorId: targetId,
+          project
+        });
+
         resolve({
           deletedCollaboratorId: targetId,
           project

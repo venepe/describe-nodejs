@@ -762,15 +762,18 @@ var introduceCollaborator = mutationWithClientMutationId({
     collaboratorEdge: {
       type: GraphQLUserEdge,
       resolve: (payload) => {
+        var collaboratorEdge = payload.collaboratorEdge;
         return {
-          cursor: cursorForObjectInConnection([payload], payload),
-          node: payload,
+          cursor: cursorForObjectInConnection([collaboratorEdge], collaboratorEdge),
+          node: collaboratorEdge,
         };
       }
     },
     project: {
-      type: nodeInterface,
-      resolve: () => {},
+      type: projectType,
+      resolve: (payload) => {
+        return payload.project;
+      },
     }
   },
   mutateAndGetPayload: ({projectId, email}, context) => {
@@ -793,7 +796,7 @@ var deleteCollaborator = mutationWithClientMutationId({
     deletedCollaboratorId: {
       type: GraphQLID,
       resolve: (payload) => {
-        return payload.deletedCollaboratorId;
+        return toGlobalId('User', payload.deletedCollaboratorId);
       },
     },
     project: {
@@ -1122,7 +1125,6 @@ var didDeleteExample = subscriptionWithClientSubscriptionId({
       type: nodeInterface,
       resolve: (payload) => {
         payload.target.id = toGlobalId('TestCase', payload.target.id);
-        console.log(payload.target);
         return payload.target;
       },
     }
@@ -1133,6 +1135,159 @@ var didDeleteExample = subscriptionWithClientSubscriptionId({
     } else {
       var localId = fromGlobalId(id).id;
       rootValue.channel = `/examples/${localId}/delete`;
+      return {id};
+    }
+  }
+});
+
+var didIntroduceCoverImage = subscriptionWithClientSubscriptionId({
+  name: 'DidIntroduceCoverImage',
+  inputFields: {
+    targetId: {
+      type: new GraphQLNonNull(GraphQLID)
+    },
+  },
+  outputFields: {
+    coverImageEdge: {
+      type: GraphQLCoverImageEdge,
+      resolve: (payload) => {
+        return {
+          cursor: cursorForObjectInConnection([payload], payload),
+          node: payload,
+        };
+      }
+    },
+    target: {
+      type: nodeInterface,
+      resolve: () => {
+        return {id: null};
+      },
+    }
+  },
+  mutateAndGetPayload: ({targetId}, {rootValue}) => {
+    if (rootValue.event) {
+      return rootValue.event;
+    } else {
+      var localId = fromGlobalId(targetId).id;
+      rootValue.channel = `/target/${localId}/coverImages`;
+      return {targetId};
+    }
+  }
+});
+
+var didDeleteCoverImage = subscriptionWithClientSubscriptionId({
+  name: 'DidDeleteCoverImage',
+  inputFields: {
+    id: {
+      type: new GraphQLNonNull(GraphQLID)
+    },
+    targetId: {
+      type: new GraphQLNonNull(GraphQLID)
+    }
+  },
+  outputFields: {
+    deletedCoverImageId: {
+      type: GraphQLID,
+      resolve: (payload) => {
+        return toGlobalId('File', payload.deletedCoverImageId);
+      },
+    },
+    coverImageEdge: {
+      type: GraphQLCoverImageEdge,
+      resolve: (payload) => {
+        let coverImage = payload.coverImageEdge;
+        return {
+          cursor: cursorForObjectInConnection([coverImage], coverImage),
+          node: coverImage,
+        };
+      }
+    },
+    target: {
+      type: nodeInterface,
+      resolve: (payload) => {
+        return payload.target;
+      },
+    }
+  },
+  mutateAndGetPayload: ({id, targetId}, {rootValue}) => {
+    if (rootValue.event) {
+      return rootValue.event;
+    } else {
+      var localId = fromGlobalId(id).id;
+      rootValue.channel = `/coverImages/${localId}/delete`;
+      return {id};
+    }
+  }
+});
+
+var didIntroduceCollaborator = subscriptionWithClientSubscriptionId({
+  name: 'DidIntroduceCollaborator',
+  inputFields: {
+    projectId: {
+      type: new GraphQLNonNull(GraphQLID)
+    },
+  },
+  outputFields: {
+    collaboratorEdge: {
+      type: GraphQLUserEdge,
+      resolve: (payload) => {
+        var collaboratorEdge = payload.collaboratorEdge;
+        return {
+          cursor: cursorForObjectInConnection([collaboratorEdge], collaboratorEdge),
+          node: collaboratorEdge,
+        };
+      }
+    },
+    project: {
+      type: projectType,
+      resolve: (payload) => {
+        return payload.project;
+      },
+    }
+  },
+  mutateAndGetPayload: ({projectId}, {rootValue}) => {
+    if (rootValue.event) {
+      return rootValue.event;
+    } else {
+      var localId = fromGlobalId(projectId).id;
+      rootValue.channel = `/projects/${localId}/collaborators`;
+      return {projectId};
+    }
+  }
+});
+
+var didDeleteCollaborator = subscriptionWithClientSubscriptionId({
+  name: 'DidDeleteCollaborator',
+  inputFields: {
+    id: {
+      type: new GraphQLNonNull(GraphQLID)
+    },
+    projectId: {
+      type: new GraphQLNonNull(GraphQLID)
+    },
+  },
+  outputFields: {
+    deletedCollaboratorId: {
+      type: GraphQLID,
+      resolve: (payload) => {
+        return toGlobalId('User', payload.deletedCollaboratorId);
+      },
+    },
+    project: {
+      type: projectType,
+      resolve: (payload) => {
+        console.log('deleteCollaborator');
+        return payload.project;
+      },
+    },
+  },
+  mutateAndGetPayload: ({id, projectId}, {rootValue}) => {
+    if (rootValue.event) {
+      return rootValue.event;
+    } else {
+      var localId = fromGlobalId(id).id;
+      var localProjectId = fromGlobalId(projectId).id;
+      rootValue.channel = `/projects/${localProjectId}/collaborators/${localId}/delete`;
       return {id};
     }
   }
@@ -1189,7 +1344,11 @@ var schema = new GraphQLSchema({
       didDeleteTestCase: didDeleteTestCase,
       didUpdateTestCase: didUpdateTestCase,
       didIntroduceExample: didIntroduceExample,
-      didDeleteExample: didDeleteExample
+      didDeleteExample: didDeleteExample,
+      didIntroduceCoverImage: didIntroduceCoverImage,
+      didDeleteCoverImage: didDeleteCoverImage,
+      didIntroduceCollaborator: didIntroduceCollaborator,
+      didDeleteCollaborator: didDeleteCollaborator
     }
   })
 });

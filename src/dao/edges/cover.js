@@ -5,6 +5,7 @@ const { SMTIValidator } = require('../validator');
 const utilities = require('../../utilities');
 import { roles, regExRoles } from '../permissions';
 import { FileConfig } from '../../config';
+import * as events from '../../events';
 
 import {
   File
@@ -77,6 +78,11 @@ class CoverDAO {
           })
           .one()
           .then((record) => {
+
+            events.publish(`/target/${relationalId}/coverImages`, {
+              ...record
+            });
+
             resolve(record);
           })
           .catch((e) => {
@@ -143,21 +149,32 @@ class CoverDAO {
       .return('$coverImage')
       .one()
       .then((result) => {
+        let payload = {};
+
+        // TODO: return target
+        let target = {id: null};
         if (result) {
-          resolve({
+          payload = {
             deletedCoverImageId: targetId,
-            coverImageEdge: result
-          });
+            coverImageEdge: result,
+            target
+          };
         } else {
           let defaultCoverFile = {
             id: targetId,
             uri: FileConfig.DefaultImageUrl + targetId
           };
-          resolve({
+
+          payload = {
             deletedCoverImageId: targetId,
-            coverImageEdge: defaultCoverFile
-          });
+            coverImageEdge: defaultCoverFile,
+            target
+          }
         }
+
+        events.publish(`/coverImages/${targetId}/delete`, payload);
+
+        resolve(payload);
       })
       .catch((e) => {
         console.log(`orientdb error: ${e}`);

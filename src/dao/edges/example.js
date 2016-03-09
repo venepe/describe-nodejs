@@ -133,9 +133,6 @@ class ExampleDAO {
       .one()
       .then((result) => {
         let id = result.id;
-        console.log('id');
-        console.log(id);
-        console.log('id');
 
         events.publish(`/examples/${targetId}/delete`, {
           deletedExampleId: targetId,
