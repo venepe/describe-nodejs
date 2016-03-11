@@ -88,7 +88,7 @@ class FulfillmentDAO {
           .return(['$file', '$testCase', '$project'])
           .all()
           .then((result) => {
-            let file = utilites.FilteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+            let fulfillmentEdge = utilites.FilteredObject(result[0], 'in_.*|out_.*|@.*|^_');
             let testCase = utilites.FilteredObject(result[1], 'in_.*|out_.*|@.*|^_');
             let project = utilites.FilteredObject(result[2], 'in_.*|out_.*|@.*|^_');
 
@@ -102,13 +102,13 @@ class FulfillmentDAO {
 
             events.publish(`/testcases/${relationalId}/fulfillments`, {
               id: relationalId,
-              file,
+              fulfillmentEdge,
               testCase,
               project
             });
 
             resolve({
-              file,
+              fulfillmentEdge,
               testCase,
               project
             });

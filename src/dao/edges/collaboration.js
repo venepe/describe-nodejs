@@ -62,6 +62,7 @@ class CollaborationDAO {
             .let('project', (s) => {
               s
               .select()
+              .getProject()
               .from('Project')
               .where({
                 id: relationalId
@@ -110,21 +111,28 @@ class CollaborationDAO {
               .update(`$collaborateson PUT _allow = "${collaboratorRole}", ${permissions.DELETE_NODE}`)
             })
             .commit()
-            .return('$collaborator')
-            .transform((record) => {
-              return utilities.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
-            })
-            .one()
-            .then((record) => {
+            .return(['$collaborator', '$project'])
+            .all()
+            .then((result) => {
+              let collaborator = utilities.FilteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+              let project = utilities.FilteredObject(result[1], 'in_.*|out_.*|@.*|^_');
 
+              //Add collaborator to project
               events.publish(`/projects/${relationalId}/collaborators`, {
-                collaboratorEdge: record,
-                project: {id: relationalId}
+                collaboratorEdge: collaborator,
+                project
               });
 
+              //Add collaboration to user
+              events.publish(`/users/${collaborator.id}/collaborations`, {
+                collaborationEdge: project,
+                me: collaborator
+              });
+
+              //Return the collaborator we added to the project
               resolve({
-                collaboratorEdge: record,
-                project: {id: relationalId}
+                collaboratorEdge: collaborator,
+                project
               });
             })
             .catch((e) => {
@@ -224,6 +232,12 @@ class CollaborationDAO {
         events.publish(`/projects/${projectId}/collaborators/${targetId}/delete`, {
           deletedCollaboratorId: targetId,
           project
+        });
+
+        //Delete collaboration from user
+        events.publish(`/users/${targetId}/collaborations/${projectId}/delete`, {
+          deletedCollaborationId: projectId,
+          me: {id: targetId}
         });
 
         resolve({

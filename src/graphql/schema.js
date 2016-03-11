@@ -420,24 +420,23 @@ var introduceFulfillment = mutationWithClientMutationId({
   outputFields: {
     fulfillmentEdge: {
       type: GraphQLFulfillEdge,
-      resolve: (payload) => {
-        var file = payload.file;
+      resolve: ({fulfillmentEdge}) => {
         return {
-          cursor: cursorForObjectInConnection([file], file),
-          node: file,
-        };
+          cursor: cursorForObjectInConnection([fulfillmentEdge], fulfillmentEdge),
+          node: fulfillmentEdge,
+        }
       }
     },
     testCase: {
       type: testCaseType,
-      resolve: (payload) => {
-        return payload.testCase;
+      resolve: ({testCase}) => {
+        return testCase;
       },
     },
     project: {
       type: projectType,
-      resolve: (payload) => {
-        return payload.project;
+      resolve: ({project}) => {
+        return project;
       },
     },
   },
@@ -839,38 +838,6 @@ var deleteCollaboration = mutationWithClientMutationId({
   }
 });
 
-var didIntroduceCollaboration = subscriptionWithClientSubscriptionId({
-  name: 'DidIntroduceCollaboration',
-  inputFields: {
-    targetId: {
-      type: new GraphQLNonNull(GraphQLID)
-    },
-    title: {
-      type: new GraphQLNonNull(GraphQLString),
-      description: 'The title of the project.',
-    }
-  },
-  outputFields: {
-    collaborationEdge: {
-      type: GraphQLProjectEdge,
-      resolve: (payload) => {
-        return {
-          cursor: cursorForObjectInConnection([payload], payload),
-          node: payload,
-        };
-      }
-    },
-    me: {
-      type: userType,
-      resolve: () => {},
-    },
-  },
-  mutateAndGetPayload: ({targetId, title}, context) => {
-    var localId = fromGlobalId(targetId).id;
-    return new DAO(context.rootValue.user).Project(localId).create({title});
-  }
-});
-
 var didUpdateProject = subscriptionWithClientSubscriptionId({
   name: 'DidUpdateProject',
   inputFields: {
@@ -941,24 +908,23 @@ var didIntroduceFulfillment = subscriptionWithClientSubscriptionId({
   outputFields: {
     fulfillmentEdge: {
       type: GraphQLFulfillEdge,
-      resolve: (payload) => {
-        var file = payload.file;
+      resolve: ({fulfillmentEdge}) => {
         return {
-          cursor: cursorForObjectInConnection([file], file),
-          node: file,
-        };
+          cursor: cursorForObjectInConnection([fulfillmentEdge], fulfillmentEdge),
+          node: fulfillmentEdge,
+        }
       }
     },
     testCase: {
       type: testCaseType,
-      resolve: (payload) => {
-        return payload.testCase;
+      resolve: ({testCase}) => {
+        return testCase;
       },
     },
     project: {
       type: projectType,
-      resolve: (payload) => {
-        return payload.project;
+      resolve: ({project}) => {
+        return project;
       },
     },
   },
@@ -1293,6 +1259,114 @@ var didDeleteCollaborator = subscriptionWithClientSubscriptionId({
   }
 });
 
+var didIntroduceCollaboration = subscriptionWithClientSubscriptionId({
+  name: 'DidIntroduceCollaboration',
+  inputFields: {
+    meId: {
+      type: new GraphQLNonNull(GraphQLID)
+    }
+  },
+  outputFields: {
+    collaborationEdge: {
+      type: GraphQLProjectEdge,
+      resolve: (payload) => {
+        var collaborationEdge = payload.collaborationEdge;
+        return {
+          cursor: cursorForObjectInConnection([collaborationEdge], collaborationEdge),
+          node: collaborationEdge,
+        };
+      }
+    },
+    me: {
+      type: userType,
+      resolve: (payload) => {
+        return payload.me;
+      },
+    }
+  },
+  mutateAndGetPayload: ({meId}, {rootValue}) => {
+    if (rootValue.event) {
+      return rootValue.event;
+    } else {
+      var localId = fromGlobalId(meId).id;
+      rootValue.channel = `/users/${localId}/collaborations`;
+      return {meId};
+    }
+  }
+});
+
+var didDeleteCollaboration = subscriptionWithClientSubscriptionId({
+  name: 'DidDeleteCollaboration',
+  inputFields: {
+    id: {
+      type: new GraphQLNonNull(GraphQLID)
+    },
+    meId: {
+      type: new GraphQLNonNull(GraphQLID)
+    }
+  },
+  outputFields: {
+    deletedCollaborationId: {
+      type: GraphQLID,
+      resolve: (payload) => {
+        return toGlobalId('Project', payload.deletedCollaborationId);
+      },
+    },
+    me: {
+      type: userType,
+      resolve: (payload) => {
+        return payload.me;
+      },
+    },
+  },
+  mutateAndGetPayload: ({id, meId}, {rootValue}) => {
+    if (rootValue.event) {
+      return rootValue.event;
+    } else {
+      var localId = fromGlobalId(id).id;
+      var localMeId = fromGlobalId(meId).id;
+      rootValue.channel = `/users/${localMeId}/collaborations/${localId}/delete`;
+      return {id};
+    }
+  }
+});
+
+var didDeleteProject = subscriptionWithClientSubscriptionId({
+  name: 'DidDeleteProject',
+  inputFields: {
+    id: {
+      type: new GraphQLNonNull(GraphQLID)
+    },
+    meId: {
+      type: new GraphQLNonNull(GraphQLID)
+    }
+  },
+  outputFields: {
+    deletedProjectId: {
+      type: GraphQLID,
+      resolve: (payload) => {
+        return toGlobalId('Project', payload.deletedProjectId);
+      },
+    },
+    me: {
+      type: userType,
+      resolve: (payload) => {
+        return {id: null};
+      },
+    },
+  },
+  mutateAndGetPayload: ({id, meId}, {rootValue}) => {
+    if (rootValue.event) {
+      return rootValue.event;
+    } else {
+      var localId = fromGlobalId(id).id;
+      var localMeId = fromGlobalId(meId).id;
+      rootValue.channel = `/projects/${localId}/delete`;
+      return {id};
+    }
+  }
+});
+
 var schema = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: 'RootQueryType',
@@ -1336,7 +1410,6 @@ var schema = new GraphQLSchema({
   subscription: new GraphQLObjectType({
     name: 'Subscription',
     fields: {
-      didIntroduceCollaboration: didIntroduceCollaboration,
       didUpdateProject: didUpdateProject,
       didIntroduceTestCase: didIntroduceTestCase,
       didIntroduceFulfillment: didIntroduceFulfillment,
@@ -1348,7 +1421,9 @@ var schema = new GraphQLSchema({
       didIntroduceCoverImage: didIntroduceCoverImage,
       didDeleteCoverImage: didDeleteCoverImage,
       didIntroduceCollaborator: didIntroduceCollaborator,
-      didDeleteCollaborator: didDeleteCollaborator
+      didDeleteCollaborator: didDeleteCollaborator,
+      didIntroduceCollaboration: didIntroduceCollaboration,
+      didDeleteCollaboration: didDeleteCollaboration
     }
   })
 });
