@@ -76,7 +76,7 @@ class CollaborationDAO {
               .create('edge', 'CollaboratesOn')
               .from('$collaborator')
               .to('$project')
-              .set({_allow})
+              .set('_allow = $project._allow[0]')
             })
             .let('testCases', (s) => {
               s
