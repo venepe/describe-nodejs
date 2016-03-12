@@ -388,16 +388,16 @@ var introduceProject = mutationWithClientMutationId({
   outputFields: {
     projectEdge: {
       type: GraphQLProjectEdge,
-      resolve: (payload) => {
+      resolve: ({project}) => {
         return {
-          cursor: cursorForObjectInConnection([payload], payload),
-          node: payload,
+          cursor: cursorForObjectInConnection([project], project),
+          node: project,
         };
       }
     },
     me: {
       type: userType,
-      resolve: () => {},
+      resolve: ({me}) => { return me },
     },
   },
   mutateAndGetPayload: ({targetId, title}, context) => {
@@ -479,18 +479,16 @@ var deleteProject = mutationWithClientMutationId({
   outputFields: {
     deletedProjectId: {
       type: GraphQLID,
-      resolve: ({id}) => id,
+      resolve: ({deletedProjectId}) => { return deletedProjectId },
     },
     me: {
       type: userType,
-      resolve: () => {},
+      resolve: ({me}) => { return me },
     }
   },
   mutateAndGetPayload: ({id}, context) => {
     var localId = fromGlobalId(id).id;
-    return new DAO(context.rootValue.user).Project(localId).del().then(function (data) {
-      return {id};
-    });
+    return new DAO(context.rootValue.user).Project(localId).del();
   }
 });
 
@@ -508,19 +506,16 @@ var introduceTestCase = mutationWithClientMutationId({
   outputFields: {
     testCaseEdge: {
       type: GraphQLTestCaseEdge,
-      resolve: (payload) => {
-        var testCase = payload.testCase;
+      resolve: ({testCaseEdge}) => {
         return {
-          cursor: cursorForObjectInConnection([testCase], testCase),
-          node: testCase,
+          cursor: cursorForObjectInConnection([testCaseEdge], testCaseEdge),
+          node: testCaseEdge,
         };
       }
     },
     project: {
       type: projectType,
-      resolve: (payload) => {
-        return payload.project;
-      },
+      resolve: ({project}) => { return project },
     },
   },
   mutateAndGetPayload: ({projectId, it}, context) => {
@@ -562,14 +557,14 @@ var deleteTestCase = mutationWithClientMutationId({
   outputFields: {
     deletedTestCaseId: {
       type: GraphQLID,
-      resolve: (payload) => {
-        return toGlobalId('TestCase', payload.deletedTestCaseId);
+      resolve: ({deletedTestCaseId}) => {
+        return toGlobalId('TestCase', deletedTestCaseId);
       },
     },
     project: {
       type: projectType,
-      resolve: (payload) => {
-        return payload.project;
+      resolve: ({project}) => {
+        return project;
       },
     }
   },
@@ -593,16 +588,16 @@ var introduceExample = mutationWithClientMutationId({
   outputFields: {
     exampleEdge: {
       type: GraphQLExampleEdge,
-      resolve: (payload) => {
+      resolve: ({exampleEdge}) => {
         return {
-          cursor: cursorForObjectInConnection([payload], payload),
-          node: payload,
+          cursor: cursorForObjectInConnection([exampleEdge], exampleEdge),
+          node: exampleEdge,
         };
       }
     },
     target: {
       type: nodeInterface,
-      resolve: () => {},
+      resolve: ({target}) => {return target},
     }
   },
   mutateAndGetPayload: ({targetId, uri}, context) => {
@@ -624,20 +619,20 @@ var deleteFulfillment = mutationWithClientMutationId({
   outputFields: {
     deletedFulfillmentId: {
       type: GraphQLID,
-      resolve: (payload) => {
-        return toGlobalId('File', payload.deletedFulfillmentId);
+      resolve: ({deletedFulfillmentId}) => {
+        return toGlobalId('File', deletedFulfillmentId);
       },
     },
     testCase: {
       type: testCaseType,
-      resolve: (payload) => {
-        return payload.testCase;
+      resolve: ({testCase}) => {
+        return testCase;
       },
     },
     project: {
       type: projectType,
-      resolve: (payload) => {
-        return payload.project;
+      resolve: ({project}) => {
+        return project;
       },
     },
   },
@@ -661,15 +656,15 @@ var deleteExample = mutationWithClientMutationId({
   outputFields: {
     deletedExampleId: {
       type: GraphQLID,
-      resolve: (payload) => {
-        return toGlobalId('File', payload.deletedExampleId);
+      resolve: ({deletedExampleId}) => {
+        return toGlobalId('File', deletedExampleId);
       },
     },
     target: {
       type: nodeInterface,
-      resolve: (payload) => {
-        payload.target.id = toGlobalId('TestCase', payload.target.id);
-        return payload.target;
+      resolve: ({target}) => {
+        target.id = toGlobalId('TestCase', payload.target.id);
+        return target;
       },
     }
   },
@@ -693,16 +688,16 @@ var introduceCoverImage = mutationWithClientMutationId({
   outputFields: {
     coverImageEdge: {
       type: GraphQLCoverImageEdge,
-      resolve: (payload) => {
+      resolve: ({coverImageEdge}) => {
         return {
-          cursor: cursorForObjectInConnection([payload], payload),
-          node: payload,
+          cursor: cursorForObjectInConnection([coverImageEdge], coverImageEdge),
+          node: coverImageEdge,
         };
       }
     },
     target: {
       type: nodeInterface,
-      resolve: () => {},
+      resolve: (target) => {return target},
     }
   },
   mutateAndGetPayload: ({targetId, uri}, context) => {
@@ -721,17 +716,16 @@ var deleteCoverImage = mutationWithClientMutationId({
   outputFields: {
     deletedCoverImageId: {
       type: GraphQLID,
-      resolve: (payload) => {
-        return toGlobalId('File', payload.deletedCoverImageId);
+      resolve: ({deletedCoverImageId}) => {
+        return toGlobalId('File', deletedCoverImageId);
       },
     },
     coverImageEdge: {
       type: GraphQLCoverImageEdge,
-      resolve: (payload) => {
-        let coverImage = payload.coverImageEdge;
+      resolve: ({coverImageEdge}) => {
         return {
-          cursor: cursorForObjectInConnection([coverImage], coverImage),
-          node: coverImage,
+          cursor: cursorForObjectInConnection([coverImageEdge], coverImageEdge),
+          node: coverImageEdge,
         };
       }
     },
@@ -760,8 +754,7 @@ var introduceCollaborator = mutationWithClientMutationId({
   outputFields: {
     collaboratorEdge: {
       type: GraphQLUserEdge,
-      resolve: (payload) => {
-        var collaboratorEdge = payload.collaboratorEdge;
+      resolve: ({collaboratorEdge}) => {
         return {
           cursor: cursorForObjectInConnection([collaboratorEdge], collaboratorEdge),
           node: collaboratorEdge,
@@ -770,9 +763,7 @@ var introduceCollaborator = mutationWithClientMutationId({
     },
     project: {
       type: projectType,
-      resolve: (payload) => {
-        return payload.project;
-      },
+      resolve: ({project}) => { return project; },
     }
   },
   mutateAndGetPayload: ({projectId, email}, context) => {
@@ -794,15 +785,13 @@ var deleteCollaborator = mutationWithClientMutationId({
   outputFields: {
     deletedCollaboratorId: {
       type: GraphQLID,
-      resolve: (payload) => {
-        return toGlobalId('User', payload.deletedCollaboratorId);
+      resolve: ({deletedCollaboratorId}) => {
+        return toGlobalId('User', deletedCollaboratorId);
       },
     },
     project: {
       type: projectType,
-      resolve: (payload) => {
-        return payload.project;
-      },
+      resolve: ({project}) => { return project; },
     },
   },
   mutateAndGetPayload: ({id, projectId}, context) => {
@@ -872,19 +861,19 @@ var didIntroduceTestCase = subscriptionWithClientSubscriptionId({
   outputFields: {
     testCaseEdge: {
       type: GraphQLTestCaseEdge,
-      resolve: (payload) => {
-        var testCase = payload.testCase;
+      resolve: ({testCaseEdge}) => {
+        testCaseEdge.fulfillments = {pageInfo: {hasNextPage: false, hasPreviousPage: false}, edges: []};
+        testCaseEdge.examples = {pageInfo: {hasNextPage: false, hasPreviousPage: false}, edges: []};
+
         return {
-          cursor: cursorForObjectInConnection([testCase], testCase),
-          node: testCase,
+          cursor: cursorForObjectInConnection([testCaseEdge], testCaseEdge),
+          node: testCaseEdge,
         };
       }
     },
     project: {
       type: projectType,
-      resolve: (payload) => {
-        return payload.project;
-      },
+      resolve: ({project}) => { return project; },
     },
   },
   mutateAndGetPayload: ({projectId}, {rootValue}) => {
@@ -952,20 +941,20 @@ var didDeleteFulfillment = subscriptionWithClientSubscriptionId({
   outputFields: {
     deletedFulfillmentId: {
       type: GraphQLID,
-      resolve: (payload) => {
-        return toGlobalId('File', payload.deletedFulfillmentId);
+      resolve: ({deletedFulfillmentId}) => {
+        return toGlobalId('File', deletedFulfillmentId);
       },
     },
     testCase: {
       type: testCaseType,
-      resolve: (payload) => {
-        return payload.testCase;
+      resolve: ({testCase}) => {
+        return testCase;
       },
     },
     project: {
       type: projectType,
-      resolve: (payload) => {
-        return payload.project;
+      resolve: ({project}) => {
+        return project;
       },
     },
   },
@@ -991,14 +980,14 @@ var didDeleteTestCase = subscriptionWithClientSubscriptionId({
   outputFields: {
     deletedTestCaseId: {
       type: GraphQLID,
-      resolve: (payload) => {
-        return toGlobalId('TestCase', payload.deletedTestCaseId);
+      resolve: ({deletedTestCaseId}) => {
+        return toGlobalId('TestCase', deletedTestCaseId);
       },
     },
     project: {
       type: projectType,
-      resolve: (payload) => {
-        return payload.project;
+      resolve: ({project}) => {
+        return project;
       },
     }
   },
@@ -1047,16 +1036,16 @@ var didIntroduceExample = subscriptionWithClientSubscriptionId({
   outputFields: {
     exampleEdge: {
       type: GraphQLExampleEdge,
-      resolve: (payload) => {
+      resolve: ({exampleEdge}) => {
         return {
-          cursor: cursorForObjectInConnection([payload], payload),
-          node: payload,
+          cursor: cursorForObjectInConnection([exampleEdge], exampleEdge),
+          node: exampleEdge,
         };
       }
     },
     target: {
       type: nodeInterface,
-      resolve: () => {},
+      resolve: ({target}) => {return target},
     }
   },
   mutateAndGetPayload: ({targetId}, {rootValue}) => {
@@ -1083,15 +1072,15 @@ var didDeleteExample = subscriptionWithClientSubscriptionId({
   outputFields: {
     deletedExampleId: {
       type: GraphQLID,
-      resolve: (payload) => {
-        return toGlobalId('File', payload.deletedExampleId);
+      resolve: ({deletedExampleId}) => {
+        return toGlobalId('File', deletedExampleId);
       },
     },
     target: {
       type: nodeInterface,
-      resolve: (payload) => {
-        payload.target.id = toGlobalId('TestCase', payload.target.id);
-        return payload.target;
+      resolve: ({target}) => {
+        target.id = toGlobalId('TestCase', target.id);
+        return target;
       },
     }
   },
@@ -1116,18 +1105,16 @@ var didIntroduceCoverImage = subscriptionWithClientSubscriptionId({
   outputFields: {
     coverImageEdge: {
       type: GraphQLCoverImageEdge,
-      resolve: (payload) => {
+      resolve: ({coverImageEdge}) => {
         return {
-          cursor: cursorForObjectInConnection([payload], payload),
-          node: payload,
+          cursor: cursorForObjectInConnection([coverImageEdge], coverImageEdge),
+          node: coverImageEdge,
         };
       }
     },
     target: {
       type: nodeInterface,
-      resolve: () => {
-        return {id: null};
-      },
+      resolve: ({target}) => { return target},
     }
   },
   mutateAndGetPayload: ({targetId}, {rootValue}) => {
@@ -1154,25 +1141,22 @@ var didDeleteCoverImage = subscriptionWithClientSubscriptionId({
   outputFields: {
     deletedCoverImageId: {
       type: GraphQLID,
-      resolve: (payload) => {
-        return toGlobalId('File', payload.deletedCoverImageId);
+      resolve: ({deletedCoverImageId}) => {
+        return toGlobalId('File', deletedCoverImageId);
       },
     },
     coverImageEdge: {
       type: GraphQLCoverImageEdge,
-      resolve: (payload) => {
-        let coverImage = payload.coverImageEdge;
+      resolve: ({coverImageEdge}) => {
         return {
-          cursor: cursorForObjectInConnection([coverImage], coverImage),
-          node: coverImage,
+          cursor: cursorForObjectInConnection([coverImageEdge], coverImageEdge),
+          node: coverImageEdge,
         };
       }
     },
     target: {
       type: nodeInterface,
-      resolve: (payload) => {
-        return payload.target;
-      },
+      resolve: ({target}) => { return target; },
     }
   },
   mutateAndGetPayload: ({id, targetId}, {rootValue}) => {
@@ -1196,8 +1180,7 @@ var didIntroduceCollaborator = subscriptionWithClientSubscriptionId({
   outputFields: {
     collaboratorEdge: {
       type: GraphQLUserEdge,
-      resolve: (payload) => {
-        var collaboratorEdge = payload.collaboratorEdge;
+      resolve: ({collaboratorEdge}) => {
         return {
           cursor: cursorForObjectInConnection([collaboratorEdge], collaboratorEdge),
           node: collaboratorEdge,
@@ -1206,9 +1189,7 @@ var didIntroduceCollaborator = subscriptionWithClientSubscriptionId({
     },
     project: {
       type: projectType,
-      resolve: (payload) => {
-        return payload.project;
-      },
+      resolve: ({project}) => { return project; },
     }
   },
   mutateAndGetPayload: ({projectId}, {rootValue}) => {
@@ -1235,16 +1216,13 @@ var didDeleteCollaborator = subscriptionWithClientSubscriptionId({
   outputFields: {
     deletedCollaboratorId: {
       type: GraphQLID,
-      resolve: (payload) => {
-        return toGlobalId('User', payload.deletedCollaboratorId);
+      resolve: ({deletedCollaboratorId}) => {
+        return toGlobalId('User', deletedCollaboratorId);
       },
     },
     project: {
       type: projectType,
-      resolve: (payload) => {
-        console.log('deleteCollaborator');
-        return payload.project;
-      },
+      resolve: ({project}) => { return project; },
     },
   },
   mutateAndGetPayload: ({id, projectId}, {rootValue}) => {
@@ -1269,8 +1247,8 @@ var didIntroduceCollaboration = subscriptionWithClientSubscriptionId({
   outputFields: {
     collaborationEdge: {
       type: GraphQLProjectEdge,
-      resolve: (payload) => {
-        var collaborationEdge = payload.collaborationEdge;
+      resolve: ({collaborationEdge}) => {
+        collaborationEdge.testCases = {pageInfo: {hasNextPage: false, hasPreviousPage: false}, edges: []};
         return {
           cursor: cursorForObjectInConnection([collaborationEdge], collaborationEdge),
           node: collaborationEdge,
@@ -1308,15 +1286,13 @@ var didDeleteCollaboration = subscriptionWithClientSubscriptionId({
   outputFields: {
     deletedCollaborationId: {
       type: GraphQLID,
-      resolve: (payload) => {
-        return toGlobalId('Project', payload.deletedCollaborationId);
+      resolve: ({deletedCollaborationId}) => {
+        return toGlobalId('Project', deletedCollaborationId);
       },
     },
     me: {
       type: userType,
-      resolve: (payload) => {
-        return payload.me;
-      },
+      resolve: ({me}) => { return me; },
     },
   },
   mutateAndGetPayload: ({id, meId}, {rootValue}) => {
@@ -1344,15 +1320,11 @@ var didDeleteProject = subscriptionWithClientSubscriptionId({
   outputFields: {
     deletedProjectId: {
       type: GraphQLID,
-      resolve: (payload) => {
-        return toGlobalId('Project', payload.deletedProjectId);
-      },
+      resolve: ({deletedProjectId}) => { return toGlobalId('Project', deletedProjectId); },
     },
     me: {
       type: userType,
-      resolve: (payload) => {
-        return {id: null};
-      },
+      resolve: () => { return {id: null}; },
     },
   },
   mutateAndGetPayload: ({id, meId}, {rootValue}) => {

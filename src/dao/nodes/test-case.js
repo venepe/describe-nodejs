@@ -174,7 +174,7 @@ class TestCaseDAO {
           .return(['$testCase', '$project'])
           .all()
           .then((result) => {
-            let testCase = utilities.FilteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+            let testCaseEdge = utilities.FilteredObject(result[0], 'in_.*|out_.*|@.*|^_');
             let project = utilities.FilteredObject(result[1], 'in_.*|out_.*|@.*|^_');
             let numOfTestCases = project.numOfTestCases;
             numOfTestCases++;
@@ -182,12 +182,12 @@ class TestCaseDAO {
 
             events.publish(`/projects/${relationalId}/testcases`, {
               id: relationalId,
-              testCase,
+              testCaseEdge,
               project
             });
 
             resolve({
-              testCase,
+              testCaseEdge,
               project
             });
           })

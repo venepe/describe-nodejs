@@ -101,7 +101,6 @@ class FulfillmentDAO {
             testCase.isFulfilled = true;
 
             events.publish(`/testcases/${relationalId}/fulfillments`, {
-              id: relationalId,
               fulfillmentEdge,
               testCase,
               project

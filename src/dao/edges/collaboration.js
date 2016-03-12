@@ -104,11 +104,11 @@ class CollaborationDAO {
             })
             .let('updateProject', (s) => {
               s
-              .update(`$project PUT _allow = "${collaboratorRole}", ${permissions.ADD_EDGE}`)
+              .update(`$project PUT _allow = "${collaboratorRole}", ${roles.owner}`)
             })
             .let('updateCollaboratesOn', (s) => {
               s
-              .update(`$collaborateson PUT _allow = "${collaboratorRole}", ${permissions.DELETE_NODE}`)
+              .update(`$collaborateson PUT _allow = "${collaboratorRole}", ${roles.owner}`)
             })
             .commit()
             .return(['$collaborator', '$project'])

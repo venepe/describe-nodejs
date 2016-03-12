@@ -77,13 +77,17 @@ class CoverDAO {
             return utilities.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
           })
           .one()
-          .then((record) => {
+          .then((coverImageEdge) => {
 
             events.publish(`/target/${relationalId}/coverImages`, {
-              ...record
+              target: {id: relationalId},
+              coverImageEdge
             });
 
-            resolve(record);
+            resolve({
+              target: {id: relationalId},
+              coverImageEdge
+            });
           })
           .catch((e) => {
             console.log(`orientdb error: ${e}`);

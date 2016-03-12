@@ -75,13 +75,17 @@ class ExampleDAO {
             return utilites.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
           })
           .one()
-          .then((record) => {
+          .then((exampleEdge) => {
 
             events.publish(`/target/${relationalId}/examples`, {
-              ...record
+                target: {id: relationalId},
+                exampleEdge
             });
 
-            resolve(record);
+            resolve({
+              target: {id: relationalId},
+              exampleEdge
+            });
           })
           .catch((e) => {
             console.log(`orientdb error: ${e}`);

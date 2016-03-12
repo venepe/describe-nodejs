@@ -160,11 +160,14 @@ class ProjectDAO {
             return utilities.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
           })
           .one()
-          .then((record) => {
-            record.testCases = [];
-            record.numOfTestCases = 0;
-            record.numOfTestCasesFulfilled = 0;
-            resolve(record);
+          .then((project) => {
+            project.testCases = [];
+            project.numOfTestCases = 0;
+            project.numOfTestCasesFulfilled = 0;
+            resolve({
+              project,
+              me: {id: relationalId}
+            });
           })
           .catch((e) => {
             console.log(`orientdb error: ${e}`);
@@ -256,7 +259,10 @@ class ProjectDAO {
       )
       .one()
       .then(() => {
-        resolve({id: targetId});
+        resolve({
+          deletedProjectId,
+          me: {id: userId}
+        });
       })
       .catch((e) => {
         console.log(`orientdb error: ${e}`);
