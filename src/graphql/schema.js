@@ -663,7 +663,7 @@ var deleteExample = mutationWithClientMutationId({
     target: {
       type: nodeInterface,
       resolve: ({target}) => {
-        target.id = toGlobalId('TestCase', payload.target.id);
+        target.id = toGlobalId('TestCase', target.id);
         return target;
       },
     }
