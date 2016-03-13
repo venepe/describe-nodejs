@@ -21,7 +21,7 @@ const CursorToOffset = require('./cursor-to-offset');
 function getOrientDBPageFromGraphQL(args) {
   let skip = 0;
   let limit = 25;
-  let orderBy = 'createdAt DESC';
+  let orderBy = 'createdAt ASC';
 
   let first = args.first || 0;
   let last = args.last || 0;
@@ -40,7 +40,7 @@ function getOrientDBPageFromGraphQL(args) {
   } else if (args.last && args.after) {
     skip = (after > limit) ? after - last : 0;
     limit = last;
-    orderBy = 'createdAt ASC';
+    orderBy = 'createdAt DESC';
   }
   limit++;
 

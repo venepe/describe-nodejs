@@ -5,6 +5,7 @@ const { SMTIValidator } = require('../validator');
 const utilities = require('../../utilities');
 import { roles, regExRoles } from '../permissions';
 import * as events from '../../events';
+import { offsetToCursor } from 'graphql-relay';
 
 import {
   TestCase
@@ -170,24 +171,39 @@ class TestCaseDAO {
             .from('$project')
             .to('$testCase')
           })
+          .let('cursor', s => {
+            s
+            .select('outE(\'Requires\').size() as cursor')
+            .from('Project')
+            .where({
+              id: relationalId
+            })
+          })
           .commit()
-          .return(['$testCase', '$project'])
+          .return(['$testCase', '$project', '$cursor'])
           .all()
           .then((result) => {
-            let testCaseEdge = utilities.FilteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+            let node = utilities.FilteredObject(result[0], 'in_.*|out_.*|@.*|^_');
             let project = utilities.FilteredObject(result[1], 'in_.*|out_.*|@.*|^_');
+            let cursor = offsetToCursor(result[2].cursor);
             let numOfTestCases = project.numOfTestCases;
             numOfTestCases++;
             project.numOfTestCases = numOfTestCases;
 
             events.publish(`/projects/${relationalId}/testcases`, {
               id: relationalId,
-              testCaseEdge,
+              testCaseEdge: {
+                cursor,
+                node
+              },
               project
             });
 
             resolve({
-              testCaseEdge,
+              testCaseEdge: {
+                cursor,
+                node
+              },
               project
             });
           })

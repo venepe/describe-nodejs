@@ -506,12 +506,7 @@ var introduceTestCase = mutationWithClientMutationId({
   outputFields: {
     testCaseEdge: {
       type: GraphQLTestCaseEdge,
-      resolve: ({testCaseEdge}) => {
-        return {
-          cursor: cursorForObjectInConnection([testCaseEdge], testCaseEdge),
-          node: testCaseEdge,
-        };
-      }
+      resolve: ({testCaseEdge}) => { return testCaseEdge; }
     },
     project: {
       type: projectType,
@@ -755,6 +750,7 @@ var introduceCollaborator = mutationWithClientMutationId({
     collaboratorEdge: {
       type: GraphQLUserEdge,
       resolve: ({collaboratorEdge}) => {
+        console.log(collaboratorEdge);
         return {
           cursor: cursorForObjectInConnection([collaboratorEdge], collaboratorEdge),
           node: collaboratorEdge,
@@ -862,13 +858,10 @@ var didIntroduceTestCase = subscriptionWithClientSubscriptionId({
     testCaseEdge: {
       type: GraphQLTestCaseEdge,
       resolve: ({testCaseEdge}) => {
-        testCaseEdge.fulfillments = {pageInfo: {hasNextPage: false, hasPreviousPage: false}, edges: []};
-        testCaseEdge.examples = {pageInfo: {hasNextPage: false, hasPreviousPage: false}, edges: []};
+        testCaseEdge.node.fulfillments = {pageInfo: {hasNextPage: false, hasPreviousPage: false}, edges: []};
+        testCaseEdge.node.examples = {pageInfo: {hasNextPage: false, hasPreviousPage: false}, edges: []};
 
-        return {
-          cursor: cursorForObjectInConnection([testCaseEdge], testCaseEdge),
-          node: testCaseEdge,
-        };
+        return testCaseEdge;
       }
     },
     project: {

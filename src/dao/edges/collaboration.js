@@ -234,6 +234,8 @@ class CollaborationDAO {
           project
         });
 
+        console.log(`/projects/${projectId}/collaborators/${targetId}/delete`);
+
         //Delete collaboration from user
         events.publish(`/users/${targetId}/collaborations/${projectId}/delete`, {
           deletedCollaborationId: projectId,
