@@ -5,6 +5,7 @@ const { SMTIValidator } = require('../validator');
 const utilities = require('../../utilities');
 import { roles, permissions, regExRoles } from '../permissions';
 import * as events from '../../events';
+import { offsetToCursor } from 'graphql-relay';
 
 import {
   Project
@@ -154,18 +155,29 @@ class ProjectDAO {
             .from('$user')
             .to('$project')
           })
-          .commit()
-          .return('$project')
-          .transform((record) => {
-            return utilities.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
+          .let('cursor', s => {
+            s
+            .select('outE(\'Creates\').size() as cursor')
+            .from('User')
+            .where({
+              id: relationalId
+            })
           })
-          .one()
-          .then((project) => {
-            project.testCases = [];
-            project.numOfTestCases = 0;
-            project.numOfTestCasesFulfilled = 0;
+          .commit()
+          .return(['$project', '$cursor'])
+          .all()
+          .then((result) => {
+            let node = utilities.FilteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+            let cursor = offsetToCursor(result[1].cursor);
+            node.testCases = [];
+            node.numOfTestCases = 0;
+            node.numOfTestCasesFulfilled = 0;
+
             resolve({
-              project,
+              projectEdge: {
+                cursor,
+                node
+              },
               me: {id: relationalId}
             });
           })

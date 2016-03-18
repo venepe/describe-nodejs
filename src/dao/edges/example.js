@@ -2,9 +2,10 @@
 
 const _class = 'File';
 const { SMTIValidator } = require('../validator');
-const utilites = require('../../utilities');
+const utilities = require('../../utilities');
 import { roles, regExRoles } from '../permissions';
 import * as events from '../../events';
+import { offsetToCursor } from 'graphql-relay';
 
 import {
   File
@@ -69,22 +70,35 @@ class ExampleDAO {
             .from('$file')
             .to('$target')
           })
-          .commit()
-          .return('$file')
-          .transform((record) => {
-            return utilites.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
+          .let('cursor', s => {
+            s
+            .select('inE(\'Fulfills\').size() as cursor')
+            .from('TestCase')
+            .where({
+              id: relationalId
+            })
           })
-          .one()
-          .then((exampleEdge) => {
+          .commit()
+          .return(['$file', '$cursor'])
+          .all()
+          .then((result) => {
+            let node = utilities.FilteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+            let cursor = offsetToCursor(result[1].cursor);
 
             events.publish(`/target/${relationalId}/examples`, {
                 target: {id: relationalId},
-                exampleEdge
+                exampleEdge: {
+                  cursor,
+                  node
+                },
             });
 
             resolve({
               target: {id: relationalId},
-              exampleEdge
+              exampleEdge: {
+                cursor,
+                node
+              },
             });
           })
           .catch((e) => {

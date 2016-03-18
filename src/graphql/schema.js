@@ -388,12 +388,7 @@ var introduceProject = mutationWithClientMutationId({
   outputFields: {
     projectEdge: {
       type: GraphQLProjectEdge,
-      resolve: ({project}) => {
-        return {
-          cursor: cursorForObjectInConnection([project], project),
-          node: project,
-        };
-      }
+      resolve: ({projectEdge}) => { return projectEdge; }
     },
     me: {
       type: userType,
@@ -420,12 +415,7 @@ var introduceFulfillment = mutationWithClientMutationId({
   outputFields: {
     fulfillmentEdge: {
       type: GraphQLFulfillEdge,
-      resolve: ({fulfillmentEdge}) => {
-        return {
-          cursor: cursorForObjectInConnection([fulfillmentEdge], fulfillmentEdge),
-          node: fulfillmentEdge,
-        }
-      }
+      resolve: ({fulfillmentEdge}) => { return fulfillmentEdge; }
     },
     testCase: {
       type: testCaseType,
@@ -583,12 +573,7 @@ var introduceExample = mutationWithClientMutationId({
   outputFields: {
     exampleEdge: {
       type: GraphQLExampleEdge,
-      resolve: ({exampleEdge}) => {
-        return {
-          cursor: cursorForObjectInConnection([exampleEdge], exampleEdge),
-          node: exampleEdge,
-        };
-      }
+      resolve: ({exampleEdge}) => { return exampleEdge; }
     },
     target: {
       type: nodeInterface,
@@ -683,12 +668,7 @@ var introduceCoverImage = mutationWithClientMutationId({
   outputFields: {
     coverImageEdge: {
       type: GraphQLCoverImageEdge,
-      resolve: ({coverImageEdge}) => {
-        return {
-          cursor: cursorForObjectInConnection([coverImageEdge], coverImageEdge),
-          node: coverImageEdge,
-        };
-      }
+      resolve: ({coverImageEdge}) => { return coverImageEdge; }
     },
     target: {
       type: nodeInterface,
@@ -749,13 +729,7 @@ var introduceCollaborator = mutationWithClientMutationId({
   outputFields: {
     collaboratorEdge: {
       type: GraphQLUserEdge,
-      resolve: ({collaboratorEdge}) => {
-        console.log(collaboratorEdge);
-        return {
-          cursor: cursorForObjectInConnection([collaboratorEdge], collaboratorEdge),
-          node: collaboratorEdge,
-        };
-      }
+      resolve: ({collaboratorEdge}) => { return collaboratorEdge; }
     },
     project: {
       type: projectType,
@@ -890,12 +864,7 @@ var didIntroduceFulfillment = subscriptionWithClientSubscriptionId({
   outputFields: {
     fulfillmentEdge: {
       type: GraphQLFulfillEdge,
-      resolve: ({fulfillmentEdge}) => {
-        return {
-          cursor: cursorForObjectInConnection([fulfillmentEdge], fulfillmentEdge),
-          node: fulfillmentEdge,
-        }
-      }
+      resolve: ({fulfillmentEdge}) => { return fulfillmentEdge; }
     },
     testCase: {
       type: testCaseType,
@@ -1029,12 +998,7 @@ var didIntroduceExample = subscriptionWithClientSubscriptionId({
   outputFields: {
     exampleEdge: {
       type: GraphQLExampleEdge,
-      resolve: ({exampleEdge}) => {
-        return {
-          cursor: cursorForObjectInConnection([exampleEdge], exampleEdge),
-          node: exampleEdge,
-        };
-      }
+      resolve: ({exampleEdge}) => { return exampleEdge; }
     },
     target: {
       type: nodeInterface,
@@ -1098,12 +1062,7 @@ var didIntroduceCoverImage = subscriptionWithClientSubscriptionId({
   outputFields: {
     coverImageEdge: {
       type: GraphQLCoverImageEdge,
-      resolve: ({coverImageEdge}) => {
-        return {
-          cursor: cursorForObjectInConnection([coverImageEdge], coverImageEdge),
-          node: coverImageEdge,
-        };
-      }
+      resolve: ({coverImageEdge}) => { return coverImageEdge; }
     },
     target: {
       type: nodeInterface,
@@ -1173,12 +1132,7 @@ var didIntroduceCollaborator = subscriptionWithClientSubscriptionId({
   outputFields: {
     collaboratorEdge: {
       type: GraphQLUserEdge,
-      resolve: ({collaboratorEdge}) => {
-        return {
-          cursor: cursorForObjectInConnection([collaboratorEdge], collaboratorEdge),
-          node: collaboratorEdge,
-        };
-      }
+      resolve: ({collaboratorEdge}) => { return collaboratorEdge; }
     },
     project: {
       type: projectType,

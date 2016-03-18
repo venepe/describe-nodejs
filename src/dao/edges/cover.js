@@ -6,6 +6,7 @@ const utilities = require('../../utilities');
 import { roles, regExRoles } from '../permissions';
 import { FileConfig } from '../../config';
 import * as events from '../../events';
+import { offsetToCursor } from 'graphql-relay';
 
 import {
   File
@@ -71,13 +72,24 @@ class CoverDAO {
             .from('$file')
             .to('$target')
           })
-          .commit()
-          .return('$file')
-          .transform((record) => {
-            return utilities.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
+          .let('cursor', s => {
+            s
+            .select('inE(\'Covers\').size() as cursor')
+            .from('V')
+            .where({
+              id: relationalId
+            })
           })
-          .one()
-          .then((coverImageEdge) => {
+          .commit()
+          .return(['$file', '$cursor'])
+          .all()
+          .then((result) => {
+            let node = utilities.FilteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+            let cursor = offsetToCursor(result[1].cursor);
+            let coverImageEdge = {
+              cursor,
+              node
+            };
 
             events.publish(`/target/${relationalId}/coverImages`, {
               target: {id: relationalId},

@@ -4,6 +4,7 @@ const { SMTIValidator } = require('../validator');
 const utilities = require('../../utilities');
 import { roles, permissions, regExRoles } from '../permissions';
 import * as events from '../../events';
+import { offsetToCursor } from 'graphql-relay';
 
 import {
   Project
@@ -86,6 +87,17 @@ class CollaborationDAO {
                 id: relationalId
               })
             })
+            .let('cursor', s => {
+              s
+              .select('inE(\'CollaboratesOn\').size() as cursor')
+              .from('Project')
+              .where({
+                id: relationalId
+              })
+              .where(
+                `not ( id = "${userId}" )`
+              )
+            })
             .let('files', (s) => {
               s
               .select('expand(outE(\'Requires\').inV(\'TestCase\').inE(\'Fulfills\',\'Exemplifies\').inV(\'File\'))')
@@ -111,15 +123,19 @@ class CollaborationDAO {
               .update(`$collaborateson PUT _allow = "${collaboratorRole}", ${roles.owner}`)
             })
             .commit()
-            .return(['$collaborator', '$project'])
+            .return(['$collaborator', '$project', '$cursor'])
             .all()
             .then((result) => {
               let collaborator = utilities.FilteredObject(result[0], 'in_.*|out_.*|@.*|^_');
               let project = utilities.FilteredObject(result[1], 'in_.*|out_.*|@.*|^_');
+              let cursor = offsetToCursor(result[2].cursor);
 
               //Add collaborator to project
               events.publish(`/projects/${relationalId}/collaborators`, {
-                collaboratorEdge: collaborator,
+                collaboratorEdge: {
+                  node: collaborator,
+                  cursor,
+                },
                 project
               });
 
@@ -131,7 +147,10 @@ class CollaborationDAO {
 
               //Return the collaborator we added to the project
               resolve({
-                collaboratorEdge: collaborator,
+                collaboratorEdge: {
+                  node: collaborator,
+                  cursor,
+                },
                 project
               });
             })

@@ -5,6 +5,7 @@ const { SMTIValidator } = require('../validator');
 const utilites = require('../../utilities');
 import { roles, regExRoles } from '../permissions';
 import * as events from '../../events';
+import { offsetToCursor } from 'graphql-relay';
 
 import {
   File
@@ -84,13 +85,22 @@ class FulfillmentDAO {
             .from('$file')
             .to('$testCase')
           })
+          .let('cursor', s => {
+            s
+            .select('inE(\'Fulfills\').size() as cursor')
+            .from('TestCase')
+            .where({
+              id: relationalId
+            })
+          })
           .commit()
-          .return(['$file', '$testCase', '$project'])
+          .return(['$file', '$testCase', '$project', '$cursor'])
           .all()
           .then((result) => {
-            let fulfillmentEdge = utilites.FilteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+            let node = utilites.FilteredObject(result[0], 'in_.*|out_.*|@.*|^_');
             let testCase = utilites.FilteredObject(result[1], 'in_.*|out_.*|@.*|^_');
             let project = utilites.FilteredObject(result[2], 'in_.*|out_.*|@.*|^_');
+            let cursor = offsetToCursor(result[3].cursor);
 
             if (testCase.isFulfilled.length === 0) {
               let numOfTestCasesFulfilled = project.numOfTestCasesFulfilled;
@@ -101,13 +111,19 @@ class FulfillmentDAO {
             testCase.isFulfilled = true;
 
             events.publish(`/testcases/${relationalId}/fulfillments`, {
-              fulfillmentEdge,
+              fulfillmentEdge: {
+                cursor,
+                node
+              },
               testCase,
               project
             });
 
             resolve({
-              fulfillmentEdge,
+              fulfillmentEdge: {
+                cursor,
+                node
+              },
               testCase,
               project
             });
