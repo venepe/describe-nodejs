@@ -119,6 +119,14 @@ class FulfillmentDAO {
               project
             });
 
+            events.publish(`/testcases/${relationalId}/update`, {
+              ...testCase
+            });
+
+            events.publish(`/projects/${project.id}`, {
+              ...project
+            });
+
             resolve({
               fulfillmentEdge: {
                 cursor,
@@ -203,6 +211,10 @@ class FulfillmentDAO {
           deletedFulfillmentId: targetId,
           testCase,
           project
+        });
+
+        events.publish(`/testcases/${testCaseId}/update`, {
+          ...testCase
         });
 
         resolve({

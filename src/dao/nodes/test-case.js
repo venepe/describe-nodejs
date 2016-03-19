@@ -263,10 +263,12 @@ class TestCaseDAO {
           })
           .one()
           .then((record) => {
+            let isFulfilled = record.isFulfilled;
+            record.isFulfilled = (isFulfilled.length > 0) ? true : false;
 
             events.publish(`/testcases/${targetId}/update`, {
               id: targetId,
-              ...object
+              ...record
             });
 
             resolve(record);
