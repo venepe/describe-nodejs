@@ -85,7 +85,7 @@ class ExampleDAO {
             let node = utilities.FilteredObject(result[0], 'in_.*|out_.*|@.*|^_');
             let cursor = offsetToCursor(result[1].cursor);
 
-            events.publish(`/target/${relationalId}/examples`, {
+            events.publish(events.didIntroduceExampleChannel(relationalId), {
                 target: {id: relationalId},
                 exampleEdge: {
                   cursor,
@@ -152,7 +152,7 @@ class ExampleDAO {
       .then((result) => {
         let id = result.id;
 
-        events.publish(`/examples/${targetId}/delete`, {
+        events.publish(events.didDeleteExampleChannel(targetId), {
           deletedExampleId: targetId,
           target: {id}
         });

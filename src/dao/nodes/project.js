@@ -235,10 +235,10 @@ class ProjectDAO {
           })
           .one()
           .then((record) => {
-            events.publish(`/projects/${targetId}`, {
-              id: targetId,
-              ...object
+            events.publish(events.didUpdateProjectChannel(targetId), {
+              ...record
             });
+
             resolve(record);
           })
           .catch((e) => {

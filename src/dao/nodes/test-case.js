@@ -133,7 +133,7 @@ class TestCaseDAO {
           .let('project', (s) => {
             s
             .select('*')
-            .select('outE(\'Requires\').size() as numOfTestCases')
+            .getProject()
             .from('Project')
             .where({
               id: relationalId
@@ -185,18 +185,22 @@ class TestCaseDAO {
           .then((result) => {
             let node = utilities.FilteredObject(result[0], 'in_.*|out_.*|@.*|^_');
             let project = utilities.FilteredObject(result[1], 'in_.*|out_.*|@.*|^_');
+            console.log(project);
             let cursor = offsetToCursor(result[2].cursor);
             let numOfTestCases = project.numOfTestCases;
             numOfTestCases++;
             project.numOfTestCases = numOfTestCases;
 
-            events.publish(`/projects/${relationalId}/testcases`, {
-              id: relationalId,
+            events.publish(events.didIntroduceTestCaseChannel(relationalId), {
               testCaseEdge: {
                 cursor,
                 node
               },
               project
+            });
+
+            events.publish(events.didUpdateProjectChannel(relationalId), {
+              ...project
             });
 
             resolve({
@@ -266,8 +270,7 @@ class TestCaseDAO {
             let isFulfilled = record.isFulfilled;
             record.isFulfilled = (isFulfilled.length > 0) ? true : false;
 
-            events.publish(`/testcases/${targetId}/update`, {
-              id: targetId,
+            events.publish(events.didUpdateTestCaseChannel(targetId), {
               ...record
             });
 
@@ -341,10 +344,14 @@ class TestCaseDAO {
           project.numOfTestCasesFulfilled = numOfTestCasesFulfilled;
         }
 
-        events.publish(`/testcases/${targetId}/delete`, {
+        events.publish(events.didDeleteTestCaseChannel(target), {
           id: targetId,
           deletedTestCaseId: targetId,
           project
+        });
+
+        events.publish(events.didUpdateProjectChannel(project.id), {
+          ...project
         });
 
         resolve({

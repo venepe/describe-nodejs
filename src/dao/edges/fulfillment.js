@@ -110,7 +110,7 @@ class FulfillmentDAO {
 
             testCase.isFulfilled = true;
 
-            events.publish(`/testcases/${relationalId}/fulfillments`, {
+            events.publish(events.didIntroduceFulfillmentChannel(relationalId), {
               fulfillmentEdge: {
                 cursor,
                 node
@@ -119,11 +119,11 @@ class FulfillmentDAO {
               project
             });
 
-            events.publish(`/testcases/${relationalId}/update`, {
+            events.publish(events.didUpdateTestCaseChannel(relationalId), {
               ...testCase
             });
 
-            events.publish(`/projects/${project.id}`, {
+            events.publish(events.didUpdateProjectChannel(project.id), {
               ...project
             });
 
@@ -206,15 +206,18 @@ class FulfillmentDAO {
           project.numOfTestCasesFulfilled = numOfTestCasesFulfilled;
         }
 
-        events.publish(`/testcases/${testCaseId}/fulfillments/${targetId}`, {
-          id: targetId,
+        events.publish(events.didDeleteFulfillmentChannel(testCaseId, targetId), {
           deletedFulfillmentId: targetId,
           testCase,
           project
         });
 
-        events.publish(`/testcases/${testCaseId}/update`, {
+        events.publish(events.didUpdateTestCaseChannel(testCaseId), {
           ...testCase
+        });
+
+        events.publish(events.didUpdateProjectChannel(project.id), {
+          ...project
         });
 
         resolve({

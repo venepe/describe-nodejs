@@ -91,7 +91,7 @@ class CoverDAO {
               node
             };
 
-            events.publish(`/target/${relationalId}/coverImages`, {
+            events.publish(events.didIntroduceCoverImageChannel(relationalId), {
               target: {id: relationalId},
               coverImageEdge
             });
@@ -188,7 +188,7 @@ class CoverDAO {
           }
         }
 
-        events.publish(`/coverImages/${targetId}/delete`, payload);
+        events.publish(events.didDeleteCoverImageChannel(targetId), payload);
 
         resolve(payload);
       })

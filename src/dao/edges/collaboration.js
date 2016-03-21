@@ -131,7 +131,7 @@ class CollaborationDAO {
               let cursor = offsetToCursor(result[2].cursor);
 
               //Add collaborator to project
-              events.publish(`/projects/${relationalId}/collaborators`, {
+              events.publish(events.didIntroduceCollaboratorChannel(relationalId), {
                 collaboratorEdge: {
                   node: collaborator,
                   cursor,
@@ -140,7 +140,7 @@ class CollaborationDAO {
               });
 
               //Add collaboration to user
-              events.publish(`/users/${collaborator.id}/collaborations`, {
+              events.publish(events.didIntroduceCollaborationChannel(collaborator.id), {
                 collaborationEdge: project,
                 me: collaborator
               });
@@ -248,15 +248,13 @@ class CollaborationDAO {
       .one()
       .then((project) => {
 
-        events.publish(`/projects/${projectId}/collaborators/${targetId}/delete`, {
+        events.publish(events.didDeleteCollaboratorChannel(projectId, targetId), {
           deletedCollaboratorId: targetId,
           project
         });
 
-        console.log(`/projects/${projectId}/collaborators/${targetId}/delete`);
-
         //Delete collaboration from user
-        events.publish(`/users/${targetId}/collaborations/${projectId}/delete`, {
+        events.publish(events.didDeleteCollaborationChannel(targetId, projectId), {
           deletedCollaborationId: projectId,
           me: {id: targetId}
         });

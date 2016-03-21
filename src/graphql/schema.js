@@ -37,6 +37,8 @@ import {
   User,
 } from '../dao/model';
 
+import * as channels from '../events/channels';
+
 var {nodeInterface, nodeField} = nodeDefinitions(
   (globalId, context) => {
     var {type, id} = fromGlobalId(globalId);
@@ -815,7 +817,7 @@ var didUpdateProject = subscriptionWithClientSubscriptionId({
       return rootValue.event;
     } else {
       var localId = fromGlobalId(id).id;
-      rootValue.channel = `/projects/${localId}`;
+      rootValue.channel = channels.didUpdateProjectChannel(localId);
       return {id};
     }
   }
@@ -848,7 +850,7 @@ var didIntroduceTestCase = subscriptionWithClientSubscriptionId({
       return rootValue.event;
     } else {
       var localId = fromGlobalId(projectId).id;
-      rootValue.channel = `/projects/${localId}/testcases`;
+      rootValue.channel = channels.didIntroduceTestCaseChannel(localId);
       return {projectId};
     }
   }
@@ -884,7 +886,7 @@ var didIntroduceFulfillment = subscriptionWithClientSubscriptionId({
       return rootValue.event;
     } else {
       var localId = fromGlobalId(testCaseId).id;
-      rootValue.channel = `/testcases/${localId}/fulfillments`;
+      rootValue.channel = channels.didIntroduceFulfillmentChannel(localId);
       return {testCaseId};
     }
   }
@@ -926,7 +928,7 @@ var didDeleteFulfillment = subscriptionWithClientSubscriptionId({
     } else {
       var localId = fromGlobalId(id).id;
       var localTestCaseId = fromGlobalId(testCaseId).id;
-      rootValue.channel = `/testcases/${localTestCaseId}/fulfillments/${localId}`;
+      rootValue.channel = channels.didDeleteFulfillmentChannel(localTestCaseId, localId);
       return {testCaseId};
     }
   }
@@ -958,7 +960,7 @@ var didDeleteTestCase = subscriptionWithClientSubscriptionId({
       return rootValue.event;
     } else {
       var localId = fromGlobalId(id).id;
-      rootValue.channel = `/testcases/${localId}/delete`;
+      rootValue.channel = channels.didDeleteTestCaseChannel(localId);
       return {id};
     }
   }
@@ -982,7 +984,7 @@ var didUpdateTestCase = subscriptionWithClientSubscriptionId({
       return rootValue.event;
     } else {
       var localId = fromGlobalId(id).id;
-      rootValue.channel = `/testcases/${localId}/update`;
+      rootValue.channel = channels.didUpdateTestCaseChannel(localId);
       return {id};
     }
   }
@@ -1010,7 +1012,7 @@ var didIntroduceExample = subscriptionWithClientSubscriptionId({
       return rootValue.event;
     } else {
       var localId = fromGlobalId(targetId).id;
-      rootValue.channel = `/target/${localId}/examples`;
+      rootValue.channel = channels.didIntroduceExampleChannel(localId);
       return {targetId};
     }
   }
@@ -1046,7 +1048,7 @@ var didDeleteExample = subscriptionWithClientSubscriptionId({
       return rootValue.event;
     } else {
       var localId = fromGlobalId(id).id;
-      rootValue.channel = `/examples/${localId}/delete`;
+      rootValue.channel = channels.didDeleteExampleChannel(localId);
       return {id};
     }
   }
@@ -1074,7 +1076,7 @@ var didIntroduceCoverImage = subscriptionWithClientSubscriptionId({
       return rootValue.event;
     } else {
       var localId = fromGlobalId(targetId).id;
-      rootValue.channel = `/target/${localId}/coverImages`;
+      rootValue.channel = channels.didIntroduceCoverImageChannel(localId);
       return {targetId};
     }
   }
@@ -1116,7 +1118,7 @@ var didDeleteCoverImage = subscriptionWithClientSubscriptionId({
       return rootValue.event;
     } else {
       var localId = fromGlobalId(id).id;
-      rootValue.channel = `/coverImages/${localId}/delete`;
+      rootValue.channel = channels.didDeleteCoverImageChannel(localId);
       return {id};
     }
   }
@@ -1144,7 +1146,7 @@ var didIntroduceCollaborator = subscriptionWithClientSubscriptionId({
       return rootValue.event;
     } else {
       var localId = fromGlobalId(projectId).id;
-      rootValue.channel = `/projects/${localId}/collaborators`;
+      rootValue.channel = channels.didIntroduceCollaboratorChannel(localId);
       return {projectId};
     }
   }
@@ -1178,7 +1180,7 @@ var didDeleteCollaborator = subscriptionWithClientSubscriptionId({
     } else {
       var localId = fromGlobalId(id).id;
       var localProjectId = fromGlobalId(projectId).id;
-      rootValue.channel = `/projects/${localProjectId}/collaborators/${localId}/delete`;
+      rootValue.channel = channels.didDeleteCollaboratorChannel(localProjectId, localId);
       return {id};
     }
   }
@@ -1214,7 +1216,7 @@ var didIntroduceCollaboration = subscriptionWithClientSubscriptionId({
       return rootValue.event;
     } else {
       var localId = fromGlobalId(meId).id;
-      rootValue.channel = `/users/${localId}/collaborations`;
+      rootValue.channel = channels.didIntroduceCollaborationChannel(localId);
       return {meId};
     }
   }
@@ -1248,7 +1250,7 @@ var didDeleteCollaboration = subscriptionWithClientSubscriptionId({
     } else {
       var localId = fromGlobalId(id).id;
       var localMeId = fromGlobalId(meId).id;
-      rootValue.channel = `/users/${localMeId}/collaborations/${localId}/delete`;
+      rootValue.channel = channels.didDeleteCollaborationChannel(localMeId, localId);
       return {id};
     }
   }
