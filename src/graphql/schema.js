@@ -1282,7 +1282,7 @@ var didDeleteProject = subscriptionWithClientSubscriptionId({
     } else {
       var localId = fromGlobalId(id).id;
       var localMeId = fromGlobalId(meId).id;
-      rootValue.channel = `/projects/${localId}/delete`;
+      rootValue.channel = channels.didDeleteProjectChannel(localId);
       return {id};
     }
   }
@@ -1307,23 +1307,23 @@ var schema = new GraphQLSchema({
   mutation: new GraphQLObjectType({
     name: 'Mutation',
     fields: {
-      updateUser: updateUser,
-      deleteUser: deleteUser,
-      introduceProject: introduceProject,
-      introduceFulfillment: introduceFulfillment,
-      updateProject: updateProject,
-      deleteProject: deleteProject,
-      introduceTestCase: introduceTestCase,
-      updateTestCase: updateTestCase,
-      deleteTestCase: deleteTestCase,
-      introduceExample: introduceExample,
-      deleteExample: deleteExample,
-      deleteFulfillment: deleteFulfillment,
-      deleteCoverImage: deleteCoverImage,
-      introduceCoverImage: introduceCoverImage,
-      deleteCollaborator: deleteCollaborator,
-      introduceCollaborator: introduceCollaborator,
-      deleteCollaboration: deleteCollaboration,
+      updateUser,
+      deleteUser,
+      introduceProject,
+      introduceFulfillment,
+      updateProject,
+      deleteProject,
+      introduceTestCase,
+      updateTestCase,
+      deleteTestCase,
+      introduceExample,
+      deleteExample,
+      deleteFulfillment,
+      deleteCoverImage,
+      introduceCoverImage,
+      deleteCollaborator,
+      introduceCollaborator,
+      deleteCollaboration,
     }
   }),
 
@@ -1331,20 +1331,21 @@ var schema = new GraphQLSchema({
   subscription: new GraphQLObjectType({
     name: 'Subscription',
     fields: {
-      didUpdateProject: didUpdateProject,
-      didIntroduceTestCase: didIntroduceTestCase,
-      didIntroduceFulfillment: didIntroduceFulfillment,
-      didDeleteFulfillment: didDeleteFulfillment,
-      didDeleteTestCase: didDeleteTestCase,
-      didUpdateTestCase: didUpdateTestCase,
-      didIntroduceExample: didIntroduceExample,
-      didDeleteExample: didDeleteExample,
-      didIntroduceCoverImage: didIntroduceCoverImage,
-      didDeleteCoverImage: didDeleteCoverImage,
-      didIntroduceCollaborator: didIntroduceCollaborator,
-      didDeleteCollaborator: didDeleteCollaborator,
-      didIntroduceCollaboration: didIntroduceCollaboration,
-      didDeleteCollaboration: didDeleteCollaboration
+      didUpdateProject,
+      didDeleteProject,
+      didIntroduceTestCase,
+      didIntroduceFulfillment,
+      didDeleteFulfillment,
+      didDeleteTestCase,
+      didUpdateTestCase,
+      didIntroduceExample,
+      didDeleteExample,
+      didIntroduceCoverImage,
+      didDeleteCoverImage,
+      didIntroduceCollaborator,
+      didDeleteCollaborator,
+      didIntroduceCollaboration,
+      didDeleteCollaboration,
     }
   })
 });

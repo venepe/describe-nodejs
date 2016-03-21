@@ -344,8 +344,7 @@ class TestCaseDAO {
           project.numOfTestCasesFulfilled = numOfTestCasesFulfilled;
         }
 
-        events.publish(events.didDeleteTestCaseChannel(target), {
-          id: targetId,
+        events.publish(events.didDeleteTestCaseChannel(targetId), {
           deletedTestCaseId: targetId,
           project
         });

@@ -271,8 +271,13 @@ class ProjectDAO {
       )
       .one()
       .then(() => {
+        events.publish(events.didDeleteProjectChannel(targetId), {
+          deletedProjectId: targetId,
+          me: {}
+        });
+
         resolve({
-          deletedProjectId,
+          deletedProjectId: targetId,
           me: {id: userId}
         });
       })
