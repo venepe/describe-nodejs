@@ -18,7 +18,7 @@ export const connect = socket => {
   let rootValue = {};
 
   socket.on('disconnect', () => {
-    Object.values(subscriptions).forEach(({channel,listener}) =>
+    Object.values(subscriptions).forEach(({channel, listener}) =>
       events.unsubscribe(channel, listener)
     )
   });

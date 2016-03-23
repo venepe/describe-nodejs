@@ -184,8 +184,8 @@ class TestCaseDAO {
           .all()
           .then((result) => {
             let node = utilities.FilteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+            node.isFulfilled = false;
             let project = utilities.FilteredObject(result[1], 'in_.*|out_.*|@.*|^_');
-            console.log(project);
             let cursor = offsetToCursor(result[2].cursor);
             let numOfTestCases = project.numOfTestCases;
             numOfTestCases++;
