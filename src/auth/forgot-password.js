@@ -2,8 +2,6 @@
 
 import DAO from '../dao';
 
-function forgotPassword(payload) {
+export const forgotPassword = (payload) => {
   return new DAO().User().forgotPassword(payload)
 }
-
-module.exports = forgotPassword;

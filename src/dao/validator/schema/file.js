@@ -1,8 +1,8 @@
 'use strict';
 
-const validator = require('node-validator');
+import validator from 'node-validator';
 
-function isValid(obj = {}, callback) {
+const isValid = (obj = {}, callback) => {
   let check = validator
               .isObject()
               .withRequired('uri', validator.isString());
@@ -10,4 +10,4 @@ function isValid(obj = {}, callback) {
   validator.run(check, obj, callback);
 }
 
-module.exports = isValid;
+export default isValid;

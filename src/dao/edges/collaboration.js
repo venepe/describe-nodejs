@@ -1,7 +1,7 @@
 'use strict';
 
-const { SMTIValidator } = require('../validator');
-const utilities = require('../../utilities');
+import { SMTIValidator } from '../validator';
+import { filteredObject } from '../../utilities';
 import { roles, permissions, regExRoles } from '../permissions';
 import * as events from '../../events';
 import { offsetToCursor } from 'graphql-relay';
@@ -126,8 +126,8 @@ class CollaborationDAO {
             .return(['$collaborator', '$project', '$cursor'])
             .all()
             .then((result) => {
-              let collaborator = utilities.FilteredObject(result[0], 'in_.*|out_.*|@.*|^_');
-              let project = utilities.FilteredObject(result[1], 'in_.*|out_.*|@.*|^_');
+              let collaborator = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+              let project = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
               let cursor = offsetToCursor(result[2].cursor);
 
               //Add collaborator to project
@@ -243,7 +243,7 @@ class CollaborationDAO {
       .commit()
       .return('$project')
       .transform((record) => {
-        return utilities.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
+        return filteredObject(record, 'in_.*|out_.*|@.*|^_');
       })
       .one()
       .then((project) => {

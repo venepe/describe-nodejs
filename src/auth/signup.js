@@ -2,8 +2,6 @@
 
 import DAO from '../dao';
 
-function signUp(user) {
+export const signUp = (user) => {
   return new DAO().User().create(user)
 }
-
-module.exports = signUp;

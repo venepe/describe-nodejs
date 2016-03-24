@@ -1,6 +1,6 @@
 'use strict';
 
-function getMeta(pageObject, payload) {
+const getMeta = (pageObject, payload) => {
   let sliceStart = pageObject.skip;
   let arrayLength = sliceStart + payload.length;
   return {
@@ -9,4 +9,8 @@ function getMeta(pageObject, payload) {
   };
 }
 
-module.exports.getMeta = getMeta;
+const GraphQLHelper = {
+  getMeta
+}
+
+export default GraphQLHelper;

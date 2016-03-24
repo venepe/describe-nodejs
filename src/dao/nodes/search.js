@@ -1,6 +1,6 @@
 'use strict';
 
-const utilities = require('../../utilities');
+import { filteredObject, Pagination, GraphQLHelper } from '../../utilities';
 
 class SearchDAO {
   constructor(targetId, params) {
@@ -9,7 +9,7 @@ class SearchDAO {
   }
 
   findUser(args) {
-    let pageObject = utilities.Pagination.getOrientDBPageFromGraphQL(args);
+    let pageObject = Pagination.getOrientDBPageFromGraphQL(args);
 
     return new Promise((resolve, reject) => {
       let query = this.query;
@@ -29,11 +29,11 @@ class SearchDAO {
       .limit(pageObject.limit)
       .order(pageObject.orderBy)
       .transform((record) => {
-        return utilities.FilteredObject(record, '@.*|rid');
+        return filteredObject(record, '@.*|rid');
       })
       .all()
       .then((payload) => {
-        let meta = utilities.GraphQLHelper.getMeta(pageObject, payload);
+        let meta = GraphQLHelper.getMeta(pageObject, payload);
         resolve({
           payload,
           meta

@@ -1,37 +1,33 @@
 'use strict';
 
-const LE = require('letsencrypt');
-const http = require('http');
-const https = require('https');
-const express = require('express');
-const graphqlHTTP = require('express-graphql');
-const bodyParser = require('body-parser');
-const app = express();
-const jwt = require('express-jwt');
-const jwtRefreshToken = require('jwt-refresh-token');
-import {AppConfig, FileConfig} from './src/config';
-import {graphql} from 'graphql';
-import {fromGlobalId} from 'graphql-relay';
-const client = require('./src/client');
+import LE from 'letsencrypt';
+import http from 'http';
+import https from 'https';
+import express from 'express';
+import graphqlHTTP from 'express-graphql';
+import bodyParser from 'body-parser';
+import jwt from 'express-jwt';
+import jwtRefreshToken from 'jwt-refresh-token';
+import { AppConfig, FileConfig } from './src/config';
+import { graphql } from 'graphql';
+import { fromGlobalId } from 'graphql-relay';
+import client from './src/client';
 import schema from './src/graphql/schema';
-import {connect} from './socket';
-const multer  = require('multer');
-const signup = require('./src/auth/signup');
-const deletAccount = require('./src/auth/delete-account');
-const forgotPassword = require('./src/auth/forgot-password');
-const authenticate = require('./src/auth/authenticate');
-const passwordUpdate = require('./src/auth/password-update');
-const passwordReset = require('./src/auth/password-reset');
+import { connect } from './socket';
+import multer from 'multer';
+import { authenticate, deletAccount, forgotPassword, passwordReset, passwordUpdate, signUp } from './src/auth';
+import fs from 'fs';
+import mmm from 'mmmagic';
+import del from 'del';
+import mv from 'mv';
+import { SMTIEmailTemplate } from './src/utilities';
+import nodemailer from 'nodemailer';
+
+const app = express();
 const upload = multer({ dest: __dirname + FileConfig.TempDir});
 const port = process.env.PORT || 80;
 const baseImageUrl = FileConfig.BaseImageUrl;
-const fs = require('fs');
-const mmm = require('mmmagic');
-const del = require('del');
-const mv = require('mv');
 const Magic = mmm.Magic;
-import {SMTIEmailTemplate} from './src/utilities';
-const nodemailer = require('nodemailer');
 const transporter = nodemailer.createTransport({
     service: 'Gmail',
     auth: {

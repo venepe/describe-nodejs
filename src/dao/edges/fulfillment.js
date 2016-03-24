@@ -1,8 +1,8 @@
 'use strict';
 
 const _class = 'File';
-const { SMTIValidator } = require('../validator');
-const utilites = require('../../utilities');
+import { SMTIValidator } from '../validator';
+import { filteredObject } from '../../utilities';
 import { roles, regExRoles } from '../permissions';
 import * as events from '../../events';
 import { offsetToCursor } from 'graphql-relay';
@@ -97,9 +97,9 @@ class FulfillmentDAO {
           .return(['$file', '$testCase', '$project', '$cursor'])
           .all()
           .then((result) => {
-            let node = utilites.FilteredObject(result[0], 'in_.*|out_.*|@.*|^_');
-            let testCase = utilites.FilteredObject(result[1], 'in_.*|out_.*|@.*|^_');
-            let project = utilites.FilteredObject(result[2], 'in_.*|out_.*|@.*|^_');
+            let node = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+            let testCase = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
+            let project = filteredObject(result[2], 'in_.*|out_.*|@.*|^_');
             let cursor = offsetToCursor(result[3].cursor);
 
             if (testCase.isFulfilled.length === 0) {
@@ -193,8 +193,8 @@ class FulfillmentDAO {
       .return(['$testCase', '$project'])
       .all()
       .then((result) => {
-        let testCase = utilites.FilteredObject(result[0], 'in_.*|out_.*|@.*|^_');
-        let project = utilites.FilteredObject(result[1], 'in_.*|out_.*|@.*|^_');
+        let testCase = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+        let project = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
         let numOfTestCasesFulfilled = project.numOfTestCasesFulfilled;
         let isFulfilled = testCase.isFulfilled;
 

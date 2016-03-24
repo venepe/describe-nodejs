@@ -1,8 +1,8 @@
 'use strict';
 
 const _class = 'User';
-const { SMTIValidator } = require('../validator');
-const utilities = require('../../utilities');
+import { SMTIValidator } from '../validator';
+import { authToken, filteredObject, SMTICrypt, Base64, Pagination, GraphQLHelper } from '../../utilities';
 import { roles } from '../permissions';
 
 import {
@@ -28,7 +28,7 @@ class UserDAO {
       .limit(1)
       .transform((record) => {
         let user = new User();
-        return utilities.FilteredObject(record, '@.*|rid', user);
+        return filteredObject(record, '@.*|rid', user);
       })
       .one()
       .then((record) => {
@@ -52,7 +52,7 @@ class UserDAO {
       .inCreatesFromNode(id)
       .limit(25)
       .transform((record) => {
-        return utilities.FilteredObject(record, '@.*|rid');
+        return filteredObject(record, '@.*|rid');
       })
       .all()
       .then((records) => {
@@ -76,7 +76,7 @@ class UserDAO {
         .isUser()
         .then((object) => {
           return new Promise((resolve, reject) => {
-            utilities.SMTICrypt.encrypt(object.password)
+            SMTICrypt.encrypt(object.password)
               .then((hash) => {
                 object.password = hash;
                 resolve(object);
@@ -98,7 +98,7 @@ class UserDAO {
           .set(object)
           .set({ _allow })
           .transform((record) => {
-            return utilities.FilteredObject(record, 'in_.*|out_.*|@.*|password|^_');
+            return filteredObject(record, 'in_.*|out_.*|@.*|password|^_');
           })
           .one()
           .then((user) => {
@@ -106,13 +106,13 @@ class UserDAO {
               let email = user.email;
               let uuid = user.id;
               let role = user.role;
-              let id = utilities.Base64.base64('User:' + uuid);
+              let id = Base64.base64('User:' + uuid);
               let payload = {
                 email,
                 id,
                 role
               };
-              let authenticate = utilities.AuthToken(payload);
+              let authenticate = authToken(payload);
 
               user.authenticate = authenticate;
 
@@ -168,7 +168,7 @@ class UserDAO {
             .commit()
             .return('$user')
             .transform((record) => {
-              return utilities.FilteredObject(record, 'in_.*|out_.*|@.*|password|^_');
+              return filteredObject(record, 'in_.*|out_.*|@.*|password|^_');
             })
             .one()
             .then((record) => {
@@ -219,10 +219,10 @@ class UserDAO {
                     .one();
           })
           .then((userRecord) => {
-            return utilities.SMTICrypt.compare(object.current, userRecord.password);
+            return SMTICrypt.compare(object.current, userRecord.password);
           })
           .then(() => {
-            return utilities.SMTICrypt.encrypt(object.new);
+            return SMTICrypt.encrypt(object.new);
           })
           .then((newHash) => {
             db
@@ -277,7 +277,7 @@ class UserDAO {
         validator
           .isReset()
           .then((object) => {
-            return utilities.SMTICrypt.encrypt(object.password);
+            return SMTICrypt.encrypt(object.password);
           })
           .then((newHash) => {
             db
@@ -294,17 +294,17 @@ class UserDAO {
             .scalar()
             .then((results) => {
               if (results > 0) {
-                let user = utilities.FilteredObject(userRecord, 'in_.*|out_.*|@.*|password|^_');
+                let user = filteredObject(userRecord, 'in_.*|out_.*|@.*|password|^_');
                 let email = user.email;
                 let uuid = user.id;
                 let role = user.role;
-                let id = utilities.Base64.base64('User:' + uuid);
+                let id = Base64.base64('User:' + uuid);
                 let payload = {
                   email,
                   id,
                   role
                 };
-                let authenticate = utilities.AuthToken(payload);
+                let authenticate = authToken(payload);
 
                 user.authenticate = authenticate;
 
@@ -341,21 +341,21 @@ class UserDAO {
       .limit(1)
       .transform((record) => {
         let user = new User ();
-        return utilities.FilteredObject(record, '@.*|rid', user);
+        return filteredObject(record, '@.*|rid', user);
       })
       .one()
       .then((record) => {
-        let user = utilities.FilteredObject(record, 'in_.*|out_.*|@.*|password|^_');
+        let user = filteredObject(record, 'in_.*|out_.*|@.*|password|^_');
         let email = user.email;
         let uuid = user.id;
         let role = user.role;
-        let id = utilities.Base64.base64('User:' + uuid);
+        let id = Base64.base64('User:' + uuid);
         let payload = {
           email,
           id,
           role
         };
-        let authenticate = utilities.AuthToken(payload);
+        let authenticate = authToken(payload);
 
         user.authenticate = authenticate;
 
@@ -400,7 +400,7 @@ class UserDAO {
   }
 
   getEdgeCollaborators(args) {
-    let pageObject = utilities.Pagination.getOrientDBPageFromGraphQL(args);
+    let pageObject = Pagination.getOrientDBPageFromGraphQL(args);
 
     return new Promise((resolve, reject) => {
       let user = this.user;
@@ -418,11 +418,11 @@ class UserDAO {
       .limit(pageObject.limit)
       .order(pageObject.orderBy)
       .transform((record) => {
-        return utilities.FilteredObject(record, '@.*|rid');
+        return filteredObject(record, '@.*|rid');
       })
       .all()
       .then((payload) => {
-        let meta = utilities.GraphQLHelper.getMeta(pageObject, payload);
+        let meta = GraphQLHelper.getMeta(pageObject, payload);
         resolve({
           payload,
           meta
@@ -437,7 +437,7 @@ class UserDAO {
   }
 
   getEdgeLeaders(args) {
-    let pageObject = utilities.Pagination.getOrientDBPageFromGraphQL(args);
+    let pageObject = Pagination.getOrientDBPageFromGraphQL(args);
 
     return new Promise((resolve, reject) => {
       let user = this.user;
@@ -455,11 +455,11 @@ class UserDAO {
       .limit(pageObject.limit)
       .order(pageObject.orderBy)
       .transform((record) => {
-        return utilities.FilteredObject(record, '@.*|rid');
+        return filteredObject(record, '@.*|rid');
       })
       .all()
       .then((payload) => {
-        let meta = utilities.GraphQLHelper.getMeta(pageObject, payload);
+        let meta = GraphQLHelper.getMeta(pageObject, payload);
         resolve({
           payload,
           meta

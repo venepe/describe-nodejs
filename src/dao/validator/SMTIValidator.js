@@ -1,8 +1,9 @@
 'use strict';
 
-const uuid = require('node-uuid');
-const validator = require('validator');
-const utilities = require('../../utilities');
+import uuid from 'node-uuid';
+import validator from 'validator';
+import { Generate } from '../../utilities'
+import * as schema from './schema';
 
 class SMTIValidator {
   constructor(obj, isOptional = false) {
@@ -16,9 +17,9 @@ class SMTIValidator {
       let obj = this.obj;
       let isValid;
       if (this.isOptional) {
-        isValid = require('./schema/file.js');
+        isValid = schema.isValidFile;
       } else {
-        isValid = require('./schema/file.js');
+        isValid = schema.isValidFile;
       }
       isValid(obj, (errorCount, errors) => {
         if (errorCount === 0) {
@@ -37,9 +38,9 @@ class SMTIValidator {
       let obj = this.obj;
       let isValid;
       if (isOptional) {
-        isValid = require('./schema/project-optional.js');
+        isValid = schema.isValidProjectOptional;
       } else {
-        isValid = require('./schema/project.js');
+        isValid = schema.isValidProject;
       }
       isValid(obj, (errorCount, errors) => {
         if (errorCount === 0) {
@@ -60,9 +61,9 @@ class SMTIValidator {
       let obj = this.obj;
       let isValid;
       if (isOptional) {
-        isValid = require('./schema/test-case-optional.js');
+        isValid = schema.isValidTestCaseOptional;
       } else {
-        isValid = require('./schema/test-case.js');
+        isValid = schema.isValidTestCase;
       }
       isValid(obj, (errorCount, errors) => {
         if (errorCount === 0) {
@@ -83,9 +84,9 @@ class SMTIValidator {
       let obj = this.obj;
       let isValid;
       if (isOptional) {
-        isValid = require('./schema/user-optional.js');
+        isValid = schema.isValidUserOptional;
       } else {
-        isValid = require('./schema/user.js');
+        isValid = schema.isValidUser;
       }
       isValid(obj, (errorCount, errors) => {
         if (errorCount === 0) {
@@ -93,7 +94,7 @@ class SMTIValidator {
             obj.id = uuid.v4();
             obj.email = validator.normalizeEmail(obj.email);
             if (!obj.name || obj.name.length === 0) {
-              obj.name = utilities.Generate.getUsername();
+              obj.name = Generate.getUsername();
             }
           }
           resolve(obj);
@@ -107,7 +108,7 @@ class SMTIValidator {
   isCredential() {
     return new Promise((resolve, reject) => {
       let obj = this.obj;
-      let isValid = require('./schema/credential.js');
+      let isValid = schema.isValidCredential;
 
       isValid(obj, (errorCount, errors) => {
         if (errorCount === 0) {
@@ -123,7 +124,7 @@ class SMTIValidator {
   isPassword() {
     return new Promise((resolve, reject) => {
       let obj = this.obj;
-      let isValid = require('./schema/password.js');
+      let isValid = schema.isValidPassword;
 
       isValid(obj, (errorCount, errors) => {
         if (errorCount === 0) {
@@ -138,7 +139,7 @@ class SMTIValidator {
   isReset() {
     return new Promise((resolve, reject) => {
       let obj = this.obj;
-      let isValid = require('./schema/reset.js');
+      let isValid = schema.isValidReset;
 
       isValid(obj, (errorCount, errors) => {
         if (errorCount === 0) {
@@ -153,7 +154,7 @@ class SMTIValidator {
   isCollaborator() {
     return new Promise((resolve, reject) => {
       let obj = this.obj;
-      let isValid = require('./schema/collaboration.js');
+      let isValid = schema.isValidCollaboration;
 
       isValid(obj, (errorCount, errors) => {
         if (errorCount === 0) {
@@ -167,4 +168,4 @@ class SMTIValidator {
   }
 }
 
-module.exports = SMTIValidator;
+export default SMTIValidator;

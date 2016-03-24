@@ -1,10 +1,10 @@
 'use strict';
 
-const moment = require('moment');
-const jwt = require('jwt-simple');
-import {AppConfig} from '../../config';
+import moment from 'moment';
+import jwt from 'jwt-simple';
+import { AppConfig } from '../../config';
 
-var authToken = function(payload) {
+export const authToken = (payload) => {
   let object = payload;
   let expires = moment().add(7, 'days').valueOf();
   payload.expires = expires;
@@ -14,5 +14,3 @@ var authToken = function(payload) {
 
   return payload;
 }
-
-module.exports = authToken;

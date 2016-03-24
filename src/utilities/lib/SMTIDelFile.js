@@ -1,8 +1,8 @@
 'use strict';
 
-const del = require('del');
+import del from 'del';
 
-function delFile(file) {
+export const delFile = (file) => {
   return new Promise((resolve, reject) => {
   let pattern = /^https?:\/\/[^\/]+/i;
   let uri = file.uri.replace(pattern, '');
@@ -17,5 +17,3 @@ function delFile(file) {
     });
   });
 }
-
-module.exports = delFile;

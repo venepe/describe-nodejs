@@ -1,8 +1,6 @@
 'use strict';
 
-module.exports = {
-  AppConfig:  require('./app-config.js'),
-  OrientDbConfig:  require('./orient-db-config.js'),
-  SumsetiDbConfig:  require('./sumseti-db-config.js'),
-  FileConfig: require('./file-config.js')
-};
+export { default as AppConfig } from './app-config';
+export { default as FileConfig } from './file-config';
+export { default as OrientDbConfig } from './orient-db-config';
+export { default as SumsetiDbConfig } from './sumseti-db-config';

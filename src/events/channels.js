@@ -56,6 +56,10 @@ export const didDeleteCollaborationChannel = (userId, collaborationId) => {
   return `/users/${userId}/collaborations/${collaborationId}/delete`;
 }
 
+export const didIntroduceProjectChannel = (userId) => {
+  return `/users/${userId}/projects`;
+}
+
 export const didDeleteProjectChannel = (projectId) => {
   return `/projects/${projectId}/delete`;
 }

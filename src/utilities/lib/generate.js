@@ -4,8 +4,12 @@ function randomInt(low, high) {
     return Math.floor(Math.random() * (high - low) + low);
 }
 
-function getUsername() {
+const getUsername = () => {
   return 'user' + randomInt(100000001, 999999999);
 }
 
-module.exports.getUsername = getUsername;
+const Generate = {
+  getUsername
+}
+
+export default Generate;

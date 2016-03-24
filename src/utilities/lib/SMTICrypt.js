@@ -1,15 +1,15 @@
 'use strict';
 
-const bcrypt = require('bcrypt');
+import bcrypt from 'bcrypt';
 
-function encrypt(secret) {
+const encrypt = (secret) => {
   return new Promise((resolve, reject) => {
-    bcrypt.genSalt(10, function(err, salt) {
+    bcrypt.genSalt(10, (err, salt) => {
       if (err) {
         console.log(`SMTICrypt encrypt error: ${err}`);
         reject()
       } else {
-        bcrypt.hash(secret, salt, function(err, hash) {
+        bcrypt.hash(secret, salt, (err, hash) => {
           if (err) {
             console.log(`SMTICrypt encrypt error: ${err}`);
             reject();
@@ -22,9 +22,9 @@ function encrypt(secret) {
   });
 }
 
-function compare(secret, hash) {
+const compare = (secret, hash) => {
   return new Promise((resolve, reject) => {
-    bcrypt.compare(secret, hash, function(err, res) {
+    bcrypt.compare(secret, hash, (err, res) => {
       if (err) {
         console.log(`SMTICrypt compare error: ${err}`);
         reject()
@@ -39,5 +39,9 @@ function compare(secret, hash) {
   });
 }
 
-module.exports.encrypt = encrypt;
-module.exports.compare = compare;
+const SMTICrypt = {
+  encrypt,
+  compare
+}
+
+export default SMTICrypt;

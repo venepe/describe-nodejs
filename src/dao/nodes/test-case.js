@@ -1,8 +1,8 @@
 'use strict';
 
 const _class = 'TestCase';
-const { SMTIValidator } = require('../validator');
-const utilities = require('../../utilities');
+import { SMTIValidator } from '../validator';
+import { filteredObject, Pagination, GraphQLHelper } from '../../utilities';
 import { roles, regExRoles } from '../permissions';
 import * as events from '../../events';
 import { offsetToCursor } from 'graphql-relay';
@@ -32,7 +32,7 @@ class TestCaseDAO {
         let isFulfilled = record.isFulfilled;
         record.isFulfilled = (isFulfilled.length > 0) ? true : false;
         let testCase = new TestCase();
-        return utilities.FilteredObject(record, '@.*|rid', testCase);
+        return filteredObject(record, '@.*|rid', testCase);
       })
       .one()
       .then((record) => {
@@ -47,7 +47,7 @@ class TestCaseDAO {
   }
 
   getEdgeCreated(args) {
-    let pageObject = utilities.Pagination.getOrientDBPageFromGraphQL(args);
+    let pageObject = Pagination.getOrientDBPageFromGraphQL(args);
 
     return new Promise((resolve, reject) => {
       let user = this.user;
@@ -63,11 +63,11 @@ class TestCaseDAO {
       .transform((record) => {
         let isFulfilled = record.isFulfilled;
         record.isFulfilled = (isFulfilled.length > 0) ? true : false;
-        return utilities.FilteredObject(record, '@.*|rid');
+        return filteredObject(record, '@.*|rid');
       })
       .all()
       .then((payload) => {
-        let meta = utilities.GraphQLHelper.getMeta(pageObject, payload);
+        let meta = GraphQLHelper.getMeta(pageObject, payload);
         resolve({
           payload,
           meta
@@ -82,7 +82,7 @@ class TestCaseDAO {
   }
 
   getEdgeRequired(args) {
-    let pageObject = utilities.Pagination.getOrientDBPageFromGraphQL(args);
+    let pageObject = Pagination.getOrientDBPageFromGraphQL(args);
 
     return new Promise((resolve, reject) => {
       let user = this.user;
@@ -98,11 +98,11 @@ class TestCaseDAO {
       .transform((record) => {
         let isFulfilled = record.isFulfilled;
         record.isFulfilled = (isFulfilled.length > 0) ? true : false;
-        return utilities.FilteredObject(record, '@.*|rid');
+        return filteredObject(record, '@.*|rid');
       })
       .all()
       .then((payload) => {
-        let meta = utilities.GraphQLHelper.getMeta(pageObject, payload);
+        let meta = GraphQLHelper.getMeta(pageObject, payload);
         resolve({
           payload,
           meta
@@ -183,9 +183,9 @@ class TestCaseDAO {
           .return(['$testCase', '$project', '$cursor'])
           .all()
           .then((result) => {
-            let node = utilities.FilteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+            let node = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
             node.isFulfilled = false;
-            let project = utilities.FilteredObject(result[1], 'in_.*|out_.*|@.*|^_');
+            let project = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
             let cursor = offsetToCursor(result[2].cursor);
             let numOfTestCases = project.numOfTestCases;
             numOfTestCases++;
@@ -263,7 +263,7 @@ class TestCaseDAO {
           .commit()
           .return('$newTestCase')
           .transform((record) => {
-            return utilities.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
+            return filteredObject(record, 'in_.*|out_.*|@.*|^_');
           })
           .one()
           .then((record) => {
@@ -333,8 +333,8 @@ class TestCaseDAO {
       .return(['$testCase', '$project'])
       .all()
       .then((result) => {
-        let testCase = utilities.FilteredObject(result[0], 'in_.*|out_.*|@.*|^_');
-        let project = utilities.FilteredObject(result[1], 'in_.*|out_.*|@.*|^_');
+        let testCase = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+        let project = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
         let numOfTestCases = project.numOfTestCases;
         numOfTestCases--;
         project.numOfTestCases = numOfTestCases;

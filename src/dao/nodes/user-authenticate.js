@@ -1,8 +1,8 @@
 'use strict';
 
 const _class = 'User';
-const { SMTIValidator } = require('../validator');
-const utilities = require('../../utilities');
+import { SMTIValidator } from '../validator';
+import { authToken, filteredObject, SMTICrypt, Base64 } from '../../utilities';
 
 class UserAuthenticateDAO {
   authenticate(object) {
@@ -26,18 +26,18 @@ class UserAuthenticateDAO {
           .then((user) => {
             let password = object.password;
             let hash = user.password;
-            utilities.SMTICrypt.compare(password, hash)
+            SMTICrypt.compare(password, hash)
               .then(() => {
                 let email = user.email;
                 let uuid = user.id;
                 let role = user.role;
-                let id = utilities.Base64.base64('User:' + uuid);
+                let id = Base64.base64('User:' + uuid);
                 let payload = {
                   email,
                   id,
                   role
                 };
-                let authenticate = utilities.AuthToken(payload);
+                let authenticate = authToken(payload);
                 authenticate.email = email;
                 resolve(authenticate);
               })

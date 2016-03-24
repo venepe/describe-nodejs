@@ -2,8 +2,6 @@
 
 import DAO from '../dao';
 
-function authenticate(authenticate) {
+export const authenticate = (authenticate) => {
   return new DAO().UserAuthenticate().authenticate(authenticate)
 }
-
-module.exports = authenticate;

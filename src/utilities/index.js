@@ -1,17 +1,15 @@
 'use strict';
 
-module.exports = {
-  AuthToken: require('./lib/auth-token.js'),
-  FilteredObject: require('./lib/filtered-object.js'),
-  Base64: require('./lib/base64.js'),
-  CursorToOffset: require('./lib/cursor-to-offset.js'),
-  GraphQLHelper: require('./lib/graphql-helper.js'),
-  Pagination: require('./lib/pagination.js'),
-  Generate: require('./lib/generate.js'),
-  IsValidPassword: require('./lib/is-valid-password.js'),
-  Constants: require('./lib/constants.js'),
-  SMTICrypt: require('./lib/SMTICrypt.js'),
-  SMTIEmailTemplate: require('./lib/SMTIEmailTemplate.js'),
-  SMTIDelFile: require('./lib/SMTIDelFile.js'),
-  EnsureHttps: require('./lib/ensure-https.js')
-}
+export { authToken } from './lib/auth-token';
+export { filteredObject } from './lib/filtered-object';
+export { default as Base64 } from './lib/base64';
+export { cursorToOffset } from './lib/cursor-to-offset';
+export { default as GraphQLHelper } from './lib/graphql-helper';
+export { default as Pagination } from './lib/pagination';
+export { default as Generate } from './lib/generate';
+export { isValidPassword } from './lib/is-valid-password';
+export { default as Constants} from './lib/constants';
+export { default as SMTICrypt } from './lib/SMTICrypt';
+export { default as SMTIEmailTemplate } from './lib/SMTIEmailTemplate';
+export { ensureHttps } from './lib/ensure-https';
+export { delFile } from './lib/SMTIDelFile';

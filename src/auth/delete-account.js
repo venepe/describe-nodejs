@@ -2,8 +2,6 @@
 
 import DAO from '../dao';
 
-function deleteAccount(user, userId) {
+export const deleteAccount = (user, userId) => {
   return new DAO(user).User(userId).del();
 }
-
-module.exports = deleteAccount;

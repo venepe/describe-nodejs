@@ -1,6 +1,6 @@
 'use strict';
 
-const CursorToOffset = require('./cursor-to-offset');
+import { cursorToOffset } from './cursor-to-offset';
 
 // before > after
 //
@@ -18,15 +18,15 @@ const CursorToOffset = require('./cursor-to-offset');
 // last 3 after 1
 // skip 1 - 3 limit 3 orderBy ASC
 
-function getOrientDBPageFromGraphQL(args) {
+const getOrientDBPageFromGraphQL = (args) => {
   let skip = 0;
   let limit = 25;
   let orderBy = 'createdAt ASC';
 
   let first = args.first || 0;
   let last = args.last || 0;
-  let before = (args.before) ? CursorToOffset(args.before) : 0;
-  let after = (args.after) ? CursorToOffset(args.after) : 0;
+  let before = (args.before) ? cursorToOffset(args.before) : 0;
+  let after = (args.after) ? cursorToOffset(args.after) : 0;
 
   if (args.first) {
     skip = (after >= before) ? after : (before > first) ? 0 : first - before;
@@ -47,4 +47,8 @@ function getOrientDBPageFromGraphQL(args) {
   return {skip, limit, orderBy};
 }
 
-module.exports.getOrientDBPageFromGraphQL = getOrientDBPageFromGraphQL;
+const Pagination = {
+  getOrientDBPageFromGraphQL
+}
+
+export default Pagination;

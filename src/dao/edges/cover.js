@@ -1,8 +1,8 @@
 'use strict';
 
 const _class = 'File';
-const { SMTIValidator } = require('../validator');
-const utilities = require('../../utilities');
+import { SMTIValidator } from '../validator';
+import { filteredObject } from '../../utilities';
 import { roles, regExRoles } from '../permissions';
 import { FileConfig } from '../../config';
 import * as events from '../../events';
@@ -84,7 +84,7 @@ class CoverDAO {
           .return(['$file', '$cursor'])
           .all()
           .then((result) => {
-            let node = utilities.FilteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+            let node = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
             let cursor = offsetToCursor(result[1].cursor);
             let coverImageEdge = {
               cursor,

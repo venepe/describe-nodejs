@@ -10,16 +10,17 @@
 
 'use strict';
 
-Object.defineProperty(exports, '__esModule', {
-  value: true
-});
-exports.base64 = base64;
-exports.unbase64 = unbase64;
-
-function base64(i) {
+const base64 = (i) => {
   return new Buffer(i, 'ascii').toString('base64');
 }
 
-function unbase64(i) {
+const unbase64 = (i) => {
   return new Buffer(i, 'base64').toString('ascii');
 }
+
+const Base64 = {
+  base64,
+  unbase64
+}
+
+export default Base64;

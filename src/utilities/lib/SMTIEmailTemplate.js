@@ -1,6 +1,6 @@
 'use strict';
 
-function forgotPasswordEmail(user) {
+const forgotPasswordEmail = (user) => {
   let authenticate = user.authenticate || {};
   let token = authenticate.token;
   let userId = user.id;
@@ -61,4 +61,6 @@ function forgotPasswordEmail(user) {
           </table>`
 }
 
-module.exports.forgotPasswordEmail = forgotPasswordEmail;
+const SMTIEmailTemplate = {
+  forgotPasswordEmail
+}

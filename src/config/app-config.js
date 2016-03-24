@@ -1,5 +1,7 @@
 'use strict';
 
-module.exports = {
+const AppConfig = {
   JWTSecret: process.env.JWT_SECRET
 }
+
+export default AppConfig;

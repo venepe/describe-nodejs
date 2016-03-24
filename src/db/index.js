@@ -1,7 +1,7 @@
 'use strict';
 
-const OrientDB = require('orientjs');
-const utilites = require('../utilities');
+import OrientDB from 'orientjs';
+import { filteredObject } from '../utilities';
 
 OrientDB.Statement.prototype.SMTINode = '';
 
@@ -48,7 +48,7 @@ OrientDB.Statement.prototype.addTestCases = function() {
             testCases.unshift({id: record.tcId[i], it: record.tcIt[i], createdAt: record.tcCreatedAt[i], updatedAt: record.tcUpdatedAt[i]})
           }
           record.testCases = testCases;
-          return utilites.FilteredObject(record, 'tc.*');
+          return filteredObject(record, 'tc.*');
         })
 }
 

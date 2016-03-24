@@ -1288,6 +1288,42 @@ var didDeleteProject = subscriptionWithClientSubscriptionId({
   }
 });
 
+var didIntroduceProject = subscriptionWithClientSubscriptionId({
+  name: 'DidIntroduceProject',
+  inputFields: {
+    meId: {
+      type: new GraphQLNonNull(GraphQLID)
+    }
+  },
+  outputFields: {
+    projectEdge: {
+      type: GraphQLProjectEdge,
+      resolve: ({projectEdge}) => {
+        projectEdge.testCases = {pageInfo: {hasNextPage: false, hasPreviousPage: false}, edges: []};
+        return {
+          cursor: cursorForObjectInConnection([projectEdge], projectEdge),
+          node: projectEdge,
+        };
+      }
+    },
+    me: {
+      type: userType,
+      resolve: (payload) => {
+        return payload.me;
+      },
+    }
+  },
+  mutateAndGetPayload: ({meId}, {rootValue}) => {
+    if (rootValue.event) {
+      return rootValue.event;
+    } else {
+      var localId = fromGlobalId(meId).id;
+      rootValue.channel = channels.didIntroduceProjectChannel(localId);
+      return {meId};
+    }
+  }
+});
+
 var schema = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: 'RootQueryType',
@@ -1343,6 +1379,7 @@ var schema = new GraphQLSchema({
       didIntroduceCoverImage,
       didIntroduceExample,
       didIntroduceFulfillment,
+      didIntroduceProject,
       didIntroduceTestCase,
       didUpdateProject,
       didUpdateTestCase,

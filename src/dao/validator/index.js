@@ -1,5 +1,3 @@
 'use strict';
 
-module.exports = {
-  SMTIValidator: require('./SMTIValidator.js')
-};
+export { default as SMTIValidator } from './SMTIValidator';

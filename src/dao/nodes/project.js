@@ -1,8 +1,8 @@
 'use strict';
 
 const _class = 'Project';
-const { SMTIValidator } = require('../validator');
-const utilities = require('../../utilities');
+import { SMTIValidator } from '../validator';
+import { filteredObject, Pagination, GraphQLHelper } from '../../utilities';
 import { roles, permissions, regExRoles } from '../permissions';
 import * as events from '../../events';
 import { offsetToCursor } from 'graphql-relay';
@@ -30,7 +30,7 @@ class ProjectDAO {
       .limit(1)
       .transform((record) => {
         let project = new Project();
-        return utilities.FilteredObject(record, '@.*|rid', project);
+        return filteredObject(record, '@.*|rid', project);
       })
       .one()
       .then((record) => {
@@ -45,7 +45,7 @@ class ProjectDAO {
   }
 
   getEdgeCreated(args) {
-    let pageObject = utilities.Pagination.getOrientDBPageFromGraphQL(args);
+    let pageObject = Pagination.getOrientDBPageFromGraphQL(args);
 
     return new Promise((resolve, reject) => {
       let user = this.user;
@@ -59,11 +59,11 @@ class ProjectDAO {
       .limit(pageObject.limit)
       .order(pageObject.orderBy)
       .transform((record) => {
-        return utilities.FilteredObject(record, '@.*|rid');
+        return filteredObject(record, '@.*|rid');
       })
       .all()
       .then((payload) => {
-        let meta = utilities.GraphQLHelper.getMeta(pageObject, payload);
+        let meta = GraphQLHelper.getMeta(pageObject, payload);
         resolve({
           payload,
           meta
@@ -78,7 +78,7 @@ class ProjectDAO {
   }
 
   getEdgeCollaborations(args) {
-    let pageObject = utilities.Pagination.getOrientDBPageFromGraphQL(args);
+    let pageObject = Pagination.getOrientDBPageFromGraphQL(args);
 
     return new Promise((resolve, reject) => {
       let user = this.user;
@@ -92,11 +92,11 @@ class ProjectDAO {
       .limit(pageObject.limit)
       .order(pageObject.orderBy)
       .transform((record) => {
-        return utilities.FilteredObject(record, '@.*|rid');
+        return filteredObject(record, '@.*|rid');
       })
       .all()
       .then((payload) => {
-        let meta = utilities.GraphQLHelper.getMeta(pageObject, payload);
+        let meta = GraphQLHelper.getMeta(pageObject, payload);
         resolve({
           payload,
           meta
@@ -167,11 +167,19 @@ class ProjectDAO {
           .return(['$project', '$cursor'])
           .all()
           .then((result) => {
-            let node = utilities.FilteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+            let node = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
             let cursor = offsetToCursor(result[1].cursor);
             node.testCases = [];
             node.numOfTestCases = 0;
             node.numOfTestCasesFulfilled = 0;
+
+            events.publish(events.didIntroduceProjectChannel(relationalId), {
+              projectEdge: {
+                cursor,
+                node
+              },
+              me: {id: relationalId}
+            });
 
             resolve({
               projectEdge: {
@@ -231,7 +239,7 @@ class ProjectDAO {
           .commit()
           .return('$newProject')
           .transform((record) => {
-            return utilities.FilteredObject(record, 'in_.*|out_.*|@.*|^_');
+            return filteredObject(record, 'in_.*|out_.*|@.*|^_');
           })
           .one()
           .then((record) => {

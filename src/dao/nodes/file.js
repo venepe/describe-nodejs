@@ -1,8 +1,7 @@
 'use strict';
 
 const _class = 'File';
-const validator = require('../validator');
-const utilities = require('../../utilities');
+import { filteredObject, Pagination, GraphQLHelper } from '../../utilities';
 import { FileConfig } from '../../config';
 
 import {
@@ -28,7 +27,7 @@ class FileDAO {
       .limit(1)
       .transform((record) => {
         let file = new File();
-        return utilities.FilteredObject(record, '@.*|rid', file);
+        return filteredObject(record, '@.*|rid', file);
       })
       .one()
       .then((record) => {
@@ -43,7 +42,7 @@ class FileDAO {
   }
 
   getEdgeCreated(args) {
-    let pageObject = utilities.Pagination.getOrientDBPageFromGraphQL(args);
+    let pageObject = Pagination.getOrientDBPageFromGraphQL(args);
 
     return new Promise((resolve, reject) => {
       let user = this.user;
@@ -57,11 +56,11 @@ class FileDAO {
       .limit(pageObject.limit)
       .order(pageObject.orderBy)
       .transform((record) => {
-        return utilities.FilteredObject(record, '@.*|rid');
+        return filteredObject(record, '@.*|rid');
       })
       .all()
       .then((payload) => {
-        let meta = utilities.GraphQLHelper.getMeta(pageObject, payload);
+        let meta = GraphQLHelper.getMeta(pageObject, payload);
         resolve({
           payload,
           meta
@@ -76,7 +75,7 @@ class FileDAO {
   }
 
   getEdgeExemplifies(args) {
-    let pageObject = utilities.Pagination.getOrientDBPageFromGraphQL(args);
+    let pageObject = Pagination.getOrientDBPageFromGraphQL(args);
 
     return new Promise((resolve, reject) => {
       let id = this.targetId;
@@ -90,11 +89,11 @@ class FileDAO {
       .limit(pageObject.limit)
       .order(pageObject.orderBy)
       .transform((record) => {
-        return utilities.FilteredObject(record, '@.*|rid');
+        return filteredObject(record, '@.*|rid');
       })
       .all()
       .then((payload) => {
-        let meta = utilities.GraphQLHelper.getMeta(pageObject, payload);
+        let meta = GraphQLHelper.getMeta(pageObject, payload);
         resolve({
           payload,
           meta
@@ -109,7 +108,7 @@ class FileDAO {
   }
 
   getEdgeCovered(args) {
-    let pageObject = utilities.Pagination.getOrientDBPageFromGraphQL(args);
+    let pageObject = Pagination.getOrientDBPageFromGraphQL(args);
 
     return new Promise((resolve, reject) => {
       let id = this.targetId;
@@ -123,7 +122,7 @@ class FileDAO {
       .limit(pageObject.limit)
       .order(pageObject.orderBy)
       .transform((record) => {
-        return utilities.FilteredObject(record, '@.*|rid');
+        return filteredObject(record, '@.*|rid');
       })
       .all()
       .then((records) => {
@@ -148,7 +147,7 @@ class FileDAO {
   }
 
   inEdgeFulfilled(args) {
-    let pageObject = utilities.Pagination.getOrientDBPageFromGraphQL(args);
+    let pageObject = Pagination.getOrientDBPageFromGraphQL(args);
 
     return new Promise((resolve, reject) => {
       let user = this.user;
@@ -162,11 +161,11 @@ class FileDAO {
       .limit(pageObject.limit)
       .order(pageObject.orderBy)
       .transform((record) => {
-        return utilities.FilteredObject(record, '@.*|rid');
+        return filteredObject(record, '@.*|rid');
       })
       .all()
       .then((payload) => {
-        let meta = utilities.GraphQLHelper.getMeta(pageObject, payload);
+        let meta = GraphQLHelper.getMeta(pageObject, payload);
         resolve({
           payload,
           meta
