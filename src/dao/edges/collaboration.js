@@ -106,6 +106,14 @@ class CollaborationDAO {
                 id: relationalId
               })
             })
+            .let('coverImages', (s) => {
+              s
+              .select('expand(in(\'Covers\'))')
+              .from('Project')
+              .where({
+                id: relationalId
+              })
+            })
             .let('updateTestCases', (s) => {
               s
               .update(`$testCases PUT _allow = "${collaboratorRole}", ${roles.owner}`)
@@ -113,6 +121,10 @@ class CollaborationDAO {
             .let('updateFiles', (s) => {
               s
               .update(`$files PUT _allow = "${collaboratorRole}", ${roles.owner}`)
+            })
+            .let('updateCoverImages', (s) => {
+              s
+              .update(`$coverImages PUT _allow = "${collaboratorRole}", ${roles.owner}`)
             })
             .let('updateProject', (s) => {
               s
@@ -228,6 +240,14 @@ class CollaborationDAO {
           id: projectId
         })
       })
+      .let('coverImages', (s) => {
+        s
+        .select('expand(in(\'Covers\'))')
+        .from('Project')
+        .where({
+          id: projectId
+        })
+      })
       .let('updateTestCases', (s) => {
         s
         .update(`$testCases REMOVE _allow = "${collaboratorRole}"`)
@@ -235,6 +255,10 @@ class CollaborationDAO {
       .let('updateFiles', (s) => {
         s
         .update(`$files REMOVE _allow = "${collaboratorRole}"`)
+      })
+      .let('updateCoverImages', (s) => {
+        s
+        .update(`$coverImages REMOVE _allow = "${collaboratorRole}"`)
       })
       .let('updateProject', (s) => {
         s
