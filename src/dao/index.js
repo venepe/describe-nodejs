@@ -1,6 +1,6 @@
 'use strict';
 
-const OrientDB = require('../db');
+import OrientDB from '../db';
 import { OrientDbConfig, SumsetiDbConfig } from '../config';
 
 import File from './nodes/file.js';

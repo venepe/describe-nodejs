@@ -10,12 +10,9 @@ export const publish = (channel, event) => {
 
 export const subscribe = (channel, listener) => {
   events.addListener(channel, listener);
-  console.log(events.getMaxListeners());
-  console.log(events.listenerCount(channel));
 }
 
 export const unsubscribe = (channel, listener) => {
-  console.log(`unsubscribe from ${channel}`);
   events.removeListener(channel, listener);
 }
 

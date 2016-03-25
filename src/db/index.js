@@ -343,4 +343,4 @@ OrientDB.Statement.prototype.inCollaboratesOnFromNode = function(id) {
   .where({'@class': this.db.SMTINode})
 }
 
-module.exports = OrientDB
+export default OrientDB

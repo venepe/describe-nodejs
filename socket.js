@@ -1,4 +1,4 @@
-import {graphql} from 'graphql';
+import { graphql } from 'graphql';
 
 import * as events from './src/events';
 import schema from './src/graphql/schema';
@@ -17,7 +17,6 @@ export const connect = socket => {
   socket.on('graphql/subscription', async request => {
     const channel = await events.channelForSubscription(request);
     const listener = ev => handleSubscription(request, ev);
-    console.log(channel);
 
     subscriptions[request.id] = {
       channel,
