@@ -252,6 +252,7 @@ if (port === 80) {
   const config = {
     server: LE.productionServerUrl,
     configDir: __dirname + '/etc/letsencrypt',
+    webrootPath: __dirname + '/etc/temp',
     privkeyPath: ':config/live/:hostname/privkey.pem',
     fullchainPath: ':config/live/:hostname/fullchain.pem',
     certPath: ':config/live/:hostname/cert.pem',
