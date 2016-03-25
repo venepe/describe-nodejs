@@ -1,8 +1,8 @@
 'use strict';
 
-import express from 'express';
-import path from 'path';
+const express = require('express');
 const app = express();
+const path = require('path');
 
 app.get('/', function (req, res) {
   let file = path.resolve(__dirname + '../../../public/build/index.html');
@@ -19,4 +19,4 @@ app.get('/bundle.js.map', function (req, res) {
   res.sendFile(file);
 });
 
-export default app;
+module.exports = app;
