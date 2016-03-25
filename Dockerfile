@@ -7,6 +7,7 @@ WORKDIR /src
 
 # Install Node.js & other dependencies
 RUN apt-get update && \
+        apt-get -y install git && \
         apt-get -y install curl && \
         apt-get -y install sudo && \
         curl -sL https://deb.nodesource.com/setup_5.x | sudo bash - && \

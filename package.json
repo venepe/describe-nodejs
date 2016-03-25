@@ -23,7 +23,7 @@
     "express-graphql": "^0.4.5",
     "express-jwt": "^3.0.1",
     "graphql": "^0.4.14",
-    "graphql-relay": "https://github.com/venepe/graphql-relay-js.git",
+    "graphql-relay": "https://github.com/venepe/graphql-relay.git",
     "jwt-refresh-token": "0.0.3",
     "jwt-simple": "^0.3.0",
     "letsencrypt": "^1.4.0",
