@@ -1,6 +1,5 @@
 'use strict';
 
-import LE from 'letsencrypt';
 import http from 'http';
 import https from 'https';
 import express from 'express';
@@ -248,40 +247,6 @@ const IO = require('socket.io')(httpServer);
 IO.on('connect', connect);
 
 if (port === 80) {
-
-  const config = {
-    server: LE.productionServerUrl,
-    configDir: __dirname + '/etc/letsencrypt',
-    privkeyPath: ':config/live/:hostname/privkey.pem',
-    fullchainPath: ':config/live/:hostname/fullchain.pem',
-    certPath: ':config/live/:hostname/cert.pem',
-    chainPath: ':config/live/:hostname/chain.pem',
-    debug: false
-  };
-
-
-  const handlers = {
-    setChallenge: function (opts, hostname, key, val, cb) {},
-    removeChallenge: function (opts, hostname, key, cb) {},
-    getChallenge: function (opts, hostname, key, cb) {},
-    agreeToTerms: function (tosUrl, cb) {}
-  };
-
-
-  const le = LE.create(config, handlers);
-  le.register({
-    domains: ['sumseti.com'],
-    email: 'admin@sumseti.com',
-    agreeTos: false
-  }, function (err) {
-
-    if (err) {
-      console.error('[Error]: node-letsencrypt/examples/standalone');
-      console.error(err.stack);
-    } else {
-      console.log('success');
-    }
-  });
 
   // your express configuration here
 

@@ -26,9 +26,6 @@
     "graphql-relay": "https://github.com/venepe/graphql-relay.git",
     "jwt-refresh-token": "0.0.3",
     "jwt-simple": "^0.3.0",
-    "letsencrypt": "^1.4.0",
-    "letsencrypt-express": "^1.0.3",
-    "localhost.daplie.com-certificates": "^1.1.2",
     "lodash": "^3.9.3",
     "mkdirp": "^0.5.1",
     "mmmagic": "^0.4.1",
@@ -41,7 +38,6 @@
     "orientjs": "^2.0.0",
     "schema-inspector": "^1.5.1",
     "socket.io": "^1.4.5",
-    "socketio-jwt": "^4.3.4",
     "validator": "^4.0.6"
   },
   "devDependencies": {
