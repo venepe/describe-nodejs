@@ -11,6 +11,7 @@ import jwtRefreshToken from 'jwt-refresh-token';
 import { AppConfig, FileConfig } from './src/config';
 import { graphql } from 'graphql';
 import { fromGlobalId } from 'graphql-relay';
+import client from './src/client';
 import schema from './src/graphql/schema';
 import { connect } from './socket';
 import multer from 'multer';
@@ -22,7 +23,6 @@ import mv from 'mv';
 import { SMTIEmailTemplate } from './src/utilities';
 import nodemailer from 'nodemailer';
 
-const client = require('./src/client');
 const app = express();
 const upload = multer({ dest: __dirname + FileConfig.TempDir});
 const port = process.env.PORT || 80;
