@@ -3,6 +3,7 @@
 import LE from 'letsencrypt';
 import http from 'http';
 import https from 'https';
+import SocketIO from 'socket.io';
 import express from 'express';
 import graphqlHTTP from 'express-graphql';
 import bodyParser from 'body-parser';
@@ -243,9 +244,6 @@ app.use(function(err, req, res, next) {
 });
 
 const httpServer = http.createServer(app);
-const IO = require('socket.io')(httpServer);
-
-IO.on('connect', connect);
 
 if (port === 80) {
 
@@ -292,10 +290,16 @@ if (port === 80) {
   const sslOptions = {key, cert, ca};
   const httpsServer = https.createServer(sslOptions, app);
 
+  const IO = new SocketIO(httpsServer);
+  IO.on('connect', connect);
+
   httpServer.listen(80);
   httpsServer.listen(443);
 
 } else {
+  const IO = new SocketIO(httpServer);
+  IO.on('connect', connect);
+
   httpServer.listen(port);
 
 }
