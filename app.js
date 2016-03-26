@@ -250,7 +250,7 @@ if (port === 80) {
   const config = {
     server: LE.productionServerUrl,
     configDir: __dirname + '/etc/letsencrypt',
-    webrootPath: __dirname + '/etc/temp',
+    webrootPath: __dirname + '/public',
     privkeyPath: ':config/live/:hostname/privkey.pem',
     fullchainPath: ':config/live/:hostname/fullchain.pem',
     certPath: ':config/live/:hostname/cert.pem',
@@ -271,7 +271,7 @@ if (port === 80) {
   le.register({
     domains: ['sumseti.com'],
     email: 'admin@sumseti.com',
-    agreeTos: false
+    agreeTos: true
   }, function (err) {
 
     if (err) {
