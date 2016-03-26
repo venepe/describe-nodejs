@@ -255,7 +255,7 @@ if (port === 80) {
     fullchainPath: ':config/live/:hostname/fullchain.pem',
     certPath: ':config/live/:hostname/cert.pem',
     chainPath: ':config/live/:hostname/chain.pem',
-    debug: true
+    debug: false
   };
 
 
@@ -271,7 +271,7 @@ if (port === 80) {
   le.register({
     domains: ['sumseti.com'],
     email: 'admin@sumseti.com',
-    agreeTos: true
+    agreeTos: false
   }, function (err) {
 
     if (err) {
