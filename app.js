@@ -271,7 +271,7 @@ if (port === 80) {
   le.register({
     domains: ['sumseti.com'],
     email: 'admin@sumseti.com',
-    agreeTos: false
+    agreeTos: true
   }, function (err) {
 
     if (err) {
