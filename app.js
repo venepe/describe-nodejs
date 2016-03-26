@@ -255,7 +255,7 @@ if (port === 80) {
     fullchainPath: ':config/live/:hostname/fullchain.pem',
     certPath: ':config/live/:hostname/cert.pem',
     chainPath: ':config/live/:hostname/chain.pem',
-    debug: false
+    debug: true
   };
 
 
