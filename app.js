@@ -102,7 +102,7 @@ app.post('/token', function(req, res) {
 
 app.post('/register', bodyParser.json(), function(req, res) {
   let user = req.body.register || {};
-  signup(user)
+  signUp(user)
   .then(function(user) {
     let authenticate = user.authenticate;
     res.status(200).json({register: authenticate});
@@ -271,7 +271,7 @@ if (port === 80) {
   le.register({
     domains: ['sumseti.com'],
     email: 'admin@sumseti.com',
-    agreeTos: true
+    agreeTos: false
   }, function (err) {
 
     if (err) {
