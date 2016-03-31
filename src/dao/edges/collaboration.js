@@ -100,7 +100,7 @@ class CollaborationDAO {
             })
             .let('files', (s) => {
               s
-              .select('expand(outE(\'Requires\').inV(\'TestCase\').inE(\'Fulfills\',\'Exemplifies\').inV(\'File\'))')
+              .select('expand(outE(\'Requires\').inV(\'TestCase\').inE(\'Fulfills\').inV(\'File\'))')
               .from('Project')
               .where({
                 id: relationalId
@@ -234,7 +234,7 @@ class CollaborationDAO {
       })
       .let('files', (s) => {
         s
-        .select('expand(outE(\'Requires\').inV(\'TestCase\').inE(\'Fulfills\',\'Exemplifies\').inV(\'File\'))')
+        .select('expand(outE(\'Requires\').inV(\'TestCase\').inE(\'Fulfills\').inV(\'File\'))')
         .from('Project')
         .where({
           id: projectId

@@ -74,39 +74,6 @@ class FileDAO {
     });
   }
 
-  getEdgeExemplifies(args) {
-    let pageObject = Pagination.getOrientDBPageFromGraphQL(args);
-
-    return new Promise((resolve, reject) => {
-      let id = this.targetId;
-      let user = this.user;
-      let db = this.db;
-
-      db
-      .getFile()
-      .inExemplifiesFromNode(id)
-      .skip(pageObject.skip)
-      .limit(pageObject.limit)
-      .order(pageObject.orderBy)
-      .transform((record) => {
-        return filteredObject(record, '@.*|rid');
-      })
-      .all()
-      .then((payload) => {
-        let meta = GraphQLHelper.getMeta(pageObject, payload);
-        resolve({
-          payload,
-          meta
-        });
-      })
-      .catch((e) => {
-        reject();
-
-      })
-      .done();
-    });
-  }
-
   getEdgeCovered(args) {
     let pageObject = Pagination.getOrientDBPageFromGraphQL(args);
 

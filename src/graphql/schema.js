@@ -250,21 +250,6 @@ let testCaseType = new GraphQLObjectType({
       type: GraphQLString,
       description: 'The timestamp when the test case was last updated.',
     },
-    examples: {
-      type: exampleConnection,
-      description: 'The files exemplifying the test case.',
-      args: connectionArgs,
-      resolve: (testCase, args, context) => {
-        return new Promise((resolve, reject) => {
-          new DAO(context.rootValue.user).File(testCase.id).getEdgeExemplifies(args).then((result) => {
-            resolve(connectionFromArraySlice(result.payload, args, result.meta));
-          })
-          .catch((e) => {
-            reject(e);
-          })
-        });
-      }
-    },
     fulfillments: {
       type: fulfillConnection,
       description: 'The files fulfilling the test case.',
@@ -311,9 +296,6 @@ var {connectionType: testCaseConnection, edgeType: GraphQLTestCaseEdge} =
 
 var {connectionType: projectConnection, edgeType: GraphQLProjectEdge} =
   connectionDefinitions({name: 'Project', nodeType: projectType});
-
-var {connectionType: exampleConnection, edgeType: GraphQLExampleEdge} =
-  connectionDefinitions({name: 'Examples', nodeType: fileType});
 
 var {connectionType: coverImageConnection, edgeType: GraphQLCoverImageEdge} =
   connectionDefinitions({name: 'CoverImages', nodeType: fileType});
@@ -561,33 +543,6 @@ var deleteTestCase = mutationWithClientMutationId({
   }
 });
 
-var introduceExample = mutationWithClientMutationId({
-  name: 'IntroduceExample',
-  inputFields: {
-    targetId: {
-      type: new GraphQLNonNull(GraphQLID)
-    },
-    uri: {
-      type: new GraphQLNonNull(GraphQLString),
-      description: 'The uri of the file.',
-    }
-  },
-  outputFields: {
-    exampleEdge: {
-      type: GraphQLExampleEdge,
-      resolve: ({exampleEdge}) => { return exampleEdge; }
-    },
-    target: {
-      type: nodeInterface,
-      resolve: ({target}) => {return target},
-    }
-  },
-  mutateAndGetPayload: ({targetId, uri}, context) => {
-    var localId = fromGlobalId(targetId).id;
-    return new DAO(context.rootValue.user).Example(localId).create({uri});
-  }
-});
-
 var deleteFulfillment = mutationWithClientMutationId({
   name: 'DeleteFulfillment',
   inputFields: {
@@ -622,37 +577,6 @@ var deleteFulfillment = mutationWithClientMutationId({
     var localId = fromGlobalId(id).id;
     var localTestCaseId = fromGlobalId(testCaseId).id;
     return new DAO(context.rootValue.user).Fulfillment(localId).del(localTestCaseId);
-  }
-});
-
-var deleteExample = mutationWithClientMutationId({
-  name: 'DeleteExample',
-  inputFields: {
-    id: {
-      type: new GraphQLNonNull(GraphQLID)
-    },
-    targetId: {
-      type: new GraphQLNonNull(GraphQLID)
-    }
-  },
-  outputFields: {
-    deletedExampleId: {
-      type: GraphQLID,
-      resolve: ({deletedExampleId}) => {
-        return toGlobalId('File', deletedExampleId);
-      },
-    },
-    target: {
-      type: nodeInterface,
-      resolve: ({target}) => {
-        target.id = toGlobalId('TestCase', target.id);
-        return target;
-      },
-    }
-  },
-  mutateAndGetPayload: ({id, targetId}, context) => {
-    var localId = fromGlobalId(id).id;
-    return new DAO(context.rootValue.user).Example(localId).del()
   }
 });
 
@@ -835,7 +759,6 @@ var didIntroduceTestCase = subscriptionWithClientSubscriptionId({
       type: GraphQLTestCaseEdge,
       resolve: ({testCaseEdge}) => {
         testCaseEdge.node.fulfillments = {pageInfo: {hasNextPage: false, hasPreviousPage: false}, edges: []};
-        testCaseEdge.node.examples = {pageInfo: {hasNextPage: false, hasPreviousPage: false}, edges: []};
 
         return testCaseEdge;
       }
@@ -985,70 +908,6 @@ var didUpdateTestCase = subscriptionWithClientSubscriptionId({
     } else {
       var localId = fromGlobalId(id).id;
       rootValue.channel = channels.didUpdateTestCaseChannel(localId);
-      return {id};
-    }
-  }
-});
-
-var didIntroduceExample = subscriptionWithClientSubscriptionId({
-  name: 'DidIntroduceExample',
-  inputFields: {
-    targetId: {
-      type: new GraphQLNonNull(GraphQLID)
-    },
-  },
-  outputFields: {
-    exampleEdge: {
-      type: GraphQLExampleEdge,
-      resolve: ({exampleEdge}) => { return exampleEdge; }
-    },
-    target: {
-      type: nodeInterface,
-      resolve: ({target}) => {return target},
-    }
-  },
-  mutateAndGetPayload: ({targetId}, {rootValue}) => {
-    if (rootValue.event) {
-      return rootValue.event;
-    } else {
-      var localId = fromGlobalId(targetId).id;
-      rootValue.channel = channels.didIntroduceExampleChannel(localId);
-      return {targetId};
-    }
-  }
-});
-
-var didDeleteExample = subscriptionWithClientSubscriptionId({
-  name: 'DidDeleteExample',
-  inputFields: {
-    id: {
-      type: new GraphQLNonNull(GraphQLID)
-    },
-    targetId: {
-      type: new GraphQLNonNull(GraphQLID)
-    }
-  },
-  outputFields: {
-    deletedExampleId: {
-      type: GraphQLID,
-      resolve: ({deletedExampleId}) => {
-        return toGlobalId('File', deletedExampleId);
-      },
-    },
-    target: {
-      type: nodeInterface,
-      resolve: ({target}) => {
-        target.id = toGlobalId('TestCase', target.id);
-        return target;
-      },
-    }
-  },
-  mutateAndGetPayload: ({id, targetId}, {rootValue}) => {
-    if (rootValue.event) {
-      return rootValue.event;
-    } else {
-      var localId = fromGlobalId(id).id;
-      rootValue.channel = channels.didDeleteExampleChannel(localId);
       return {id};
     }
   }
@@ -1346,14 +1205,12 @@ var schema = new GraphQLSchema({
       deleteCollaboration,
       deleteCollaborator,
       deleteCoverImage,
-      deleteExample,
       deleteFulfillment,
       deleteProject,
       deleteTestCase,
       deleteUser,
       introduceCollaborator,
       introduceCoverImage,
-      introduceExample,
       introduceFulfillment,
       introduceProject,
       introduceTestCase,
@@ -1370,14 +1227,12 @@ var schema = new GraphQLSchema({
       didDeleteCollaboration,
       didDeleteCollaborator,
       didDeleteCoverImage,
-      didDeleteExample,
       didDeleteFulfillment,
       didDeleteProject,
       didDeleteTestCase,
       didIntroduceCollaborator,
       didIntroduceCollaboration,
       didIntroduceCoverImage,
-      didIntroduceExample,
       didIntroduceFulfillment,
       didIntroduceProject,
       didIntroduceTestCase,

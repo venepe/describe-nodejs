@@ -23,35 +23,6 @@ OrientDB.Statement.prototype.getTestCase = function() {
   return this.select('id, it, createdAt, updatedAt, inE(\'Fulfills\') as isFulfilled');
 }
 
-OrientDB.Statement.prototype.addTestCases = function() {
-  let statement = 'expand(outE(\'Requires\').inV(\'TestCase\'))';
-
-  return this.select('$tc[0-24].id as tcId, $tc[0-24].it as tcIt, $tc[0-24].createdAt as tcCreatedAt, $tc[0-24].updatedAt as tcUpdatedAt')
-        .let('tc', function(s) {
-          s
-          .select()
-          .from(function (s) {
-            s
-            .select(statement)
-            .from('$parent.$current')
-            .order({
-              createdAt: 'DESC'
-            })
-          })
-          .where({'@class': 'TestCase'})
-          .skip(0)
-          .limit(25)
-        })
-        .transform(function(record) {
-          var testCases = [];
-          for (var i = record.tcId.length - 1; i >= 0; i--) {
-            testCases.unshift({id: record.tcId[i], it: record.tcIt[i], createdAt: record.tcCreatedAt[i], updatedAt: record.tcUpdatedAt[i]})
-          }
-          record.testCases = testCases;
-          return filteredObject(record, 'tc.*');
-        })
-}
-
 OrientDB.Db.prototype.getFile = function() {
   this.SMTINode = 'File';
   return this.select('id, uri, createdAt, updatedAt');
@@ -59,31 +30,6 @@ OrientDB.Db.prototype.getFile = function() {
 
 OrientDB.Statement.prototype.getFile = function() {
   return this.select('id, uri, createdAt, updatedAt');
-}
-
-OrientDB.Statement.prototype.addFiles = function() {
-  return this.select('$img[0-24].id as imgId, $img[0-24].uri as imgUri, $img[0-24].createdAt as imgCreatedAt, $img[0-24].updatedAt as imgUpdatedAt')
-        .let('img', function(s) {
-          s
-          .select()
-          .from(function (s) {
-            s
-            .select('expand(outE(\'Exemplifies\').inV(\'File\'))')
-            .from('$parent.$current')
-            .order({
-              createdAt: 'DESC'
-            })
-          })
-          .where({'@class': 'File'})
-        })
-        .transform(function(record) {
-          var files = [];
-          for (var i = record.imgId.length - 1; i >= 0; i--) {
-            files.push({id: record.imgId[i], uri: record.imgUri[i], createdAt: record.imgCreatedAt[i], updatedAt: record.imgUpdatedAt[i]})
-          }
-          record.files = files;
-          return utiluries.FilteredObject(record, 'img.*');
-        })
 }
 
 OrientDB.Db.prototype.getProject = function() {
@@ -171,38 +117,6 @@ OrientDB.Statement.prototype.inLeadsFromNode = function(id) {
   return this.from(function (s) {
     s
     .select('expand(in("Leads"))')
-    .from(function (s) {
-      s
-      .select()
-      .from('indexvalues:id')
-      .where({id: id})
-      .limit(1)
-    })
-    .order('createdAt DESC')
-  })
-  .where({'@class': this.db.SMTINode})
-}
-
-OrientDB.Statement.prototype.outExemplifiesFromNode = function(id) {
-  return this.from(function (s) {
-    s
-    .select('expand(out("Exemplifies"))')
-    .from(function (s) {
-      s
-      .select()
-      .from('indexvalues:id')
-      .where({id: id})
-      .limit(1)
-    })
-    .order('createdAt DESC')
-  })
-  .where({'@class': this.db.SMTINode})
-}
-
-OrientDB.Statement.prototype.inExemplifiesFromNode = function(id) {
-  return this.from(function (s) {
-    s
-    .select('expand(in("Exemplifies"))')
     .from(function (s) {
       s
       .select()

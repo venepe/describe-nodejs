@@ -6,7 +6,6 @@ import { OrientDbConfig, SumsetiDbConfig } from '../config';
 import File from './nodes/file.js';
 import Collaboration from './edges/collaboration.js';
 import Cover from './edges/cover.js';
-import Example from './edges/example.js';
 import Fulfillment from './edges/fulfillment.js';
 import Project from './nodes/project.js';
 import Search from './nodes/search.js';
@@ -40,13 +39,6 @@ class DAO {
     cv.db = this.db;
     cv.user = this.user;
     return cv;
-  }
-
-  Example(targetId, params) {
-    const ex = new Example(targetId, params);
-    ex.db = this.db;
-    ex.user = this.user;
-    return ex;
   }
 
   Fulfillment(targetId, params) {
