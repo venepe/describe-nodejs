@@ -26,7 +26,7 @@
     "graphql-relay": "https://github.com/venepe/graphql-relay.git",
     "jwt-refresh-token": "0.0.3",
     "jwt-simple": "^0.3.0",
-    "letsencrypt": "1.4.0",
+    "letsencrypt": "1.4.3",
     "letsencrypt-express": "1.0.3",
     "localhost.daplie.com-certificates": "1.1.2",
     "lodash": "^3.9.3",
