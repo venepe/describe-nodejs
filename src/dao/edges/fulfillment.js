@@ -37,7 +37,7 @@ class FulfillmentDAO {
             .getTestCase()
             .from('TestCase')
             .where({
-              id: relationalId
+              uuid: relationalId
             })
             .where(
               `_allow["${role}"].asString() MATCHES "${regExRoles.addEdge}"`
@@ -51,7 +51,7 @@ class FulfillmentDAO {
               .select('expand(in("Requires"))')
               .from('TestCase')
               .where({
-                id: relationalId
+                uuid: relationalId
               })
               .limit(1)
             })
@@ -61,7 +61,7 @@ class FulfillmentDAO {
             .select()
             .from('User')
             .where({
-              id: userId
+              uuid: userId
             })
             .where(
               `_allow["${role}"] = ${roles.owner}`
@@ -90,7 +90,7 @@ class FulfillmentDAO {
             .select('inE(\'Fulfills\').size() as cursor')
             .from('TestCase')
             .where({
-              id: relationalId
+              uuid: relationalId
             })
           })
           .commit()
@@ -163,7 +163,7 @@ class FulfillmentDAO {
         .getTestCase()
         .from('TestCase')
         .where({
-          id: testCaseId
+          uuid: testCaseId
         })
       })
       .let('project', (s) => {
@@ -174,7 +174,7 @@ class FulfillmentDAO {
           .select('expand(in("Requires"))')
           .from('TestCase')
           .where({
-            id: testCaseId
+            uuid: testCaseId
           })
           .limit(1)
         })
@@ -183,7 +183,7 @@ class FulfillmentDAO {
         s
         .delete('VERTEX', _class)
         .where({
-          id: targetId
+          uuid: targetId
         })
         .where(
           `_allow["${role}"].asString() MATCHES "${regExRoles.deleteNode}"`

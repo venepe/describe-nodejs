@@ -24,7 +24,7 @@ class UserDAO {
       db
       .getUser()
       .from(_class)
-      .where({id: id})
+      .where({uuid: id})
       .limit(1)
       .transform((record) => {
         let user = new User();
@@ -104,7 +104,7 @@ class UserDAO {
           .then((user) => {
             if(user) {
               let email = user.email;
-              let uuid = user.id;
+              let uuid = user.uuid;
               let role = user.role;
               let id = Base64.base64('User:' + uuid);
               let payload = {
@@ -154,7 +154,9 @@ class UserDAO {
               s
               .update(_class)
               .set(object)
-              .where({id: targetId})
+              .where({
+                uuid: targetId
+              })
               .where(
                 `_allow["${role}"] = ${roles.owner}`
               )
@@ -163,7 +165,9 @@ class UserDAO {
               s
               .getUser()
               .from(_class)
-              .where({id: targetId})
+              .where({
+                uuid: targetId
+              })
             })
             .commit()
             .return('$user')
@@ -213,7 +217,7 @@ class UserDAO {
                     .select('*')
                     .from(_class)
                     .where({
-                      id: targetId,
+                      uuid: targetId,
                     })
                     .limit(1)
                     .one();
@@ -231,7 +235,7 @@ class UserDAO {
               password: newHash
             })
             .where({
-              id: targetId
+              uuid: targetId
             })
             .where(
               `_allow["${role}"] = ${roles.owner}`
@@ -286,7 +290,7 @@ class UserDAO {
               password: newHash
             })
             .where({
-              id: targetId
+              uuid: targetId
             })
             .where(
               `_allow["${role}"] = ${roles.owner}`
@@ -296,7 +300,7 @@ class UserDAO {
               if (results > 0) {
                 let user = filteredObject(userRecord, 'in_.*|out_.*|@.*|password|^_');
                 let email = user.email;
-                let uuid = user.id;
+                let uuid = user.uuid;
                 let role = user.role;
                 let id = Base64.base64('User:' + uuid);
                 let payload = {
@@ -347,7 +351,7 @@ class UserDAO {
       .then((record) => {
         let user = filteredObject(record, 'in_.*|out_.*|@.*|password|^_');
         let email = user.email;
-        let uuid = user.id;
+        let uuid = user.uuid;
         let role = user.role;
         let id = Base64.base64('User:' + uuid);
         let payload = {
@@ -378,7 +382,7 @@ class UserDAO {
 
       db.delete('VERTEX', _class)
       .where({
-        id: targetId
+        uuid: targetId
       })
       .where(
         `_allow["${role}"] = ${roles.owner}`

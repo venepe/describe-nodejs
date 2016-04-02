@@ -26,7 +26,7 @@ class TestCaseDAO {
       db
       .getTestCase()
       .from(_class)
-      .where({id: id})
+      .where({uuid: id})
       .limit(1)
       .transform((record) => {
         let isFulfilled = record.isFulfilled;
@@ -136,7 +136,7 @@ class TestCaseDAO {
             .getProject()
             .from('Project')
             .where({
-              id: relationalId
+              uuid: relationalId
             })
             .where(
               `_allow["${role}"].asString() MATCHES "${regExRoles.addEdge}"`
@@ -147,7 +147,7 @@ class TestCaseDAO {
             .select()
             .from('User')
             .where({
-              id: userId
+              uuid: userId
             })
             .where(
               `_allow["${role}"] = ${roles.owner}`
@@ -176,7 +176,7 @@ class TestCaseDAO {
             .select('outE(\'Requires\').size() as cursor')
             .from('Project')
             .where({
-              id: relationalId
+              uuid: relationalId
             })
           })
           .commit()
@@ -244,7 +244,7 @@ class TestCaseDAO {
             .select()
             .from(_class)
             .where({
-              id: targetId
+              uuid: targetId
             })
             .where(
               `_allow["${role}"].asString() MATCHES "${regExRoles.updateNode}"`
@@ -303,7 +303,7 @@ class TestCaseDAO {
         .getTestCase()
         .from(_class)
         .where({
-          id: targetId
+          uuid: targetId
         })
       })
       .let('project', (s) => {
@@ -314,7 +314,7 @@ class TestCaseDAO {
           .select('expand(in("Requires"))')
           .from('TestCase')
           .where({
-            id: targetId
+            uuid: targetId
           })
           .limit(1)
         })
@@ -323,7 +323,7 @@ class TestCaseDAO {
         s
         .delete('VERTEX', _class)
         .where({
-          id: targetId
+          uuid: targetId
         })
         .where(
           `_allow["${role}"].asString() MATCHES "${regExRoles.deleteNode}"`

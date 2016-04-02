@@ -23,7 +23,7 @@ class FileDAO {
       db
       .getFile()
       .from(_class)
-      .where({id: id})
+      .where({uuid: id})
       .limit(1)
       .transform((record) => {
         let file = new File();

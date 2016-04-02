@@ -7,34 +7,34 @@ OrientDB.Statement.prototype.SMTINode = '';
 
 OrientDB.Db.prototype.getUser = function() {
   this.SMTINode = 'User';
-  return this.select('id, name, fullName, summary, email, createdAt, updatedAt');
+  return this.select('uuid as id, name, fullName, summary, email, createdAt, updatedAt');
 }
 
 OrientDB.Statement.prototype.getUser = function() {
-  return this.select('id, name, fullName, summary, email, createdAt, updatedAt');
+  return this.select('uuid as id, name, fullName, summary, email, createdAt, updatedAt');
 }
 
 OrientDB.Db.prototype.getTestCase = function() {
   this.SMTINode = 'TestCase';
-  return this.select('id, it, createdAt, updatedAt, inE(\'Fulfills\') as isFulfilled');
+  return this.select('uuid as id, it, createdAt, updatedAt, inE(\'Fulfills\') as isFulfilled');
 }
 
 OrientDB.Statement.prototype.getTestCase = function() {
-  return this.select('id, it, createdAt, updatedAt, inE(\'Fulfills\') as isFulfilled');
+  return this.select('uuid as id, it, createdAt, updatedAt, inE(\'Fulfills\') as isFulfilled');
 }
 
 OrientDB.Db.prototype.getFile = function() {
   this.SMTINode = 'File';
-  return this.select('id, uri, createdAt, updatedAt');
+  return this.select('uuid as id, uri, createdAt, updatedAt');
 }
 
 OrientDB.Statement.prototype.getFile = function() {
-  return this.select('id, uri, createdAt, updatedAt');
+  return this.select('uuid as id, uri, createdAt, updatedAt');
 }
 
 OrientDB.Db.prototype.getProject = function() {
   this.SMTINode = 'Project';
-  return this.select('id, title, createdAt, updatedAt, outE(\'Requires\').size() as numOfTestCases, $tcF.size() as numOfTestCasesFulfilled')
+  return this.select('uuid as id, title, createdAt, updatedAt, outE(\'Requires\').size() as numOfTestCases, $tcF.size() as numOfTestCasesFulfilled')
     .let('tcF', function(s) {
       s
       .select()
@@ -50,7 +50,7 @@ OrientDB.Db.prototype.getProject = function() {
 }
 
 OrientDB.Statement.prototype.getProject = function() {
-  return this.select('id, title, createdAt, updatedAt, outE(\'Requires\').size() as numOfTestCases, $tcF.size() as numOfTestCasesFulfilled')
+  return this.select('uuid as id, title, createdAt, updatedAt, outE(\'Requires\').size() as numOfTestCases, $tcF.size() as numOfTestCasesFulfilled')
     .let('tcF', function(s) {
       s
       .select()
@@ -72,8 +72,8 @@ OrientDB.Statement.prototype.outCreatesFromNode = function(id) {
     .from(function (s) {
       s
       .select()
-      .from('indexvalues:id')
-      .where({id: id})
+      .from('indexvalues:V.uuid ')
+      .where({uuid: id})
       .limit(1)
     })
     .order('createdAt DESC')
@@ -88,8 +88,8 @@ OrientDB.Statement.prototype.inCreatesFromNode = function(id) {
     .from(function (s) {
       s
       .select()
-      .from('indexvalues:id')
-      .where({id: id})
+      .from('indexvalues:V.uuid ')
+      .where({uuid: id})
       .limit(1)
     })
     .order('createdAt DESC')
@@ -104,8 +104,8 @@ OrientDB.Statement.prototype.outLeadsFromNode = function(id) {
     .from(function (s) {
       s
       .select()
-      .from('indexvalues:id')
-      .where({id: id})
+      .from('indexvalues:V.uuid ')
+      .where({uuid: id})
       .limit(1)
     })
     .order('createdAt DESC')
@@ -120,8 +120,8 @@ OrientDB.Statement.prototype.inLeadsFromNode = function(id) {
     .from(function (s) {
       s
       .select()
-      .from('indexvalues:id')
-      .where({id: id})
+      .from('indexvalues:V.uuid ')
+      .where({uuid: id})
       .limit(1)
     })
     .order('createdAt DESC')
@@ -136,8 +136,8 @@ OrientDB.Statement.prototype.outFulfillsFromNode = function(id) {
     .from(function (s) {
       s
       .select()
-      .from('indexvalues:id')
-      .where({id: id})
+      .from('indexvalues:V.uuid ')
+      .where({uuid: id})
       .limit(1)
     })
     .order('createdAt DESC')
@@ -152,8 +152,8 @@ OrientDB.Statement.prototype.inFulfillsFromNode = function(id) {
     .from(function (s) {
       s
       .select()
-      .from('indexvalues:id')
-      .where({id: id})
+      .from('indexvalues:V.uuid ')
+      .where({uuid: id})
       .limit(1)
     })
     .order('createdAt DESC')
@@ -168,8 +168,8 @@ OrientDB.Statement.prototype.outRequiresFromNode = function(id) {
     .from(function (s) {
       s
       .select()
-      .from('indexvalues:id')
-      .where({id: id})
+      .from('indexvalues:V.uuid ')
+      .where({uuid: id})
       .limit(1)
     })
     .order('createdAt DESC')
@@ -184,8 +184,8 @@ OrientDB.Statement.prototype.inRequiresFromNode = function(id) {
     .from(function (s) {
       s
       .select()
-      .from('indexvalues:id')
-      .where({id: id})
+      .from('indexvalues:V.uuid ')
+      .where({uuid: id})
       .limit(1)
     })
     .order('createdAt DESC')
@@ -200,8 +200,8 @@ OrientDB.Statement.prototype.outCoversFromNode = function(id) {
     .from(function (s) {
       s
       .select()
-      .from('indexvalues:id')
-      .where({id: id})
+      .from('indexvalues:V.uuid ')
+      .where({uuid: id})
       .limit(1)
     })
     .order('createdAt DESC')
@@ -216,8 +216,8 @@ OrientDB.Statement.prototype.inCoversFromNode = function(id) {
     .from(function (s) {
       s
       .select()
-      .from('indexvalues:id')
-      .where({id: id})
+      .from('indexvalues:V.uuid ')
+      .where({uuid: id})
       .limit(1)
     })
     .order('createdAt DESC')
@@ -232,8 +232,8 @@ OrientDB.Statement.prototype.outCollaboratesOnFromNode = function(id) {
     .from(function (s) {
       s
       .select()
-      .from('indexvalues:id')
-      .where({id: id})
+      .from('indexvalues:V.uuid ')
+      .where({uuid: id})
       .limit(1)
     })
     .order('createdAt DESC')
@@ -248,8 +248,8 @@ OrientDB.Statement.prototype.inCollaboratesOnFromNode = function(id) {
     .from(function (s) {
       s
       .select()
-      .from('indexvalues:id')
-      .where({id: id})
+      .from('indexvalues:V.uuid ')
+      .where({uuid: id})
       .limit(1)
     })
     .order('createdAt DESC')

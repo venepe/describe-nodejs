@@ -34,13 +34,13 @@ class CollaborationDAO {
           let email = object.email;
 
           db
-          .select('id, role')
+          .select('uuid, role')
           .from('User')
           .where({
             email
           })
           .where(
-            `not ( id = "${userId}" )`
+            `not ( uuid = "${userId}" )`
           )
           .limit(1)
           .one()
@@ -57,7 +57,7 @@ class CollaborationDAO {
                 email
               })
               .where(
-                `not ( id = "${userId}" )`
+                `not ( uuid = "${userId}" )`
               )
             })
             .let('project', (s) => {
@@ -66,7 +66,7 @@ class CollaborationDAO {
               .getProject()
               .from('Project')
               .where({
-                id: relationalId
+                uuid: relationalId
               })
               .where(
                 `_allow["${role}"] = ${roles.owner}`
@@ -84,7 +84,7 @@ class CollaborationDAO {
               .select('expand(outE(\'Requires\').inV(\'TestCase\'))')
               .from('Project')
               .where({
-                id: relationalId
+                uuid: relationalId
               })
             })
             .let('cursor', s => {
@@ -92,7 +92,7 @@ class CollaborationDAO {
               .select('inE(\'CollaboratesOn\').size() as cursor')
               .from('Project')
               .where({
-                id: relationalId
+                uuid: relationalId
               })
               .where(
                 `not ( id = "${userId}" )`
@@ -103,7 +103,7 @@ class CollaborationDAO {
               .select('expand(outE(\'Requires\').inV(\'TestCase\').inE(\'Fulfills\').inV(\'File\'))')
               .from('Project')
               .where({
-                id: relationalId
+                uuid: relationalId
               })
             })
             .let('coverImages', (s) => {
@@ -111,7 +111,7 @@ class CollaborationDAO {
               .select('expand(in(\'Covers\'))')
               .from('Project')
               .where({
-                id: relationalId
+                uuid: relationalId
               })
             })
             .let('updateTestCases', (s) => {
@@ -204,7 +204,7 @@ class CollaborationDAO {
         .getProject()
         .from('Project')
         .where({
-          id: projectId
+          uuid: projectId
         })
       })
       .let('collaborator', (s) => {
@@ -212,7 +212,7 @@ class CollaborationDAO {
         .select()
         .from('User')
         .where({
-          id: targetId
+          uuid: targetId
         })
       })
       .let('deletes', (s) => {
@@ -229,7 +229,7 @@ class CollaborationDAO {
         .select('expand(outE(\'Requires\').inV(\'TestCase\'))')
         .from('Project')
         .where({
-          id: projectId
+          uuid: projectId
         })
       })
       .let('files', (s) => {
@@ -237,7 +237,7 @@ class CollaborationDAO {
         .select('expand(outE(\'Requires\').inV(\'TestCase\').inE(\'Fulfills\').inV(\'File\'))')
         .from('Project')
         .where({
-          id: projectId
+          uuid: projectId
         })
       })
       .let('coverImages', (s) => {
@@ -245,7 +245,7 @@ class CollaborationDAO {
         .select('expand(in(\'Covers\'))')
         .from('Project')
         .where({
-          id: projectId
+          uuid: projectId
         })
       })
       .let('updateTestCases', (s) => {

@@ -26,7 +26,7 @@ class ProjectDAO {
       db
       .getProject()
       .from(_class)
-      .where({id: id})
+      .where({uuid: id})
       .limit(1)
       .transform((record) => {
         let project = new Project();
@@ -131,7 +131,7 @@ class ProjectDAO {
             .select()
             .from('User')
             .where({
-              id: relationalId
+              uuid: relationalId
             })
             .where(
               `_allow["${role}"] = ${roles.owner}`
@@ -160,7 +160,7 @@ class ProjectDAO {
             .select('outE(\'Creates\').size() as cursor')
             .from('User')
             .where({
-              id: relationalId
+              uuid: relationalId
             })
           })
           .commit()
@@ -220,7 +220,7 @@ class ProjectDAO {
             .select()
             .from(_class)
             .where({
-              id: targetId
+              uuid: targetId
             })
             .where(
               `_allow["${role}"].asString() MATCHES "${regExRoles.updateNode}"`
@@ -272,7 +272,7 @@ class ProjectDAO {
       db
       .delete('VERTEX', _class)
       .where({
-        id: targetId
+        uuid: targetId
       })
       .where(
         `_allow["${role}"].asString() MATCHES "${regExRoles.deleteNode}"`

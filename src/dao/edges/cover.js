@@ -35,9 +35,9 @@ class CoverDAO {
           .let('target', (s) => {
             s
             .select()
-            .from('indexvalues:id')
+            .from('indexvalues:V.uuid ')
             .where({
-              id: relationalId
+              uuid: relationalId
             })
             .where(
               `_allow["${role}"] = ${roles.owner}`
@@ -48,7 +48,7 @@ class CoverDAO {
             .select()
             .from('User')
             .where({
-              id: userId
+              uuid: userId
             })
             .where(
               `_allow["${role}"] = ${roles.owner}`
@@ -77,7 +77,7 @@ class CoverDAO {
             .select('inE(\'Covers\').size() as cursor')
             .from('V')
             .where({
-              id: relationalId
+              uuid: relationalId
             })
           })
           .commit()
@@ -133,7 +133,7 @@ class CoverDAO {
           .select('expand(outE(\'Covers\').inV(\'Project|User\'))')
           .from('File')
           .where({
-            id: targetId
+            uuid: targetId
           })
           .limit(1)
         })
@@ -143,7 +143,7 @@ class CoverDAO {
         s
         .delete('VERTEX', _class)
         .where({
-          id: targetId
+          uuid: targetId
         })
         .where(
           `_allow["${role}"].asString() MATCHES "${regExRoles.deleteNode}"`

@@ -29,7 +29,7 @@ class UserAuthenticateDAO {
             SMTICrypt.compare(password, hash)
               .then(() => {
                 let email = user.email;
-                let uuid = user.id;
+                let uuid = user.uuid;
                 let role = user.role;
                 let id = Base64.base64('User:' + uuid);
                 let payload = {
