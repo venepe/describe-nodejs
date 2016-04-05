@@ -2,7 +2,7 @@
 
 const _class = 'Project';
 import { SMTIValidator } from '../validator';
-import { filteredObject, Pagination, GraphQLHelper } from '../../utilities';
+import { filteredObject, Pagination, GraphQLHelper, uuidToId } from '../../utilities';
 import { roles, permissions, regExRoles } from '../permissions';
 import * as events from '../../events';
 import { offsetToCursor } from 'graphql-relay';
@@ -124,7 +124,7 @@ class ProjectDAO {
 
       validator
         .isProject()
-        .then((object) => {
+        .then(({project, projectEvent}) => {
           db
           .let('user', (s) => {
             s
@@ -140,8 +140,15 @@ class ProjectDAO {
           .let('project', (s) => {
             s
             .create('vertex', 'Project')
-            .set(object)
+            .set(project)
             .set({ _allow })
+          })
+          .let('projectEvent', (s) => {
+            s
+            .create('edge', 'ProjectEvent')
+            .from('$user')
+            .to('$project')
+            .set(projectEvent)
           })
           .let('creates', (s) => {
             s
@@ -169,6 +176,7 @@ class ProjectDAO {
           .then((result) => {
             let node = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
             let cursor = offsetToCursor(result[1].cursor);
+            node = uuidToId(node);
             node.testCases = [];
             node.numOfTestCases = 0;
             node.numOfTestCasesFulfilled = 0;
@@ -213,7 +221,7 @@ class ProjectDAO {
 
       validator
         .isProject()
-        .then((object) => {
+        .then(({project, projectEvent}) => {
           db
           .let('project', (s) => {
             s
@@ -225,6 +233,24 @@ class ProjectDAO {
             .where(
               `_allow["${role}"].asString() MATCHES "${regExRoles.updateNode}"`
             )
+          })
+          .let('user', (s) => {
+            s
+            .select()
+            .from('User')
+            .where({
+              uuid: userId
+            })
+            .where(
+              `_allow["${role}"] = ${roles.owner}`
+            )
+          })
+          .let('projectEvent', (s) => {
+            s
+            .create('edge', 'ProjectEvent')
+            .from('$user')
+            .to('$project')
+            .set(projectEvent)
           })
           .let('update', (s) => {
             s

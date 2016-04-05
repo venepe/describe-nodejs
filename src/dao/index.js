@@ -8,8 +8,10 @@ import Collaboration from './edges/collaboration.js';
 import Cover from './edges/cover.js';
 import Fulfillment from './edges/fulfillment.js';
 import Project from './nodes/project.js';
+import ProjectEvent from './events/project-event.js';
 import Search from './nodes/search.js';
 import TestCase from './nodes/test-case.js';
+import TestCaseEvent from './events/test-case-event.js';
 import User from './nodes/user.js';
 import UserAuthenticate from './nodes/user-authenticate.js';
 const server = OrientDB(OrientDbConfig);
@@ -55,6 +57,13 @@ class DAO {
     return pjt;
   }
 
+  ProjectEvent(targetId, params) {
+    const pjte = new ProjectEvent(targetId, params);
+    pjte.db = this.db;
+    pjte.user = this.user;
+    return pjte;
+  }
+
   Search(query, params) {
     const srch = new Search(query, params);
     srch.db = this.db;
@@ -67,6 +76,13 @@ class DAO {
     tc.db = this.db;
     tc.user = this.user;
     return tc;
+  }
+
+  TestCaseEvent(targetId, params) {
+    const tce = new TestCaseEvent(targetId, params);
+    tce.db = this.db;
+    tce.user = this.user;
+    return tce;
   }
 
   UserAuthenticate() {

@@ -2,7 +2,7 @@
 
 const _class = 'File';
 import { SMTIValidator } from '../validator';
-import { filteredObject } from '../../utilities';
+import { filteredObject, uuidToId } from '../../utilities';
 import { roles, regExRoles } from '../permissions';
 import * as events from '../../events';
 import { offsetToCursor } from 'graphql-relay';
@@ -101,6 +101,8 @@ class FulfillmentDAO {
             let testCase = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
             let project = filteredObject(result[2], 'in_.*|out_.*|@.*|^_');
             let cursor = offsetToCursor(result[3].cursor);
+
+            node = uuidToId(node);
 
             if (testCase.isFulfilled.length === 0) {
               let numOfTestCasesFulfilled = project.numOfTestCasesFulfilled;

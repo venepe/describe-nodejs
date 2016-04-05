@@ -225,6 +225,46 @@ let projectType = new GraphQLObjectType({
         });
       }
     },
+    events: {
+      type: projectEventConnection,
+      description: 'The changes made on the project.',
+      args: connectionArgs,
+      resolve: (project, args, context) => {
+        return new Promise((resolve, reject) => {
+          new DAO(context.rootValue.user).ProjectEvent(project.id).getProjectEvents(args).then((result) => {
+            resolve(connectionFromArraySlice(result.payload, args, result.meta));
+          })
+          .catch((e) => {
+            reject(e);
+          })
+        });
+      }
+    }
+  }),
+  interfaces: [nodeInterface],
+});
+
+let projectEventType = new GraphQLObjectType({
+  name: 'ProjectEvent',
+  description: 'Project event object',
+  fields: () => ({
+    id: globalIdField('ProjectEvent'),
+    title: {
+      type: GraphQLString,
+      description: 'The title of the project event.',
+    },
+    numOfTestCases: {
+      type: GraphQLInt,
+      description: 'The total number of test cases for the project event.',
+    },
+    numOfTestCasesFulfilled: {
+      type: GraphQLInt,
+      description: 'The total number of test cases fulfilled for the project event.',
+    },
+    createdAt: {
+      type: GraphQLString,
+      description: 'The timestamp when the project was created.',
+    }
   }),
   interfaces: [nodeInterface],
 });
@@ -264,11 +304,42 @@ let testCaseType = new GraphQLObjectType({
           })
         });
       }
+    },
+    events: {
+      type: testCaseEventConnection,
+      description: 'The changes made on the test case.',
+      args: connectionArgs,
+      resolve: (testCase, args, context) => {
+        return new Promise((resolve, reject) => {
+          new DAO(context.rootValue.user).TestCaseEvent(testCase.id).getTestCaseEvents(args).then((result) => {
+            resolve(connectionFromArraySlice(result.payload, args, result.meta));
+          })
+          .catch((e) => {
+            reject(e);
+          })
+        });
+      }
     }
   }),
   interfaces: [nodeInterface],
 });
 
+let testCaseEventType = new GraphQLObjectType({
+  name: 'TestCaseEvent',
+  description: 'Test case event object',
+  fields: () => ({
+    id: globalIdField('TestCaseEvent'),
+    it: {
+      type: GraphQLString,
+      description: 'The \"it\" or what a test case should do.',
+    },
+    createdAt: {
+      type: GraphQLString,
+      description: 'The timestamp when the test case was created.',
+    }
+  }),
+  interfaces: [nodeInterface],
+});
 
 let fileType = new GraphQLObjectType({
   name: 'File',
@@ -293,6 +364,12 @@ let fileType = new GraphQLObjectType({
 
 var {connectionType: testCaseConnection, edgeType: GraphQLTestCaseEdge} =
   connectionDefinitions({name: 'TestCase', nodeType: testCaseType});
+
+var {connectionType: testCaseEventConnection, edgeType: GraphQLTestCaseEventEdge} =
+  connectionDefinitions({name: 'TestCaseEvent', nodeType: testCaseEventType});
+
+var {connectionType: projectEventConnection, edgeType: GraphQLProjectEventEdge} =
+  connectionDefinitions({name: 'ProjectEvent', nodeType: projectEventType});
 
 var {connectionType: projectConnection, edgeType: GraphQLProjectEdge} =
   connectionDefinitions({name: 'Project', nodeType: projectType});
@@ -507,8 +584,17 @@ var updateTestCase = mutationWithClientMutationId({
   outputFields: {
     testCase: {
       type: testCaseType,
-      resolve: (payload) => payload
-    }
+      resolve: ({testCase}) => { return testCase; }
+    },
+    testCaseEventEdge: {
+      type: GraphQLTestCaseEventEdge,
+      resolve: ({testCaseEvent}) => {
+        return {
+          cursor: cursorForObjectInConnection([testCaseEvent], testCaseEvent),
+          node: testCaseEvent,
+        };
+      }
+    },
   },
   mutateAndGetPayload: ({id, it}, context) => {
     var localId = fromGlobalId(id).id;
@@ -759,6 +845,7 @@ var didIntroduceTestCase = subscriptionWithClientSubscriptionId({
       type: GraphQLTestCaseEdge,
       resolve: ({testCaseEdge}) => {
         testCaseEdge.node.fulfillments = {pageInfo: {hasNextPage: false, hasPreviousPage: false}, edges: []};
+        testCaseEdge.node.events = {pageInfo: {hasNextPage: false, hasPreviousPage: false}, edges: []};
 
         return testCaseEdge;
       }
@@ -899,8 +986,17 @@ var didUpdateTestCase = subscriptionWithClientSubscriptionId({
   outputFields: {
     testCase: {
       type: testCaseType,
-      resolve: (payload) => payload
-    }
+      resolve: ({testCase}) => { return testCase; }
+    },
+    testCaseEventEdge: {
+      type: GraphQLTestCaseEventEdge,
+      resolve: ({testCaseEvent}) => {
+        return {
+          cursor: cursorForObjectInConnection([testCaseEvent], testCaseEvent),
+          node: testCaseEvent,
+        };
+      }
+    },
   },
   mutateAndGetPayload: ({id}, {rootValue}) => {
     if (rootValue.event) {
@@ -1158,11 +1254,10 @@ var didIntroduceProject = subscriptionWithClientSubscriptionId({
     projectEdge: {
       type: GraphQLProjectEdge,
       resolve: ({projectEdge}) => {
-        projectEdge.testCases = {pageInfo: {hasNextPage: false, hasPreviousPage: false}, edges: []};
-        return {
-          cursor: cursorForObjectInConnection([projectEdge], projectEdge),
-          node: projectEdge,
-        };
+        projectEdge.node.testCases = {pageInfo: {hasNextPage: false, hasPreviousPage: false}, edges: []};
+        projectEdge.node.events = {pageInfo: {hasNextPage: false, hasPreviousPage: false}, edges: []};
+
+        return projectEdge;
       }
     },
     me: {

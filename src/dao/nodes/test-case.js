@@ -2,7 +2,7 @@
 
 const _class = 'TestCase';
 import { SMTIValidator } from '../validator';
-import { filteredObject, Pagination, GraphQLHelper } from '../../utilities';
+import { filteredObject, Pagination, GraphQLHelper, uuidToId } from '../../utilities';
 import { roles, regExRoles } from '../permissions';
 import * as events from '../../events';
 import { offsetToCursor } from 'graphql-relay';
@@ -128,7 +128,7 @@ class TestCaseDAO {
 
       validator
         .isTestCase()
-        .then((object) => {
+        .then(({testCase, testCaseEvent}) => {
           db
           .let('project', (s) => {
             s
@@ -156,14 +156,15 @@ class TestCaseDAO {
           .let('testCase', (s) => {
             s
             .create('vertex', 'TestCase')
-            .set(object)
+            .set(testCase)
             .set('_allow = $project._allow[0]')
           })
-          .let('creates', (s) => {
+          .let('testCaseEvent', (s) => {
             s
-            .create('edge', 'Creates')
+            .create('edge', 'TestCaseEvent')
             .from('$user')
             .to('$testCase')
+            .set(testCaseEvent)
           })
           .let('requires', (s) => {
             s
@@ -184,6 +185,7 @@ class TestCaseDAO {
           .all()
           .then((result) => {
             let node = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+            node = uuidToId(node);
             node.isFulfilled = false;
             let project = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
             let cursor = offsetToCursor(result[2].cursor);
@@ -237,7 +239,7 @@ class TestCaseDAO {
 
       validator
         .isTestCase()
-        .then((object) => {
+        .then(({testCase, testCaseEvent}) => {
           db
           .let('testCase', (s) => {
             s
@@ -250,10 +252,28 @@ class TestCaseDAO {
               `_allow["${role}"].asString() MATCHES "${regExRoles.updateNode}"`
             )
           })
+          .let('user', (s) => {
+            s
+            .select()
+            .from('User')
+            .where({
+              uuid: userId
+            })
+            .where(
+              `_allow["${role}"] = ${roles.owner}`
+            )
+          })
+          .let('testCaseEvent', (s) => {
+            s
+            .create('edge', 'TestCaseEvent')
+            .from('$user')
+            .to('$testCase')
+            .set(testCaseEvent)
+          })
           .let('update', (s) => {
             s
             .update('$testCase')
-            .set(object)
+            .set(testCase)
           })
           .let('newTestCase', (s) => {
             s
@@ -261,20 +281,24 @@ class TestCaseDAO {
             .from('$testCase')
           })
           .commit()
-          .return('$newTestCase')
-          .transform((record) => {
-            return filteredObject(record, 'in_.*|out_.*|@.*|^_');
-          })
-          .one()
-          .then((record) => {
-            let isFulfilled = record.isFulfilled;
-            record.isFulfilled = (isFulfilled.length > 0) ? true : false;
+          .return(['$newTestCase', '$testCaseEvent'])
+          .all()
+          .then((result) => {
+            let testCase = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+            let isFulfilled = testCase.isFulfilled;
+            testCase.isFulfilled = (isFulfilled.length > 0) ? true : false;
+            let testCaseEvent = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
+            testCaseEvent = uuidToId(testCaseEvent);
 
             events.publish(events.didUpdateTestCaseChannel(targetId), {
-              ...record
+                testCase,
+                testCaseEvent
             });
 
-            resolve(record);
+            resolve({
+                testCase,
+                testCaseEvent
+            });
           })
           .catch((e) => {
             console.log(`orientdb error: ${e}`);

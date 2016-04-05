@@ -2,7 +2,7 @@
 
 const _class = 'File';
 import { SMTIValidator } from '../validator';
-import { filteredObject } from '../../utilities';
+import { filteredObject, uuidToId } from '../../utilities';
 import { roles, regExRoles } from '../permissions';
 import { FileConfig } from '../../config';
 import * as events from '../../events';
@@ -85,6 +85,7 @@ class CoverDAO {
           .all()
           .then((result) => {
             let node = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+            node = uuidToId(node);
             let cursor = offsetToCursor(result[1].cursor);
             let coverImageEdge = {
               cursor,

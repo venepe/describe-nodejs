@@ -2,7 +2,7 @@
 
 const _class = 'User';
 import { SMTIValidator } from '../validator';
-import { authToken, filteredObject, SMTICrypt, Base64, Pagination, GraphQLHelper } from '../../utilities';
+import { authToken, filteredObject, SMTICrypt, Base64, Pagination, GraphQLHelper, uuidToId } from '../../utilities';
 import { roles } from '../permissions';
 
 import {
@@ -115,6 +115,8 @@ class UserDAO {
               let authenticate = authToken(payload);
 
               user.authenticate = authenticate;
+
+              user = uuidToId(user);
 
               resolve(user);
             } else {

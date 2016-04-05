@@ -257,4 +257,24 @@ OrientDB.Statement.prototype.inCollaboratesOnFromNode = function(id) {
   .where({'@class': this.db.SMTINode})
 }
 
+OrientDB.Statement.prototype.inTestCaseEvent = function(id) {
+  return this.from(function (s) {
+    s
+    .select('expand(in_TestCaseEvent)')
+    .from('TestCase')
+    .where({uuid: id})
+    .order('createdAt DESC')
+  })
+}
+
+OrientDB.Statement.prototype.inProjectEvent = function(id) {
+  return this.from(function (s) {
+    s
+    .select('expand(in_ProjectEvent)')
+    .from('TestCase')
+    .where({uuid: id})
+    .order('createdAt DESC')
+  })
+}
+
 export default OrientDB

@@ -1,6 +1,5 @@
 'use strict';
 
-import uuid from 'node-uuid';
 import validator from 'validator';
 import { Generate } from '../../utilities'
 import * as schema from './schema';
@@ -23,7 +22,6 @@ class SMTIValidator {
       }
       isValid(obj, (errorCount, errors) => {
         if (errorCount === 0) {
-          obj.id = uuid.v4();
           resolve(obj);
         } else {
           reject(errors);
@@ -44,10 +42,7 @@ class SMTIValidator {
       }
       isValid(obj, (errorCount, errors) => {
         if (errorCount === 0) {
-          if (!isOptional) {
-            obj.id = uuid.v4();
-          }
-          resolve(obj);
+          resolve({project: obj, projectEvent: obj});
         } else {
           reject(errors);
         }
@@ -67,10 +62,7 @@ class SMTIValidator {
       }
       isValid(obj, (errorCount, errors) => {
         if (errorCount === 0) {
-          if (!isOptional) {
-            obj.id = uuid.v4();
-          }
-          resolve(obj);
+          resolve({testCase: obj, testCaseEvent: obj});
         } else {
           reject(errors);
         }
@@ -91,7 +83,6 @@ class SMTIValidator {
       isValid(obj, (errorCount, errors) => {
         if (errorCount === 0) {
           if (!isOptional) {
-            obj.id = uuid.v4();
             obj.email = validator.normalizeEmail(obj.email);
             if (!obj.name || obj.name.length === 0) {
               obj.name = Generate.getUsername();

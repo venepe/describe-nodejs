@@ -13,3 +13,4 @@ export { default as SMTICrypt } from './lib/SMTICrypt';
 export { default as SMTIEmailTemplate } from './lib/SMTIEmailTemplate';
 export { ensureHttps } from './lib/ensure-https';
 export { delFile } from './lib/SMTIDelFile';
+export { uuidToId } from './lib/uuid-to-id';
