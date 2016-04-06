@@ -28,8 +28,8 @@ class FulfillmentDAO {
       let validator = new SMTIValidator(object);
 
       validator
-        .isFile()
-        .then((object) => {
+        .isFulfillment()
+        .then(({fulfillment, fulfillmentEvent}) => {
           db
           .let('testCase', (s) => {
             s
@@ -70,14 +70,15 @@ class FulfillmentDAO {
           .let('file', (s) => {
             s
             .create('vertex', 'File')
-            .set(object)
+            .set(fulfillment)
             .set('_allow = $testCase._allow[0]')
           })
-          .let('creates', (s) => {
+          .let('fulfillmentEvent', (s) => {
             s
-            .create('edge', 'Creates')
+            .create('edge', 'FulfillmentEvent')
             .from('$user')
             .to('$file')
+            .set(fulfillmentEvent)
           })
           .let('fulfills', (s) => {
             s
@@ -122,11 +123,11 @@ class FulfillmentDAO {
             });
 
             events.publish(events.didUpdateTestCaseChannel(relationalId), {
-              ...testCase
+              testCase
             });
 
             events.publish(events.didUpdateProjectChannel(project.id), {
-              ...project
+              project
             });
 
             resolve({
@@ -150,9 +151,8 @@ class FulfillmentDAO {
     });
   }
 
-  del(testCaseId) {
+  reject(testCaseId) {
     return new Promise((resolve, reject) => {
-      var del = require('del');
       var targetId = this.targetId;
       var db = this.db;
       var user = this.user;
@@ -162,7 +162,7 @@ class FulfillmentDAO {
       db
       .let('testCase', (s) => {
         s
-        .getTestCase()
+        .select()
         .from('TestCase')
         .where({
           uuid: testCaseId
@@ -181,9 +181,10 @@ class FulfillmentDAO {
           .limit(1)
         })
       })
-      .let('deletes', (s) => {
+      .let('file', (s) => {
         s
-        .delete('VERTEX', _class)
+        .select()
+        .from('File')
         .where({
           uuid: targetId
         })
@@ -191,14 +192,40 @@ class FulfillmentDAO {
           `_allow["${role}"].asString() MATCHES "${regExRoles.deleteNode}"`
         )
       })
+      .let('deletes', (s) => {
+        s
+        .delete('EDGE', 'Fulfills')
+        .from('$file')
+        .to('$testCase')
+      })
+      .let('fulfills', (s) => {
+        s
+        .create('edge', 'Rejects')
+        .from('$file')
+        .to('$testCase')
+      })
+      .let('cursor', s => {
+        s
+        .select('inE(\'Rejects\').size() as cursor')
+        .from('TestCase')
+        .where({
+          uuid: testCaseId
+        })
+      })
       .commit()
-      .return(['$testCase', '$project'])
+      .return(['$file', '$testCase', '$project', '$cursor'])
       .all()
       .then((result) => {
-        let testCase = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
-        let project = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
+        let node = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+        let testCase = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
+        let project = filteredObject(result[2], 'in_.*|out_.*|@.*|^_');
+        let cursor = offsetToCursor(result[3].cursor);
+
         let numOfTestCasesFulfilled = project.numOfTestCasesFulfilled;
         let isFulfilled = testCase.isFulfilled;
+
+        node = uuidToId(node);
+        testCase = uuidToId(testCase);
 
         //Because the test case is pull before the fulfillment is deleted
         testCase.isFulfilled = (isFulfilled.length > 1) ? true : false;
@@ -208,22 +235,30 @@ class FulfillmentDAO {
           project.numOfTestCasesFulfilled = numOfTestCasesFulfilled;
         }
 
-        events.publish(events.didDeleteFulfillmentChannel(testCaseId, targetId), {
-          deletedFulfillmentId: targetId,
+        events.publish(events.didRejectFulfillmentChannel(testCaseId, targetId), {
+          rejectedFulfillmentId: targetId,
+          rejectionEdge: {
+            cursor,
+            node
+          },
           testCase,
           project
         });
 
         events.publish(events.didUpdateTestCaseChannel(testCaseId), {
-          ...testCase
+          testCase
         });
 
         events.publish(events.didUpdateProjectChannel(project.id), {
-          ...project
+          project
         });
 
         resolve({
-          deletedFulfillmentId: targetId,
+          rejectedFulfillmentId: targetId,
+          rejectionEdge: {
+            cursor,
+            node
+          },
           testCase,
           project
         });

@@ -263,17 +263,21 @@ class ProjectDAO {
             .from('$project')
           })
           .commit()
-          .return('$newProject')
-          .transform((record) => {
-            return filteredObject(record, 'in_.*|out_.*|@.*|^_');
-          })
-          .one()
-          .then((record) => {
+          .return(['$newProject', '$projectEvent'])
+          .all()
+          .then((result) => {
+            let project = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+            let projectEvent = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
+            projectEvent = uuidToId(projectEvent);
             events.publish(events.didUpdateProjectChannel(targetId), {
-              ...record
+              project,
+              projectEvent
             });
 
-            resolve(record);
+            resolve({
+              project,
+              projectEvent
+            });
           })
           .catch((e) => {
             console.log(`orientdb error: ${e}`);

@@ -30,8 +30,8 @@ class CollaborationDAO {
 
       validator
         .isCollaborator()
-        .then((object) => {
-          let email = object.email;
+        .then(({collaborator}) => {
+          let email = collaborator.email;
 
           db
           .select('uuid, role')

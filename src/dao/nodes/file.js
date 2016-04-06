@@ -145,6 +145,40 @@ class FileDAO {
       .done();
     });
   }
+
+  inEdgeRejected(args) {
+    let pageObject = Pagination.getOrientDBPageFromGraphQL(args);
+
+    return new Promise((resolve, reject) => {
+      let user = this.user;
+      let db = this.db;
+      let id = this.targetId;
+
+      db
+      .getFile()
+      .inRejectsFromNode(id)
+      .skip(pageObject.skip)
+      .limit(pageObject.limit)
+      .order(pageObject.orderBy)
+      .transform((record) => {
+        return filteredObject(record, '@.*|rid');
+      })
+      .all()
+      .then((payload) => {
+        let meta = GraphQLHelper.getMeta(pageObject, payload);
+        resolve({
+          payload,
+          meta
+        });
+      })
+      .catch((e) => {
+        reject();
+
+      })
+      .done();
+    });
+  }
+
 }
 
 export default FileDAO;

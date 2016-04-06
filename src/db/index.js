@@ -161,6 +161,38 @@ OrientDB.Statement.prototype.inFulfillsFromNode = function(id) {
   .where({'@class': this.db.SMTINode})
 }
 
+OrientDB.Statement.prototype.outRejectsFromNode = function(id) {
+  return this.from(function (s) {
+    s
+    .select('expand(out("Rejects"))')
+    .from(function (s) {
+      s
+      .select()
+      .from('indexvalues:V.uuid ')
+      .where({uuid: id})
+      .limit(1)
+    })
+    .order('createdAt DESC')
+  })
+  .where({'@class': this.db.SMTINode})
+}
+
+OrientDB.Statement.prototype.inRejectsFromNode = function(id) {
+  return this.from(function (s) {
+    s
+    .select('expand(in("Rejects"))')
+    .from(function (s) {
+      s
+      .select()
+      .from('indexvalues:V.uuid ')
+      .where({uuid: id})
+      .limit(1)
+    })
+    .order('createdAt DESC')
+  })
+  .where({'@class': this.db.SMTINode})
+}
+
 OrientDB.Statement.prototype.outRequiresFromNode = function(id) {
   return this.from(function (s) {
     s
@@ -271,7 +303,7 @@ OrientDB.Statement.prototype.inProjectEvent = function(id) {
   return this.from(function (s) {
     s
     .select('expand(in_ProjectEvent)')
-    .from('TestCase')
+    .from('Project')
     .where({uuid: id})
     .order('createdAt DESC')
   })

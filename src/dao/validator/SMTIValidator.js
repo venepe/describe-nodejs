@@ -10,7 +10,7 @@ class SMTIValidator {
     this.obj = obj;
   }
 
-  isFile() {
+  isCoverImage() {
     return new Promise((resolve, reject) => {
       let isOptional = this.isOptional;
       let obj = this.obj;
@@ -22,7 +22,27 @@ class SMTIValidator {
       }
       isValid(obj, (errorCount, errors) => {
         if (errorCount === 0) {
-          resolve(obj);
+          resolve({coverImage: obj, coverImageEvent: obj});
+        } else {
+          reject(errors);
+        }
+      });
+    });
+  }
+
+  isFulfillment() {
+    return new Promise((resolve, reject) => {
+      let isOptional = this.isOptional;
+      let obj = this.obj;
+      let isValid;
+      if (this.isOptional) {
+        isValid = schema.isValidFile;
+      } else {
+        isValid = schema.isValidFile;
+      }
+      isValid(obj, (errorCount, errors) => {
+        if (errorCount === 0) {
+          resolve({fulfillment: obj, fulfillmentEvent: obj});
         } else {
           reject(errors);
         }
@@ -150,7 +170,7 @@ class SMTIValidator {
       isValid(obj, (errorCount, errors) => {
         if (errorCount === 0) {
           obj.email = validator.normalizeEmail(obj.email);
-          resolve(obj);
+          resolve({collaborator: obj, collaboratorEvent: obj});
         } else {
           reject(errors);
         }

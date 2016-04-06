@@ -12,7 +12,7 @@ export const didIntroduceFulfillmentChannel = (testCaseId) => {
   return `/testcases/${testCaseId}/fulfillments`;
 }
 
-export const didDeleteFulfillmentChannel = (testCaseId, fulfillmentId) => {
+export const didRejectFulfillmentChannel = (testCaseId, fulfillmentId) => {
   return `/testcases/${testCaseId}/fulfillments/${fulfillmentId}`;
 }
 

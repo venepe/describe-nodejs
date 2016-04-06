@@ -29,8 +29,8 @@ class CoverDAO {
       let validator = new SMTIValidator(object);
 
       validator
-        .isFile()
-        .then((object) => {
+        .isCoverImage()
+        .then(({coverImage, coverImageEvent}) => {
           db
           .let('target', (s) => {
             s
@@ -57,14 +57,15 @@ class CoverDAO {
           .let('file', (s) => {
             s
             .create('vertex', 'File')
-            .set(object)
+            .set(coverImage)
             .set('_allow = $target._allow[0]')
           })
-          .let('creates', (s) => {
+          .let('coverImageEvent', (s) => {
             s
-            .create('edge', 'Creates')
+            .create('edge', 'CoverImageEvent')
             .from('$user')
             .to('$file')
+            .set(coverImageEvent)
           })
           .let('covers', (s) => {
             s
