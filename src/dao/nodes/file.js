@@ -41,6 +41,43 @@ class FileDAO {
     });
   }
 
+  getCover() {
+    return new Promise((resolve, reject) => {
+      let id = this.targetId;
+      let user = this.user;
+      let db = this.db;
+
+      db
+      .getFile()
+      .inCoversFromNode(id)
+      .skip(0)
+      .limit(1)
+      .order('createdAt DESC')
+      .transform((record) => {
+        return filteredObject(record, '@.*|rid');
+      })
+      .one()
+      .then((record) => {
+        if (record) {
+          resolve(record);
+        } else {
+          let defaultCoverFile = {
+            id: id,
+            uri: FileConfig.DefaultImageUrl + id
+          };
+          resolve(
+            defaultCoverFile
+          );
+        }
+      })
+      .catch((e) => {
+        reject();
+
+      })
+      .done();
+    });
+  }
+
   getEdgeCreated(args) {
     let pageObject = Pagination.getOrientDBPageFromGraphQL(args);
 

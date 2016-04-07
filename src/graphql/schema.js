@@ -101,15 +101,12 @@ let userType = new GraphQLObjectType({
       type: GraphQLString,
       description: 'The timestamp when the user was last updated.',
     },
-    coverImages: {
-      type: coverImageConnection,
-      description: 'The cover images of the user.',
-      args: connectionArgs,
-      resolve: (user, args, context) => connectionFromPromisedArray(
-        new DAO(context.rootValue.user).File(user.id).getEdgeCovered(args)
-        ,
-        args
-      ),
+    cover: {
+      type: fileType,
+      description: 'The cover image of the user.',
+      resolve: (user, args, context) => {
+        return new DAO(context.rootValue.user).File(user.id).getCover();
+      }
     },
     projects: {
       type: projectConnection,
@@ -184,16 +181,6 @@ let projectType = new GraphQLObjectType({
           })
         });
       }
-    },
-    coverImages: {
-      type: coverImageConnection,
-      description: 'The cover images of the project.',
-      args: connectionArgs,
-      resolve: (project, args, context) => connectionFromPromisedArray(
-        new DAO(context.rootValue.user).File(project.id).getEdgeCovered(args)
-        ,
-        args
-      ),
     },
     collaborators: {
       type: userConnection,
