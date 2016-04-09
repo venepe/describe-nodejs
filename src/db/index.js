@@ -309,4 +309,14 @@ OrientDB.Statement.prototype.inProjectEvent = function(id) {
   })
 }
 
+OrientDB.Statement.prototype.outEventAuthor = function(id) {
+  return this.from(function (s) {
+    s
+    .select('expand(out[@class = "User"])')
+    .from('Event')
+    .where({uuid: id})
+    .limit(1)
+  })
+}
+
 export default OrientDB

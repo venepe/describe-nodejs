@@ -22,7 +22,7 @@ class FulfillmentEventDAO {
       let id = this.targetId;
 
       db
-      .select('uuid as id, uri')
+      .select('uuid as id, uri, createdAt')
       .inFulfillmentEvent(id)
       .skip(pageObject.skip)
       .limit(pageObject.limit)

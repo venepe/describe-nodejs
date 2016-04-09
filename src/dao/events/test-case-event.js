@@ -22,7 +22,7 @@ class TestCaseEventDAO {
       let id = this.targetId;
 
       db
-      .select('uuid as id, it')
+      .select('uuid as id, it, createdAt')
       .inTestCaseEvent(id)
       .skip(pageObject.skip)
       .limit(pageObject.limit)

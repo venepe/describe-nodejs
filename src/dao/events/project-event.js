@@ -22,7 +22,7 @@ class ProjectEventDAO {
       let id = this.targetId;
 
       db
-      .select('uuid as id, title')
+      .select('uuid as id, title, createdAt')
       .inProjectEvent(id)
       .skip(pageObject.skip)
       .limit(pageObject.limit)

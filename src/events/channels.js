@@ -24,14 +24,6 @@ export const didUpdateTestCaseChannel = (testCaseId) => {
   return `/testcases/${testCaseId}/update`;
 }
 
-export const didIntroduceCoverImageChannel = (targetId) => {
-  return `/target/${targetId}/coverImages`;
-}
-
-export const didDeleteCoverImageChannel = (coverImageId) => {
-  return `/coverImages/${coverImageId}/delete`;
-}
-
 export const didIntroduceCollaboratorChannel = (projectId) => {
   return `/projects/${projectId}/collaborators`;
 }

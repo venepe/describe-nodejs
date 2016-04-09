@@ -243,6 +243,13 @@ let projectEventType = new GraphQLObjectType({
     createdAt: {
       type: GraphQLString,
       description: 'The timestamp when the project was created.',
+    },
+    author: {
+      type: userType,
+      description: 'The user who created the title event',
+      resolve: (projectEvent, args, context) => {
+        return new DAO(context.rootValue.user).User(projectEvent.id).outEventAuthor();
+      }
     }
   }),
   interfaces: [nodeInterface],
@@ -330,6 +337,13 @@ let testCaseEventType = new GraphQLObjectType({
     createdAt: {
       type: GraphQLString,
       description: 'The timestamp when the test case was created.',
+    },
+    author: {
+      type: userType,
+      description: 'The user who created the title event',
+      resolve: (projectEvent, args, context) => {
+        return new DAO(context.rootValue.user).User(projectEvent.id).outEventAuthor();
+      }
     }
   }),
   interfaces: [nodeInterface],
@@ -676,10 +690,10 @@ var rejectFulfillment = mutationWithClientMutationId({
   }
 });
 
-var introduceCoverImage = mutationWithClientMutationId({
-  name: 'IntroduceCoverImage',
+var introduceUserCover = mutationWithClientMutationId({
+  name: 'IntroduceUserCover',
   inputFields: {
-    targetId: {
+    userId: {
       type: new GraphQLNonNull(GraphQLID)
     },
     uri: {
@@ -688,52 +702,33 @@ var introduceCoverImage = mutationWithClientMutationId({
     }
   },
   outputFields: {
-    coverImageEdge: {
-      type: GraphQLCoverImageEdge,
-      resolve: ({coverImageEdge}) => { return coverImageEdge; }
-    },
-    target: {
-      type: nodeInterface,
-      resolve: (target) => {return target},
+    user: {
+      type: userType,
+      resolve: ({user}) => { return user; }
     }
   },
-  mutateAndGetPayload: ({targetId, uri}, context) => {
-    var localId = fromGlobalId(targetId).id;
-    return new DAO(context.rootValue.user).Cover(localId).create({uri});
+  mutateAndGetPayload: ({userId, uri}, context) => {
+    var localId = fromGlobalId(userId).id;
+    return new DAO(context.rootValue.user).Cover(localId).createUserCover({uri});
   }
 });
 
-var deleteCoverImage = mutationWithClientMutationId({
-  name: 'DeleteCoverImage',
+var deleteUserCover = mutationWithClientMutationId({
+  name: 'DeleteUserCover',
   inputFields: {
     id: {
       type: new GraphQLNonNull(GraphQLID)
     }
   },
   outputFields: {
-    deletedCoverImageId: {
-      type: GraphQLID,
-      resolve: ({deletedCoverImageId}) => {
-        return toGlobalId('File', deletedCoverImageId);
-      },
+    user: {
+      type: userType,
+      resolve: ({user}) => { return user; }
     },
-    coverImageEdge: {
-      type: GraphQLCoverImageEdge,
-      resolve: ({coverImageEdge}) => {
-        return {
-          cursor: cursorForObjectInConnection([coverImageEdge], coverImageEdge),
-          node: coverImageEdge,
-        };
-      }
-    },
-    target: {
-      type: nodeInterface,
-      resolve: () => {},
-    }
   },
   mutateAndGetPayload: ({id}, context) => {
     var localId = fromGlobalId(id).id;
-    return new DAO(context.rootValue.user).Cover(localId).del();
+    return new DAO(context.rootValue.user).Cover(localId).delUserCover();
   }
 });
 
@@ -1033,76 +1028,6 @@ var didUpdateTestCase = subscriptionWithClientSubscriptionId({
   }
 });
 
-var didIntroduceCoverImage = subscriptionWithClientSubscriptionId({
-  name: 'DidIntroduceCoverImage',
-  inputFields: {
-    targetId: {
-      type: new GraphQLNonNull(GraphQLID)
-    },
-  },
-  outputFields: {
-    coverImageEdge: {
-      type: GraphQLCoverImageEdge,
-      resolve: ({coverImageEdge}) => { return coverImageEdge; }
-    },
-    target: {
-      type: nodeInterface,
-      resolve: ({target}) => { return target},
-    }
-  },
-  mutateAndGetPayload: ({targetId}, {rootValue}) => {
-    if (rootValue.event) {
-      return rootValue.event;
-    } else {
-      var localId = fromGlobalId(targetId).id;
-      rootValue.channel = channels.didIntroduceCoverImageChannel(localId);
-      return {targetId};
-    }
-  }
-});
-
-var didDeleteCoverImage = subscriptionWithClientSubscriptionId({
-  name: 'DidDeleteCoverImage',
-  inputFields: {
-    id: {
-      type: new GraphQLNonNull(GraphQLID)
-    },
-    targetId: {
-      type: new GraphQLNonNull(GraphQLID)
-    }
-  },
-  outputFields: {
-    deletedCoverImageId: {
-      type: GraphQLID,
-      resolve: ({deletedCoverImageId}) => {
-        return toGlobalId('File', deletedCoverImageId);
-      },
-    },
-    coverImageEdge: {
-      type: GraphQLCoverImageEdge,
-      resolve: ({coverImageEdge}) => {
-        return {
-          cursor: cursorForObjectInConnection([coverImageEdge], coverImageEdge),
-          node: coverImageEdge,
-        };
-      }
-    },
-    target: {
-      type: nodeInterface,
-      resolve: ({target}) => { return target; },
-    }
-  },
-  mutateAndGetPayload: ({id, targetId}, {rootValue}) => {
-    if (rootValue.event) {
-      return rootValue.event;
-    } else {
-      var localId = fromGlobalId(id).id;
-      rootValue.channel = channels.didDeleteCoverImageChannel(localId);
-      return {id};
-    }
-  }
-});
-
 var didIntroduceCollaborator = subscriptionWithClientSubscriptionId({
   name: 'DidIntroduceCollaborator',
   inputFields: {
@@ -1323,12 +1248,12 @@ var schema = new GraphQLSchema({
     fields: {
       deleteCollaboration,
       deleteCollaborator,
-      deleteCoverImage,
+      deleteUserCover,
       deleteProject,
       deleteTestCase,
       deleteUser,
       introduceCollaborator,
-      introduceCoverImage,
+      introduceUserCover,
       introduceFulfillment,
       introduceProject,
       introduceTestCase,
@@ -1345,12 +1270,10 @@ var schema = new GraphQLSchema({
     fields: {
       didDeleteCollaboration,
       didDeleteCollaborator,
-      didDeleteCoverImage,
       didDeleteProject,
       didDeleteTestCase,
       didIntroduceCollaborator,
       didIntroduceCollaboration,
-      didIntroduceCoverImage,
       didIntroduceFulfillment,
       didIntroduceProject,
       didIntroduceTestCase,

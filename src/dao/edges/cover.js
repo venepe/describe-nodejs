@@ -18,7 +18,7 @@ class CoverDAO {
     this.params = params;
   }
 
-  create(object) {
+  createUserCover(object) {
     return new Promise((resolve, reject) => {
       var db = this.db;
       var relationalId = this.targetId;
@@ -73,34 +73,25 @@ class CoverDAO {
             .from('$file')
             .to('$target')
           })
-          .let('cursor', s => {
-            s
-            .select('inE(\'Covers\').size() as cursor')
-            .from('V')
-            .where({
-              uuid: relationalId
-            })
-          })
           .commit()
-          .return(['$file', '$cursor'])
+          .return(['$file'])
           .all()
           .then((result) => {
-            let node = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
-            node = uuidToId(node);
-            let cursor = offsetToCursor(result[1].cursor);
-            let coverImageEdge = {
-              cursor,
-              node
-            };
+            let cover = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+            cover = uuidToId(cover);
 
-            events.publish(events.didIntroduceCoverImageChannel(relationalId), {
-              target: {id: relationalId},
-              coverImageEdge
-            });
+            // events.publish(events.didUpdateUserChannel(relationalId), {
+            // user: {
+            //   id: relationalId,
+            //   cover
+            // }
+            // });
 
             resolve({
-              target: {id: relationalId},
-              coverImageEdge
+              user: {
+                id: relationalId,
+                cover
+              }
             });
           })
           .catch((e) => {
@@ -117,12 +108,11 @@ class CoverDAO {
     });
   }
 
-  del() {
+  delUserCover() {
     return new Promise((resolve, reject) => {
-      var del = require('del');
       var targetId = this.targetId;
       var db = this.db;
-      var user = this.user;
+      // var user = this.user;
       var userId = this.user.id;
       var role = this.user.role;
 
@@ -132,7 +122,7 @@ class CoverDAO {
         .select('*')
         .from(function (s) {
           s
-          .select('expand(outE(\'Covers\').inV(\'Project|User\'))')
+          .select('expand(outE(\'Covers\').inV(\'User\'))')
           .from('File')
           .where({
             uuid: targetId
@@ -166,33 +156,24 @@ class CoverDAO {
       .commit()
       .return('$coverImage')
       .one()
-      .then((result) => {
-        let payload = {};
+      .then((cover) => {
+        // TODO: return user insead of relying on context user object
+        let user = {id: userId};
 
-        // TODO: return target
-        let target = {id: null};
-        if (result) {
-          payload = {
-            deletedCoverImageId: targetId,
-            coverImageEdge: result,
-            target
-          };
+        if (cover) {
+          user.cover = cover;
         } else {
           let defaultCoverFile = {
-            id: targetId,
-            uri: FileConfig.DefaultImageUrl + targetId
+            id: user.id,
+            uri: FileConfig.DefaultImageUrl + userId
           };
 
-          payload = {
-            deletedCoverImageId: targetId,
-            coverImageEdge: defaultCoverFile,
-            target
-          }
+          user.cover = defaultCoverFile;
         }
 
-        events.publish(events.didDeleteCoverImageChannel(targetId), payload);
+        // events.publish(events.didUpdateUserChannel(user.id), {user});
 
-        resolve(payload);
+        resolve({user});
       })
       .catch((e) => {
         console.log(`orientdb error: ${e}`);

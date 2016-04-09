@@ -66,6 +66,32 @@ class UserDAO {
     });
   }
 
+  outEventAuthor() {
+    return new Promise((resolve, reject) => {
+      let user = this.user;
+      let db = this.db;
+      let id = this.targetId;
+
+      db
+      .getUser()
+      .outEventAuthor(id)
+      .limit(1)
+      .transform((record) => {
+        let user = new User();
+        return filteredObject(record, '@.*|rid', user);
+      })
+      .one()
+      .then((record) => {
+        resolve(record);
+      })
+      .catch((e) => {
+        reject();
+
+      })
+      .done();
+    });
+  }
+
   create(object) {
     return new Promise((resolve, reject) => {
       let db = this.db;
