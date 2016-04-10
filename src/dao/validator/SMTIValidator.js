@@ -50,6 +50,26 @@ class SMTIValidator {
     });
   }
 
+  isRejection() {
+    return new Promise((resolve, reject) => {
+      let isOptional = this.isOptional;
+      let obj = this.obj;
+      let isValid;
+      if (this.isOptional) {
+        isValid = schema.isValidRejection;
+      } else {
+        isValid = schema.isValidRejection;
+      }
+      isValid(obj, (errorCount, errors) => {
+        if (errorCount === 0) {
+          resolve({rejection: obj, rejectionEvent: obj});
+        } else {
+          reject(errors);
+        }
+      });
+    });
+  }
+
   isProject() {
     return new Promise((resolve, reject) => {
       let isOptional = this.isOptional;

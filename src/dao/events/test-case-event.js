@@ -13,6 +13,33 @@ class TestCaseEventDAO {
     this.params = params;
   }
 
+  get() {
+    return new Promise((resolve, reject) => {
+      let user = this.user;
+      let db = this.db;
+      let id = this.targetId;
+
+      db
+      .select('uuid as id, it, createdAt')
+      .from('TestCaseEvent')
+      .where({uuid: id})
+      .limit(1)
+      .transform((record) => {
+        let testCaseEvent = new TestCaseEvent();
+        return filteredObject(record, '@.*|rid', testCaseEvent);
+      })
+      .one()
+      .then((record) => {
+        resolve(record);
+      })
+      .catch((e) => {
+        reject();
+
+      })
+      .done();
+    });
+  }
+
   getTestCaseEvents(args) {
     let pageObject = Pagination.getOrientDBPageFromGraphQL(args);
 

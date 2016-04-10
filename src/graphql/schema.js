@@ -11,6 +11,7 @@ import {
   GraphQLNonNull,
   GraphQLList,
   GraphQLInputObjectType,
+  GraphQLEnumType,
   GraphQLBoolean,
   GraphQLFloat,
   GraphQLInt
@@ -33,7 +34,9 @@ import {
 import {
   File,
   Project,
+  ProjectEvent,
   TestCase,
+  TestCaseEvent,
   User,
 } from '../dao/model';
 
@@ -52,6 +55,10 @@ var {nodeInterface, nodeField} = nodeDefinitions(
       return new DAO(user).File(id).get();
     } else if (type === 'User') {
       return new DAO(user).User(id).get();
+    } else if (type === 'TestCaseEvent') {
+      return new DAO(user).TestCaseEvent(id).get();
+    } else if (type === 'ProjectEvent') {
+      return new DAO(user).ProjectEvent(id).get();
     } else {
       return null;
     }
@@ -66,6 +73,8 @@ var {nodeInterface, nodeField} = nodeDefinitions(
       return fileType;
     } else if (obj instanceof User) {
       return userType;
+    } else if (obj instanceof TestCaseEvent) {
+      return testCaseEventType;
     } else {
       return null;
     }
@@ -370,6 +379,56 @@ let fileType = new GraphQLObjectType({
   interfaces: [nodeInterface],
 });
 
+let fulfillmentType = new GraphQLObjectType({
+  name: 'Fulfillment',
+  description: 'Fulfillment object',
+  fields: () => ({
+    id: globalIdField('Fulfillment'),
+    file: {
+      type: GraphQLString,
+      description: 'The file fulfilling the test case.',
+    },
+    reason: {
+      type: GraphQLString,
+      description: 'The reason for a fulfillment\'s status.',
+    },
+    createdAt: {
+      type: GraphQLString,
+      description: 'The timestamp when the fulfillment was created.',
+    },
+    updatedAt: {
+      type: GraphQLString,
+      description: 'The timestamp when the fulfillment was last updated.',
+    }
+  }),
+  interfaces: [nodeInterface],
+});
+
+let rejectionType = new GraphQLObjectType({
+  name: 'Rejection',
+  description: 'Rejection object',
+  fields: () => ({
+    id: globalIdField('Rejection'),
+    file: {
+      type: fileType,
+      description: 'The file not fulfilling the test case.',
+    },
+    reason: {
+      type: GraphQLString,
+      description: 'The reason for a rejections\'s status.',
+    },
+    createdAt: {
+      type: GraphQLString,
+      description: 'The timestamp when the rejection was created.',
+    },
+    updatedAt: {
+      type: GraphQLString,
+      description: 'The timestamp when the rejection was last updated.',
+    }
+  }),
+  interfaces: [nodeInterface],
+});
+
 var {connectionType: testCaseConnection, edgeType: GraphQLTestCaseEdge} =
   connectionDefinitions({name: 'TestCase', nodeType: testCaseType});
 
@@ -389,7 +448,7 @@ var {connectionType: fulfillConnection, edgeType: GraphQLFulfillEdge} =
   connectionDefinitions({name: 'Fulfills', nodeType: fileType});
 
 var {connectionType: rejectConnection, edgeType: GraphQLRejectEdge} =
-  connectionDefinitions({name: 'Rejects', nodeType: fileType});
+  connectionDefinitions({name: 'Rejects', nodeType: rejectionType});
 
 var {connectionType: userConnection, edgeType: GraphQLUserEdge} =
   connectionDefinitions({name: 'Users', nodeType: userType});
@@ -657,6 +716,10 @@ var rejectFulfillment = mutationWithClientMutationId({
     },
     testCaseId: {
       type: new GraphQLNonNull(GraphQLID)
+    },
+    reason: {
+      type: new GraphQLNonNull(GraphQLString),
+      description: 'The reason for a rejection.',
     }
   },
   outputFields: {
@@ -683,10 +746,10 @@ var rejectFulfillment = mutationWithClientMutationId({
       },
     },
   },
-  mutateAndGetPayload: ({id, testCaseId}, context) => {
+  mutateAndGetPayload: ({id, testCaseId, reason}, context) => {
     var localId = fromGlobalId(id).id;
     var localTestCaseId = fromGlobalId(testCaseId).id;
-    return new DAO(context.rootValue.user).Fulfillment(localId).reject(localTestCaseId);
+    return new DAO(context.rootValue.user).Fulfillment(localId).reject(localTestCaseId, {reason});
   }
 });
 

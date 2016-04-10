@@ -177,10 +177,24 @@ OrientDB.Statement.prototype.outRejectsFromNode = function(id) {
   .where({'@class': this.db.SMTINode})
 }
 
+OrientDB.Db.prototype.getRejection = function() {
+  return this.select('uuid as id, reason, createdAt, updatedAt, $file[0] as file')
+    .let('file', function(s) {
+      s
+      .getFile()
+      .from(function (s) {
+        s
+        .select('expand(out[@class = "File"])')
+        .from('$parent.$current')
+        .limit(1)
+      })
+    })
+}
+
 OrientDB.Statement.prototype.inRejectsFromNode = function(id) {
   return this.from(function (s) {
     s
-    .select('expand(in("Rejects"))')
+    .select('expand(in_Rejects)')
     .from(function (s) {
       s
       .select()
@@ -190,7 +204,6 @@ OrientDB.Statement.prototype.inRejectsFromNode = function(id) {
     })
     .order('createdAt DESC')
   })
-  .where({'@class': this.db.SMTINode})
 }
 
 OrientDB.Statement.prototype.outRequiresFromNode = function(id) {

@@ -151,7 +151,7 @@ class FulfillmentDAO {
     });
   }
 
-  reject(testCaseId) {
+  reject(testCaseId, object) {
     return new Promise((resolve, reject) => {
       var targetId = this.targetId;
       var db = this.db;
@@ -159,115 +159,129 @@ class FulfillmentDAO {
       var userId = this.user.id;
       var role = this.user.role;
 
-      db
-      .let('testCase', (s) => {
-        s
-        .select()
-        .from('TestCase')
-        .where({
-          uuid: testCaseId
-        })
-      })
-      .let('project', (s) => {
-        s
-        .getProject()
-        .from(function (s) {
-          s
-          .select('expand(in("Requires"))')
-          .from('TestCase')
-          .where({
-            uuid: testCaseId
+      let validator = new SMTIValidator(object);
+
+      validator
+        .isRejection()
+        .then(({rejection, rejectionEvent}) => {
+          db
+          .let('testCase', (s) => {
+            s
+            .select()
+            .from('TestCase')
+            .where({
+              uuid: testCaseId
+            })
           })
-          .limit(1)
+          .let('project', (s) => {
+            s
+            .getProject()
+            .from(function (s) {
+              s
+              .select('expand(in("Requires"))')
+              .from('TestCase')
+              .where({
+                uuid: testCaseId
+              })
+              .limit(1)
+            })
+          })
+          .let('file', (s) => {
+            s
+            .select()
+            .from('File')
+            .where({
+              uuid: targetId
+            })
+            .where(
+              `_allow["${role}"].asString() MATCHES "${regExRoles.deleteNode}"`
+            )
+          })
+          .let('deletes', (s) => {
+            s
+            .delete('EDGE', 'Fulfills')
+            .from('$file')
+            .to('$testCase')
+          })
+          .let('rejects', (s) => {
+            s
+            .create('edge', 'Rejects')
+            .from('$file')
+            .to('$testCase')
+            .set(rejection)
+          })
+          .let('cursor', s => {
+            s
+            .select('inE(\'Rejects\').size() as cursor')
+            .from('TestCase')
+            .where({
+              uuid: testCaseId
+            })
+          })
+          .commit()
+          .return(['$rejects', '$file', '$testCase', '$project', '$cursor'])
+          .all()
+          .then((result) => {
+            let node = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+            let file = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
+            let testCase = filteredObject(result[2], 'in_.*|out_.*|@.*|^_');
+            let project = filteredObject(result[3], 'in_.*|out_.*|@.*|^_');
+            let cursor = offsetToCursor(result[4].cursor);
+
+            let numOfTestCasesFulfilled = project.numOfTestCasesFulfilled;
+            let isFulfilled = testCase.isFulfilled;
+
+            node = uuidToId(node);
+            file = uuidToId(file);
+            testCase = uuidToId(testCase);
+
+            node.file = file;
+
+            //Because the test case is pull before the fulfillment is deleted
+            testCase.isFulfilled = (isFulfilled.length > 1) ? true : false;
+            if (!testCase.isFulfilled) {
+              let numOfTestCasesFulfilled = project.numOfTestCasesFulfilled;
+              numOfTestCasesFulfilled--;
+              project.numOfTestCasesFulfilled = numOfTestCasesFulfilled;
+            }
+
+            events.publish(events.didRejectFulfillmentChannel(testCaseId, targetId), {
+              rejectedFulfillmentId: targetId,
+              rejectionEdge: {
+                cursor,
+                node
+              },
+              testCase,
+              project
+            });
+
+            events.publish(events.didUpdateTestCaseChannel(testCaseId), {
+              testCase
+            });
+
+            events.publish(events.didUpdateProjectChannel(project.id), {
+              project
+            });
+
+            resolve({
+              rejectedFulfillmentId: targetId,
+              rejectionEdge: {
+                cursor,
+                node
+              },
+              testCase,
+              project
+            });
+          })
+          .catch((e) => {
+            console.log(`orientdb error: ${e}`);
+            reject();
+          })
+          .done();
         })
-      })
-      .let('file', (s) => {
-        s
-        .select()
-        .from('File')
-        .where({
-          uuid: targetId
-        })
-        .where(
-          `_allow["${role}"].asString() MATCHES "${regExRoles.deleteNode}"`
-        )
-      })
-      .let('deletes', (s) => {
-        s
-        .delete('EDGE', 'Fulfills')
-        .from('$file')
-        .to('$testCase')
-      })
-      .let('fulfills', (s) => {
-        s
-        .create('edge', 'Rejects')
-        .from('$file')
-        .to('$testCase')
-      })
-      .let('cursor', s => {
-        s
-        .select('inE(\'Rejects\').size() as cursor')
-        .from('TestCase')
-        .where({
-          uuid: testCaseId
-        })
-      })
-      .commit()
-      .return(['$file', '$testCase', '$project', '$cursor'])
-      .all()
-      .then((result) => {
-        let node = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
-        let testCase = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
-        let project = filteredObject(result[2], 'in_.*|out_.*|@.*|^_');
-        let cursor = offsetToCursor(result[3].cursor);
-
-        let numOfTestCasesFulfilled = project.numOfTestCasesFulfilled;
-        let isFulfilled = testCase.isFulfilled;
-
-        node = uuidToId(node);
-        testCase = uuidToId(testCase);
-
-        //Because the test case is pull before the fulfillment is deleted
-        testCase.isFulfilled = (isFulfilled.length > 1) ? true : false;
-        if (!testCase.isFulfilled) {
-          let numOfTestCasesFulfilled = project.numOfTestCasesFulfilled;
-          numOfTestCasesFulfilled--;
-          project.numOfTestCasesFulfilled = numOfTestCasesFulfilled;
-        }
-
-        events.publish(events.didRejectFulfillmentChannel(testCaseId, targetId), {
-          rejectedFulfillmentId: targetId,
-          rejectionEdge: {
-            cursor,
-            node
-          },
-          testCase,
-          project
-        });
-
-        events.publish(events.didUpdateTestCaseChannel(testCaseId), {
-          testCase
-        });
-
-        events.publish(events.didUpdateProjectChannel(project.id), {
-          project
-        });
-
-        resolve({
-          rejectedFulfillmentId: targetId,
-          rejectionEdge: {
-            cursor,
-            node
-          },
-          testCase,
-          project
-        });
-      })
-      .catch((e) => {
-        console.log(`orientdb error: ${e}`);
-        reject();
-      })
-      .done();
+        .catch((errors) => {
+          reject(errors);
+      });
     });
   }
 }

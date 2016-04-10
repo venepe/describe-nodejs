@@ -192,7 +192,7 @@ class FileDAO {
       let id = this.targetId;
 
       db
-      .getFile()
+      .getRejection()
       .inRejectsFromNode(id)
       .skip(pageObject.skip)
       .limit(pageObject.limit)
