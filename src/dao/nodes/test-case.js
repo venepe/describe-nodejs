@@ -280,24 +280,35 @@ class TestCaseDAO {
             .getTestCase()
             .from('$testCase')
           })
+          .let('cursor', s => {
+            s
+            .select('in_TestCaseEvent.size() as cursor')
+            .from('$testCase')
+          })
           .commit()
-          .return(['$newTestCase', '$testCaseEvent'])
+          .return(['$newTestCase', '$testCaseEvent', '$cursor'])
           .all()
           .then((result) => {
             let testCase = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
             let isFulfilled = testCase.isFulfilled;
             testCase.isFulfilled = (isFulfilled.length > 0) ? true : false;
             let testCaseEvent = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
+            let cursor = offsetToCursor(result[2].cursor);
             testCaseEvent = uuidToId(testCaseEvent);
+
+            let testCaseEventEdge = {
+              node: testCaseEvent,
+              cursor
+            }
 
             events.publish(events.didUpdateTestCaseChannel(targetId), {
                 testCase,
-                testCaseEvent
+                testCaseEventEdge
             });
 
             resolve({
                 testCase,
-                testCaseEvent
+                testCaseEventEdge
             });
           })
           .catch((e) => {

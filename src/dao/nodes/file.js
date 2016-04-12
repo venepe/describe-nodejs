@@ -159,7 +159,7 @@ class FileDAO {
       let id = this.targetId;
 
       db
-      .getFile()
+      .getFulfillment()
       .inFulfillsFromNode(id)
       .skip(pageObject.skip)
       .limit(pageObject.limit)

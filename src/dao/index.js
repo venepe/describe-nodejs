@@ -7,6 +7,7 @@ import File from './nodes/file.js';
 import Collaboration from './edges/collaboration.js';
 import Cover from './edges/cover.js';
 import Fulfillment from './edges/fulfillment.js';
+import FulfillmentEvent from './events/fulfillment-event.js';
 import Project from './nodes/project.js';
 import ProjectEvent from './events/project-event.js';
 import Search from './nodes/search.js';
@@ -48,6 +49,13 @@ class DAO {
     ful.db = this.db;
     ful.user = this.user;
     return ful;
+  }
+
+  FulfillmentEvent(targetId, params) {
+    const fule = new FulfillmentEvent(targetId, params);
+    fule.db = this.db;
+    fule.user = this.user;
+    return fule;
   }
 
   Project(targetId, params) {

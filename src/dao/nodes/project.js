@@ -262,21 +262,33 @@ class ProjectDAO {
             .getProject()
             .from('$project')
           })
+          .let('cursor', s => {
+            s
+            .select('in_ProjectEvent.size() as cursor')
+            .from('$project')
+          })
           .commit()
-          .return(['$newProject', '$projectEvent'])
+          .return(['$newProject', '$projectEvent', '$cursor'])
           .all()
           .then((result) => {
             let project = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
             let projectEvent = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
+            let cursor = offsetToCursor(result[2].cursor);
             projectEvent = uuidToId(projectEvent);
+
+            let projectEventEdge = {
+              node: projectEvent,
+              cursor
+            }
+
             events.publish(events.didUpdateProjectChannel(targetId), {
               project,
-              projectEvent
+              projectEventEdge
             });
 
             resolve({
               project,
-              projectEvent
+              projectEventEdge
             });
           })
           .catch((e) => {

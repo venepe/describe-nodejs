@@ -1,6 +1,7 @@
 'use strict';
 
 export class File {}
+export class Fulfillment {}
 export class FulfillmentEvent {}
 export class Project {}
 export class ProjectEvent {}

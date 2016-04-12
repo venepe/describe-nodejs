@@ -33,6 +33,8 @@ import {
 
 import {
   File,
+  Fulfillment,
+  FulfillmentEvent,
   Project,
   ProjectEvent,
   TestCase,
@@ -53,12 +55,16 @@ var {nodeInterface, nodeField} = nodeDefinitions(
       return new DAO(user).TestCase(id).get();
     } else if (type === 'File') {
       return new DAO(user).File(id).get();
+    } else if (type === 'Fulfillment') {
+      return new DAO(user).Fulfillment(id).get();
     } else if (type === 'User') {
       return new DAO(user).User(id).get();
     } else if (type === 'TestCaseEvent') {
       return new DAO(user).TestCaseEvent(id).get();
     } else if (type === 'ProjectEvent') {
       return new DAO(user).ProjectEvent(id).get();
+    } else if (type === 'FulfillmentEvent') {
+      return new DAO(user).FulfillmentEvent(id).get();
     } else {
       return null;
     }
@@ -71,10 +77,14 @@ var {nodeInterface, nodeField} = nodeDefinitions(
       return testCaseType;
     } else if (obj instanceof File) {
       return fileType;
+    } else if (obj instanceof Fulfillment) {
+      return fulfillmentType;
     } else if (obj instanceof User) {
       return userType;
     } else if (obj instanceof TestCaseEvent) {
       return testCaseEventType;
+    } else if (obj instanceof FulfillmentEvent) {
+      return fulfillmentEventType;
     } else {
       return null;
     }
@@ -287,26 +297,11 @@ let testCaseType = new GraphQLObjectType({
     },
     fulfillments: {
       type: fulfillConnection,
-      description: 'The files fulfilling the test case.',
+      description: 'The possible files fulfilling the test case.',
       args: connectionArgs,
       resolve: (testCase, args, context) => {
         return new Promise((resolve, reject) => {
           new DAO(context.rootValue.user).File(testCase.id).inEdgeFulfilled(args).then((result) => {
-            resolve(connectionFromArraySlice(result.payload, args, result.meta));
-          })
-          .catch((e) => {
-            reject(e);
-          })
-        });
-      }
-    },
-    rejections: {
-      type: rejectConnection,
-      description: 'The files not fulfilling the test case.',
-      args: connectionArgs,
-      resolve: (testCase, args, context) => {
-        return new Promise((resolve, reject) => {
-          new DAO(context.rootValue.user).File(testCase.id).inEdgeRejected(args).then((result) => {
             resolve(connectionFromArraySlice(result.payload, args, result.meta));
           })
           .catch((e) => {
@@ -379,18 +374,31 @@ let fileType = new GraphQLObjectType({
   interfaces: [nodeInterface],
 });
 
+var fulfillmentStatus = new GraphQLEnumType({
+  name: 'FulfillmentStatus',
+  values: {
+    SUBMITTED: { value: 0 },
+    REJECTED: { value: 1 },
+    ACCEPTED: { value: 2 }
+  }
+});
+
 let fulfillmentType = new GraphQLObjectType({
   name: 'Fulfillment',
   description: 'Fulfillment object',
   fields: () => ({
     id: globalIdField('Fulfillment'),
     file: {
-      type: GraphQLString,
-      description: 'The file fulfilling the test case.',
+      type: fileType,
+      description: 'The file possibly fulfilling the test case.',
+    },
+    status: {
+      type: fulfillmentStatus,
+      description: 'The status of the fulfillment.',
     },
     reason: {
       type: GraphQLString,
-      description: 'The reason for a fulfillment\'s status.',
+      description: 'The reason for the status.',
     },
     createdAt: {
       type: GraphQLString,
@@ -399,31 +407,49 @@ let fulfillmentType = new GraphQLObjectType({
     updatedAt: {
       type: GraphQLString,
       description: 'The timestamp when the fulfillment was last updated.',
+    },
+    events: {
+      type: fulfillEventConnection,
+      description: 'The changes made on the fulfillment.',
+      args: connectionArgs,
+      resolve: (fulfillment, args, context) => {
+        return new Promise((resolve, reject) => {
+          new DAO(context.rootValue.user).FulfillmentEvent(fulfillment.id).getFulfillmentEvents(args).then((result) => {
+            resolve(connectionFromArraySlice(result.payload, args, result.meta));
+          })
+          .catch((e) => {
+            reject(e);
+          })
+        });
+      }
     }
   }),
   interfaces: [nodeInterface],
 });
 
-let rejectionType = new GraphQLObjectType({
-  name: 'Rejection',
-  description: 'Rejection object',
+let fulfillmentEventType = new GraphQLObjectType({
+  name: 'FulfillmentEvent',
+  description: 'Fulfillment event object',
   fields: () => ({
-    id: globalIdField('Rejection'),
-    file: {
-      type: fileType,
-      description: 'The file not fulfilling the test case.',
+    id: globalIdField('FulfillmentEvent'),
+    status: {
+      type: fulfillmentStatus,
+      description: 'The status of the fulfillment.',
     },
     reason: {
       type: GraphQLString,
-      description: 'The reason for a rejections\'s status.',
+      description: 'The reason for the status.',
     },
     createdAt: {
       type: GraphQLString,
-      description: 'The timestamp when the rejection was created.',
+      description: 'The timestamp when the fulfillment was created.',
     },
-    updatedAt: {
-      type: GraphQLString,
-      description: 'The timestamp when the rejection was last updated.',
+    author: {
+      type: userType,
+      description: 'The user who created the title event',
+      resolve: (fulfillmentEvent, args, context) => {
+        return new DAO(context.rootValue.user).User(fulfillmentEvent.id).outEventAuthor();
+      }
     }
   }),
   interfaces: [nodeInterface],
@@ -445,10 +471,10 @@ var {connectionType: coverImageConnection, edgeType: GraphQLCoverImageEdge} =
   connectionDefinitions({name: 'CoverImages', nodeType: fileType});
 
 var {connectionType: fulfillConnection, edgeType: GraphQLFulfillEdge} =
-  connectionDefinitions({name: 'Fulfills', nodeType: fileType});
+  connectionDefinitions({name: 'Fulfills', nodeType: fulfillmentType});
 
-var {connectionType: rejectConnection, edgeType: GraphQLRejectEdge} =
-  connectionDefinitions({name: 'Rejects', nodeType: rejectionType});
+var {connectionType: fulfillEventConnection, edgeType: GraphQLFulfillEventEdge} =
+  connectionDefinitions({name: 'FulfillsEvent', nodeType: fulfillmentEventType});
 
 var {connectionType: userConnection, edgeType: GraphQLUserEdge} =
   connectionDefinitions({name: 'Users', nodeType: userType});
@@ -585,12 +611,7 @@ var updateProject = mutationWithClientMutationId({
     },
     projectEventEdge: {
       type: GraphQLProjectEventEdge,
-      resolve: ({projectEvent}) => {
-        return {
-          cursor: cursorForObjectInConnection([projectEvent], projectEvent),
-          node: projectEvent,
-        };
-      }
+      resolve: ({projectEventEdge}) => { return projectEventEdge }
     },
   },
   mutateAndGetPayload: ({id, title}, context) => {
@@ -667,12 +688,7 @@ var updateTestCase = mutationWithClientMutationId({
     },
     testCaseEventEdge: {
       type: GraphQLTestCaseEventEdge,
-      resolve: ({testCaseEvent}) => {
-        return {
-          cursor: cursorForObjectInConnection([testCaseEvent], testCaseEvent),
-          node: testCaseEvent,
-        };
-      }
+      resolve: ({testCaseEventEdge}) => { return testCaseEventEdge }
     },
   },
   mutateAndGetPayload: ({id, it}, context) => {
@@ -708,8 +724,8 @@ var deleteTestCase = mutationWithClientMutationId({
   }
 });
 
-var rejectFulfillment = mutationWithClientMutationId({
-  name: 'RejectFulfillment',
+var updateFulfillment = mutationWithClientMutationId({
+  name: 'UpdateFulfillment',
   inputFields: {
     id: {
       type: new GraphQLNonNull(GraphQLID)
@@ -717,21 +733,28 @@ var rejectFulfillment = mutationWithClientMutationId({
     testCaseId: {
       type: new GraphQLNonNull(GraphQLID)
     },
+    status: {
+      type: fulfillmentStatus,
+      description: 'The status of the update.',
+    },
     reason: {
       type: new GraphQLNonNull(GraphQLString),
       description: 'The reason for a rejection.',
     }
   },
   outputFields: {
-    rejectedFulfillmentId: {
-      type: GraphQLID,
-      resolve: ({rejectedFulfillmentId}) => {
-        return toGlobalId('File', rejectedFulfillmentId);
-      },
+    fulfillment: {
+      type: fulfillmentType,
+      resolve: ({fulfillment}) => { return fulfillment; }
     },
-    rejectionEdge: {
-      type: GraphQLRejectEdge,
-      resolve: ({rejectionEdge}) => { return rejectionEdge; }
+    fulfillmentEventEdge: {
+      type: GraphQLFulfillEventEdge,
+      resolve: ({fulfillmentEventEdge}) => {
+        return {
+          cursor: cursorForObjectInConnection([fulfillmentEventEdge], fulfillmentEventEdge),
+          node: fulfillmentEventEdge,
+        };
+      }
     },
     testCase: {
       type: testCaseType,
@@ -746,10 +769,10 @@ var rejectFulfillment = mutationWithClientMutationId({
       },
     },
   },
-  mutateAndGetPayload: ({id, testCaseId, reason}, context) => {
+  mutateAndGetPayload: ({id, testCaseId, reason, status}, context) => {
     var localId = fromGlobalId(id).id;
     var localTestCaseId = fromGlobalId(testCaseId).id;
-    return new DAO(context.rootValue.user).Fulfillment(localId).reject(localTestCaseId, {reason});
+    return new DAO(context.rootValue.user).Fulfillment(localId).update(localTestCaseId, {reason, status});
   }
 });
 
@@ -891,12 +914,7 @@ var didUpdateProject = subscriptionWithClientSubscriptionId({
     },
     projectEventEdge: {
       type: GraphQLProjectEventEdge,
-      resolve: ({projectEvent}) => {
-        return {
-          cursor: cursorForObjectInConnection([projectEvent], projectEvent),
-          node: projectEvent,
-        };
-      }
+      resolve: ({projectEventEdge}) => { return projectEventEdge }
     },
   },
   mutateAndGetPayload: ({id}, {rootValue}) => {
@@ -954,7 +972,11 @@ var didIntroduceFulfillment = subscriptionWithClientSubscriptionId({
   outputFields: {
     fulfillmentEdge: {
       type: GraphQLFulfillEdge,
-      resolve: ({fulfillmentEdge}) => { return fulfillmentEdge; }
+      resolve: ({fulfillmentEdge}) => {
+        fulfillmentEdge.node.events = {pageInfo: {hasNextPage: false, hasPreviousPage: false}, edges: []};
+
+        return fulfillmentEdge;
+      }
     },
     testCase: {
       type: testCaseType,
@@ -980,8 +1002,8 @@ var didIntroduceFulfillment = subscriptionWithClientSubscriptionId({
   }
 });
 
-var didRejectFulfillment = subscriptionWithClientSubscriptionId({
-  name: 'DidRejectFulfillment',
+var didUpdateFulfillment = subscriptionWithClientSubscriptionId({
+  name: 'DidUpdateFulfillment',
   inputFields: {
     id: {
       type: new GraphQLNonNull(GraphQLID)
@@ -991,15 +1013,18 @@ var didRejectFulfillment = subscriptionWithClientSubscriptionId({
     }
   },
   outputFields: {
-    rejectedFulfillmentId: {
-      type: GraphQLID,
-      resolve: ({rejectedFulfillmentId}) => {
-        return toGlobalId('File', rejectedFulfillmentId);
-      },
+    fulfillment: {
+      type: fulfillmentType,
+      resolve: ({fulfillment}) => { return fulfillment; }
     },
-    rejectionEdge: {
-      type: GraphQLRejectEdge,
-      resolve: ({rejectionEdge}) => { return rejectionEdge; }
+    fulfillmentEventEdge: {
+      type: GraphQLFulfillEventEdge,
+      resolve: ({fulfillmentEventEdge}) => {
+        return {
+          cursor: cursorForObjectInConnection([fulfillmentEventEdge], fulfillmentEventEdge),
+          node: fulfillmentEventEdge,
+        };
+      }
     },
     testCase: {
       type: testCaseType,
@@ -1020,7 +1045,7 @@ var didRejectFulfillment = subscriptionWithClientSubscriptionId({
     } else {
       var localId = fromGlobalId(id).id;
       var localTestCaseId = fromGlobalId(testCaseId).id;
-      rootValue.channel = channels.didRejectFulfillmentChannel(localTestCaseId, localId);
+      rootValue.channel = channels.didUpdateFulfillmentChannel(localTestCaseId, localId);
       return {testCaseId};
     }
   }
@@ -1072,12 +1097,7 @@ var didUpdateTestCase = subscriptionWithClientSubscriptionId({
     },
     testCaseEventEdge: {
       type: GraphQLTestCaseEventEdge,
-      resolve: ({testCaseEvent}) => {
-        return {
-          cursor: cursorForObjectInConnection([testCaseEvent], testCaseEvent),
-          node: testCaseEvent,
-        };
-      }
+      resolve: ({testCaseEventEdge}) => { return testCaseEventEdge }
     },
   },
   mutateAndGetPayload: ({id}, {rootValue}) => {
@@ -1320,7 +1340,7 @@ var schema = new GraphQLSchema({
       introduceFulfillment,
       introduceProject,
       introduceTestCase,
-      rejectFulfillment,
+      updateFulfillment,
       updateProject,
       updateTestCase,
       updateUser,
@@ -1340,7 +1360,7 @@ var schema = new GraphQLSchema({
       didIntroduceFulfillment,
       didIntroduceProject,
       didIntroduceTestCase,
-      didRejectFulfillment,
+      didUpdateFulfillment,
       didUpdateProject,
       didUpdateTestCase,
     }

@@ -13,6 +13,33 @@ class FulfillmentEventDAO {
     this.params = params;
   }
 
+  get() {
+    return new Promise((resolve, reject) => {
+      let user = this.user;
+      let db = this.db;
+      let id = this.targetId;
+
+      db
+      .select('uuid as id, status, reason, createdAt')
+      .from('FulfillmentEvent')
+      .where({uuid: id})
+      .limit(1)
+      .transform((record) => {
+        let fulfillmentEvent = new FulfillmentEvent();
+        return filteredObject(record, '@.*|rid', fulfillmentEvent);
+      })
+      .one()
+      .then((record) => {
+        resolve(record);
+      })
+      .catch((e) => {
+        reject();
+
+      })
+      .done();
+    });
+  }
+
   getFulfillmentEvents(args) {
     let pageObject = Pagination.getOrientDBPageFromGraphQL(args);
 
@@ -22,7 +49,7 @@ class FulfillmentEventDAO {
       let id = this.targetId;
 
       db
-      .select('uuid as id, uri, createdAt')
+      .select('uuid as id, status, reason, createdAt')
       .inFulfillmentEvent(id)
       .skip(pageObject.skip)
       .limit(pageObject.limit)

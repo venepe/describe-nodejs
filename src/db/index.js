@@ -16,11 +16,35 @@ OrientDB.Statement.prototype.getUser = function() {
 
 OrientDB.Db.prototype.getTestCase = function() {
   this.SMTINode = 'TestCase';
-  return this.select('uuid as id, it, createdAt, updatedAt, inE(\'Fulfills\') as isFulfilled');
+  return this.select('uuid as id, it, createdAt, updatedAt, $isFulfilled as isFulfilled')
+  .let('isFulfilled', function(s) {
+    s
+    .select()
+    .from(function (s) {
+      s
+      .select('in_Fulfills')
+      .from('$parent.$current')
+      .where(
+        'in_Fulfills.status <> 1'
+      )
+    })
+  })
 }
 
 OrientDB.Statement.prototype.getTestCase = function() {
-  return this.select('uuid as id, it, createdAt, updatedAt, inE(\'Fulfills\') as isFulfilled');
+  return this.select('uuid as id, it, createdAt, updatedAt, $isFulfilled as isFulfilled')
+  .let('isFulfilled', function(s) {
+    s
+    .select()
+    .from(function (s) {
+      s
+      .select('in_Fulfills')
+      .from('$parent.$current')
+      .where(
+        'in_Fulfills.status <> 1'
+      )
+    })
+  })
 }
 
 OrientDB.Db.prototype.getFile = function() {
@@ -44,7 +68,7 @@ OrientDB.Db.prototype.getProject = function() {
         .from('$parent.$current')
       })
       .where(
-        'inE(\'Fulfills\').size() > 0'
+        'in_Fulfills.status <> 1'
       )
     })
 }
@@ -60,7 +84,7 @@ OrientDB.Statement.prototype.getProject = function() {
         .from('$parent.$current')
       })
       .where(
-        'inE(\'Fulfills\').size() > 0'
+        'in_Fulfills.status <> 1'
       )
     })
 }
@@ -129,56 +153,8 @@ OrientDB.Statement.prototype.inLeadsFromNode = function(id) {
   .where({'@class': this.db.SMTINode})
 }
 
-OrientDB.Statement.prototype.outFulfillsFromNode = function(id) {
-  return this.from(function (s) {
-    s
-    .select('expand(out("Fulfills"))')
-    .from(function (s) {
-      s
-      .select()
-      .from('indexvalues:V.uuid ')
-      .where({uuid: id})
-      .limit(1)
-    })
-    .order('createdAt DESC')
-  })
-  .where({'@class': this.db.SMTINode})
-}
-
-OrientDB.Statement.prototype.inFulfillsFromNode = function(id) {
-  return this.from(function (s) {
-    s
-    .select('expand(in("Fulfills"))')
-    .from(function (s) {
-      s
-      .select()
-      .from('indexvalues:V.uuid ')
-      .where({uuid: id})
-      .limit(1)
-    })
-    .order('createdAt DESC')
-  })
-  .where({'@class': this.db.SMTINode})
-}
-
-OrientDB.Statement.prototype.outRejectsFromNode = function(id) {
-  return this.from(function (s) {
-    s
-    .select('expand(out("Rejects"))')
-    .from(function (s) {
-      s
-      .select()
-      .from('indexvalues:V.uuid ')
-      .where({uuid: id})
-      .limit(1)
-    })
-    .order('createdAt DESC')
-  })
-  .where({'@class': this.db.SMTINode})
-}
-
-OrientDB.Db.prototype.getRejection = function() {
-  return this.select('uuid as id, reason, createdAt, updatedAt, $file[0] as file')
+OrientDB.Statement.prototype.getFulfillment = function() {
+  return this.select('uuid as id, status, reason, createdAt, updatedAt, $file[0] as file')
     .let('file', function(s) {
       s
       .getFile()
@@ -191,10 +167,39 @@ OrientDB.Db.prototype.getRejection = function() {
     })
 }
 
-OrientDB.Statement.prototype.inRejectsFromNode = function(id) {
+OrientDB.Db.prototype.getFulfillment = function() {
+  return this.select('uuid as id, status, reason, createdAt, updatedAt, $file[0] as file')
+    .let('file', function(s) {
+      s
+      .getFile()
+      .from(function (s) {
+        s
+        .select('expand(out[@class = "File"])')
+        .from('$parent.$current')
+        .limit(1)
+      })
+    })
+}
+
+OrientDB.Statement.prototype.inFulfillsFromNode = function(id) {
   return this.from(function (s) {
     s
-    .select('expand(in_Rejects)')
+    .select('expand(in_Fulfills)')
+    .from(function (s) {
+      s
+      .select()
+      .from('indexvalues:V.uuid ')
+      .where({uuid: id})
+      .limit(1)
+    })
+    .order('createdAt DESC')
+  })
+}
+
+OrientDB.Statement.prototype.outFulfillsFromNode = function(id) {
+  return this.from(function (s) {
+    s
+    .select('expand(out_Fulfills)')
     .from(function (s) {
       s
       .select()
@@ -317,6 +322,16 @@ OrientDB.Statement.prototype.inProjectEvent = function(id) {
     s
     .select('expand(in_ProjectEvent)')
     .from('Project')
+    .where({uuid: id})
+    .order('createdAt DESC')
+  })
+}
+
+OrientDB.Statement.prototype.inFulfillmentEvent = function(id) {
+  return this.from(function (s) {
+    s
+    .select('expand(out.in_FulfillmentEvent)')
+    .from('Fulfills')
     .where({uuid: id})
     .order('createdAt DESC')
   })

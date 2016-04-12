@@ -6,7 +6,7 @@ export { default as isValidFile } from './file';
 export { default as isValidPassword } from './password';
 export { default as isValidProjectOptional } from './project-optional';
 export { default as isValidProject } from './project';
-export { default as isValidRejection } from './rejection';
+export { default as isValidFulfillment } from './fulfillment';
 export { default as isValidReset } from './reset';
 export { default as isValidTestCaseOptional } from './test-case-optional';
 export { default as isValidTestCase } from './test-case';

@@ -8,13 +8,40 @@ import * as events from '../../events';
 import { offsetToCursor } from 'graphql-relay';
 
 import {
-  File
+  Fulfillment
 } from '../model';
 
 class FulfillmentDAO {
   constructor(targetId, params) {
     this.targetId = targetId;
     this.params = params;
+  }
+
+  get() {
+    return new Promise((resolve, reject) => {
+      let user = this.user;
+      let db = this.db;
+      let id = this.targetId;
+
+      db
+      .getFulfillment()
+      .from('Fulfills')
+      .where({uuid: id})
+      .limit(1)
+      .transform((record) => {
+        let fulfillment = new Fulfillment();
+        return filteredObject(record, '@.*|rid', fulfillment);
+      })
+      .one()
+      .then((record) => {
+        resolve(record);
+      })
+      .catch((e) => {
+        reject();
+
+      })
+      .done();
+    });
   }
 
   create(object) {
@@ -28,8 +55,10 @@ class FulfillmentDAO {
       let validator = new SMTIValidator(object);
 
       validator
-        .isFulfillment()
-        .then(({fulfillment, fulfillmentEvent}) => {
+        .isFile()
+        .then(({file}) => {
+          let fulfillment = {status: 0, file};
+          let fulfillmentEvent = fulfillment;
           db
           .let('testCase', (s) => {
             s
@@ -70,7 +99,7 @@ class FulfillmentDAO {
           .let('file', (s) => {
             s
             .create('vertex', 'File')
-            .set(fulfillment)
+            .set(file)
             .set('_allow = $testCase._allow[0]')
           })
           .let('fulfillmentEvent', (s) => {
@@ -85,6 +114,7 @@ class FulfillmentDAO {
             .create('edge', 'Fulfills')
             .from('$file')
             .to('$testCase')
+            .set(fulfillment)
           })
           .let('cursor', s => {
             s
@@ -95,15 +125,19 @@ class FulfillmentDAO {
             })
           })
           .commit()
-          .return(['$file', '$testCase', '$project', '$cursor'])
+          .return(['$fulfills', '$file', '$testCase', '$project', '$cursor'])
           .all()
           .then((result) => {
-            let node = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
-            let testCase = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
-            let project = filteredObject(result[2], 'in_.*|out_.*|@.*|^_');
-            let cursor = offsetToCursor(result[3].cursor);
+            let node = filteredObject(result[0], 'in.*|out.*|@.*|^_');
+            let file = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
+            let testCase = filteredObject(result[2], 'in_.*|out_.*|@.*|^_');
+            let project = filteredObject(result[3], 'in_.*|out_.*|@.*|^_');
+            let cursor = offsetToCursor(result[4].cursor);
 
             node = uuidToId(node);
+            file = uuidToId(file);
+
+            node.file = file;
 
             if (testCase.isFulfilled.length === 0) {
               let numOfTestCasesFulfilled = project.numOfTestCasesFulfilled;
@@ -151,7 +185,7 @@ class FulfillmentDAO {
     });
   }
 
-  reject(testCaseId, object) {
+  update(testCaseId, object) {
     return new Promise((resolve, reject) => {
       var targetId = this.targetId;
       var db = this.db;
@@ -162,12 +196,44 @@ class FulfillmentDAO {
       let validator = new SMTIValidator(object);
 
       validator
-        .isRejection()
-        .then(({rejection, rejectionEvent}) => {
+        .isFulfillment()
+        .then(({fulfillment, fulfillmentEvent}) => {
           db
+          .let('fulfillment', (s) => {
+            s
+            .select()
+            .from('Fulfills')
+            .where({
+              uuid: targetId
+            })
+          })
+          .let('file', (s) => {
+            s
+            .select('expand(out)')
+            .from('$fulfillment')
+          })
+          .let('user', (s) => {
+            s
+            .select()
+            .from('User')
+            .where({
+              uuid: userId
+            })
+            .where(
+              `_allow["${role}"] = ${roles.owner}`
+            )
+          })
+          .let('fulfillmentEvent', (s) => {
+            s
+            .create('edge', 'FulfillmentEvent')
+            .from('$user')
+            .to('$file')
+            .set(fulfillmentEvent)
+          })
           .let('testCase', (s) => {
             s
             .select()
+            .getTestCase()
             .from('TestCase')
             .where({
               uuid: testCaseId
@@ -186,56 +252,39 @@ class FulfillmentDAO {
               .limit(1)
             })
           })
-          .let('file', (s) => {
+          .let('update', (s) => {
             s
-            .select()
-            .from('File')
-            .where({
-              uuid: targetId
-            })
-            .where(
-              `_allow["${role}"].asString() MATCHES "${regExRoles.deleteNode}"`
-            )
+            .update('$fulfillment')
+            .set(fulfillment)
           })
-          .let('deletes', (s) => {
+          .let('newFulfillment', (s) => {
             s
-            .delete('EDGE', 'Fulfills')
-            .from('$file')
-            .to('$testCase')
-          })
-          .let('rejects', (s) => {
-            s
-            .create('edge', 'Rejects')
-            .from('$file')
-            .to('$testCase')
-            .set(rejection)
+            .getFulfillment()
+            .from('$fulfillment')
           })
           .let('cursor', s => {
             s
-            .select('inE(\'Rejects\').size() as cursor')
+            .select('inE(\'Fulfills\').size() as cursor')
             .from('TestCase')
             .where({
               uuid: testCaseId
             })
           })
           .commit()
-          .return(['$rejects', '$file', '$testCase', '$project', '$cursor'])
+          .return(['$newFulfillment', '$testCase', '$project', '$cursor', '$fulfillmentEvent'])
           .all()
           .then((result) => {
-            let node = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
-            let file = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
-            let testCase = filteredObject(result[2], 'in_.*|out_.*|@.*|^_');
-            let project = filteredObject(result[3], 'in_.*|out_.*|@.*|^_');
-            let cursor = offsetToCursor(result[4].cursor);
+            let fulfillment = filteredObject(result[0], 'in.*|out.*|@.*|^_');
+            let testCase = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
+            let project = filteredObject(result[2], 'in_.*|out_.*|@.*|^_');
+            let cursor = offsetToCursor(result[3].cursor);
+            let fulfillmentEventEdge = filteredObject(result[4], 'in_.*|out_.*|@.*|^_');
+            fulfillmentEventEdge = uuidToId(fulfillmentEvent);
 
             let numOfTestCasesFulfilled = project.numOfTestCasesFulfilled;
             let isFulfilled = testCase.isFulfilled;
 
-            node = uuidToId(node);
-            file = uuidToId(file);
             testCase = uuidToId(testCase);
-
-            node.file = file;
 
             //Because the test case is pull before the fulfillment is deleted
             testCase.isFulfilled = (isFulfilled.length > 1) ? true : false;
@@ -245,12 +294,9 @@ class FulfillmentDAO {
               project.numOfTestCasesFulfilled = numOfTestCasesFulfilled;
             }
 
-            events.publish(events.didRejectFulfillmentChannel(testCaseId, targetId), {
-              rejectedFulfillmentId: targetId,
-              rejectionEdge: {
-                cursor,
-                node
-              },
+            events.publish(events.didUpdateFulfillmentChannel(testCaseId, targetId), {
+              fulfillment,
+              fulfillmentEventEdge,
               testCase,
               project
             });
@@ -264,11 +310,8 @@ class FulfillmentDAO {
             });
 
             resolve({
-              rejectedFulfillmentId: targetId,
-              rejectionEdge: {
-                cursor,
-                node
-              },
+              fulfillment,
+              fulfillmentEventEdge,
               testCase,
               project
             });

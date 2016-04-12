@@ -30,7 +30,7 @@ class SMTIValidator {
     });
   }
 
-  isFulfillment() {
+  isFile() {
     return new Promise((resolve, reject) => {
       let isOptional = this.isOptional;
       let obj = this.obj;
@@ -42,7 +42,7 @@ class SMTIValidator {
       }
       isValid(obj, (errorCount, errors) => {
         if (errorCount === 0) {
-          resolve({fulfillment: obj, fulfillmentEvent: obj});
+          resolve({file: obj});
         } else {
           reject(errors);
         }
@@ -50,19 +50,19 @@ class SMTIValidator {
     });
   }
 
-  isRejection() {
+  isFulfillment() {
     return new Promise((resolve, reject) => {
       let isOptional = this.isOptional;
       let obj = this.obj;
       let isValid;
       if (this.isOptional) {
-        isValid = schema.isValidRejection;
+        isValid = schema.isValidFulfillment;
       } else {
-        isValid = schema.isValidRejection;
+        isValid = schema.isValidFulfillment;
       }
       isValid(obj, (errorCount, errors) => {
         if (errorCount === 0) {
-          resolve({rejection: obj, rejectionEvent: obj});
+          resolve({fulfillment: obj, fulfillmentEvent: obj});
         } else {
           reject(errors);
         }
