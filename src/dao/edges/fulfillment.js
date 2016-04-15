@@ -6,6 +6,7 @@ import { filteredObject, uuidToId } from '../../utilities';
 import { roles, regExRoles } from '../permissions';
 import * as events from '../../events';
 import { offsetToCursor } from 'graphql-relay';
+import { fulfillmentStatus } from '../../constants';
 
 import {
   Fulfillment
@@ -57,7 +58,7 @@ class FulfillmentDAO {
       validator
         .isFile()
         .then(({file}) => {
-          let fulfillment = {status: 0, file};
+          let fulfillment = {status: fulfillmentStatus.SUBMITTED, file};
           let fulfillmentEvent = fulfillment;
           db
           .let('testCase', (s) => {
@@ -262,6 +263,11 @@ class FulfillmentDAO {
             .getFulfillment()
             .from('$fulfillment')
           })
+          .let('newFulfillmentEvent', (s) => {
+            s
+            .getFulfillmentEvent()
+            .from('$fulfillmentEvent')
+          })
           .let('cursor', s => {
             s
             .select('inE(\'Fulfills\').size() as cursor')
@@ -271,7 +277,7 @@ class FulfillmentDAO {
             })
           })
           .commit()
-          .return(['$newFulfillment', '$testCase', '$project', '$cursor', '$fulfillmentEvent'])
+          .return(['$newFulfillment', '$testCase', '$project', '$cursor', '$newFulfillmentEvent'])
           .all()
           .then((result) => {
             let fulfillment = filteredObject(result[0], 'in.*|out.*|@.*|^_');
@@ -279,7 +285,6 @@ class FulfillmentDAO {
             let project = filteredObject(result[2], 'in_.*|out_.*|@.*|^_');
             let cursor = offsetToCursor(result[3].cursor);
             let fulfillmentEventEdge = filteredObject(result[4], 'in_.*|out_.*|@.*|^_');
-            fulfillmentEventEdge = uuidToId(fulfillmentEvent);
 
             let numOfTestCasesFulfilled = project.numOfTestCasesFulfilled;
             let isFulfilled = testCase.isFulfilled;

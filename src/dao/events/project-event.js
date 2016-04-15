@@ -20,7 +20,7 @@ class ProjectEventDAO {
       let id = this.targetId;
 
       db
-      .select('uuid as id, title, createdAt')
+      .getProjectEvent()
       .from('ProjectEvent')
       .where({uuid: id})
       .limit(1)
@@ -49,7 +49,7 @@ class ProjectEventDAO {
       let id = this.targetId;
 
       db
-      .select('uuid as id, title, createdAt')
+      .getProjectEvent()
       .inProjectEvent(id)
       .skip(pageObject.skip)
       .limit(pageObject.limit)

@@ -2,6 +2,7 @@
 
 import OrientDB from 'orientjs';
 import { filteredObject } from '../utilities';
+import { fulfillmentStatus } from '../constants';
 
 OrientDB.Statement.prototype.SMTINode = '';
 
@@ -25,7 +26,7 @@ OrientDB.Db.prototype.getTestCase = function() {
       .select('in_Fulfills')
       .from('$parent.$current')
       .where(
-        'in_Fulfills.status <> 1'
+        `in_Fulfills.status <> ${fulfillmentStatus.REJECTED}`
       )
     })
   })
@@ -178,6 +179,96 @@ OrientDB.Db.prototype.getFulfillment = function() {
         .from('$parent.$current')
         .limit(1)
       })
+    })
+}
+
+OrientDB.Db.prototype.getProjectEvent = function() {
+  return this.select('uuid as id, title, createdAt, $author[0] as author')
+    .let('author', function(s) {
+      s
+      .getUser()
+      .from(function (s) {
+        s
+        .select('expand(out[@class = "User"])')
+        .from('$parent.$current')
+        .limit(1)
+      })
+      .limit(1)
+    })
+}
+
+OrientDB.Statement.prototype.getProjectEvent = function() {
+  return this.select('uuid as id, title, createdAt, $author[0] as author')
+    .let('author', function(s) {
+      s
+      .getUser()
+      .from(function (s) {
+        s
+        .select('expand(out[@class = "User"])')
+        .from('$parent.$current')
+        .limit(1)
+      })
+      .limit(1)
+    })
+}
+
+OrientDB.Db.prototype.getTestCaseEvent = function() {
+  return this.select('uuid as id, it, createdAt, $author[0] as author')
+    .let('author', function(s) {
+      s
+      .getUser()
+      .from(function (s) {
+        s
+        .select('expand(out[@class = "User"])')
+        .from('$parent.$current')
+        .limit(1)
+      })
+      .limit(1)
+    })
+}
+
+OrientDB.Statement.prototype.getTestCaseEvent = function() {
+  return this.select('uuid as id, it, createdAt, $author[0] as author')
+    .let('author', function(s) {
+      s
+      .getUser()
+      .from(function (s) {
+        s
+        .select('expand(out[@class = "User"])')
+        .from('$parent.$current')
+        .limit(1)
+      })
+      .limit(1)
+    })
+}
+
+OrientDB.Db.prototype.getFulfillmentEvent = function() {
+  return this.select('uuid as id, status, reason, createdAt, $author[0] as author')
+    .let('author', function(s) {
+      s
+      .getUser()
+      .from(function (s) {
+        s
+        .select('expand(out[@class = "User"])')
+        .from('$parent.$current')
+        .limit(1)
+      })
+      .limit(1)
+    })
+}
+
+OrientDB.Statement.prototype.getFulfillmentEvent = function() {
+  return this.select('uuid as id, status, reason, createdAt, $author[0] as author')
+    .let('author', function(s) {
+      s
+      .getUser()
+      .from(function (s) {
+        s
+        .select('expand(out[@class = "User"])')
+        .from('$parent.$current')
+        .limit(1)
+      })
+      .limit(1)
     })
 }
 
@@ -334,16 +425,6 @@ OrientDB.Statement.prototype.inFulfillmentEvent = function(id) {
     .from('Fulfills')
     .where({uuid: id})
     .order('createdAt DESC')
-  })
-}
-
-OrientDB.Statement.prototype.outEventAuthor = function(id) {
-  return this.from(function (s) {
-    s
-    .select('expand(out[@class = "User"])')
-    .from('Event')
-    .where({uuid: id})
-    .limit(1)
   })
 }
 

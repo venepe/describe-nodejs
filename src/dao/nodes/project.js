@@ -262,13 +262,18 @@ class ProjectDAO {
             .getProject()
             .from('$project')
           })
+          .let('newProjectEvent', (s) => {
+            s
+            .getProjectEvent()
+            .from('$projectEvent')
+          })
           .let('cursor', s => {
             s
             .select('in_ProjectEvent.size() as cursor')
             .from('$project')
           })
           .commit()
-          .return(['$newProject', '$projectEvent', '$cursor'])
+          .return(['$newProject', '$newProjectEvent', '$cursor'])
           .all()
           .then((result) => {
             let project = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');

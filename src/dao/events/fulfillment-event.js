@@ -20,7 +20,7 @@ class FulfillmentEventDAO {
       let id = this.targetId;
 
       db
-      .select('uuid as id, status, reason, createdAt')
+      .getFulfillmentEvent()
       .from('FulfillmentEvent')
       .where({uuid: id})
       .limit(1)
@@ -49,7 +49,7 @@ class FulfillmentEventDAO {
       let id = this.targetId;
 
       db
-      .select('uuid as id, status, reason, createdAt')
+      .getFulfillmentEvent()
       .inFulfillmentEvent(id)
       .skip(pageObject.skip)
       .limit(pageObject.limit)

@@ -280,13 +280,18 @@ class TestCaseDAO {
             .getTestCase()
             .from('$testCase')
           })
+          .let('newTestCaseEvent', (s) => {
+            s
+            .getTestCaseEvent()
+            .from('$testCaseEvent')
+          })
           .let('cursor', s => {
             s
             .select('in_TestCaseEvent.size() as cursor')
             .from('$testCase')
           })
           .commit()
-          .return(['$newTestCase', '$testCaseEvent', '$cursor'])
+          .return(['$newTestCase', '$newTestCaseEvent', '$cursor'])
           .all()
           .then((result) => {
             let testCase = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');

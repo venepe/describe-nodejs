@@ -30,7 +30,7 @@ class CoverDAO {
 
       validator
         .isCoverImage()
-        .then(({coverImage, coverImageEvent}) => {
+        .then(({coverImage}) => {
           db
           .let('target', (s) => {
             s
@@ -59,13 +59,6 @@ class CoverDAO {
             .create('vertex', 'File')
             .set(coverImage)
             .set('_allow = $target._allow[0]')
-          })
-          .let('coverImageEvent', (s) => {
-            s
-            .create('edge', 'CoverImageEvent')
-            .from('$user')
-            .to('$file')
-            .set(coverImageEvent)
           })
           .let('covers', (s) => {
             s

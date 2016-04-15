@@ -83,6 +83,8 @@ var {nodeInterface, nodeField} = nodeDefinitions(
       return userType;
     } else if (obj instanceof TestCaseEvent) {
       return testCaseEventType;
+    } else if (obj instanceof ProjectEvent) {
+      return projectEventType;
     } else if (obj instanceof FulfillmentEvent) {
       return fulfillmentEventType;
     } else {
@@ -266,9 +268,6 @@ let projectEventType = new GraphQLObjectType({
     author: {
       type: userType,
       description: 'The user who created the title event',
-      resolve: (projectEvent, args, context) => {
-        return new DAO(context.rootValue.user).User(projectEvent.id).outEventAuthor();
-      }
     }
   }),
   interfaces: [nodeInterface],
@@ -345,9 +344,6 @@ let testCaseEventType = new GraphQLObjectType({
     author: {
       type: userType,
       description: 'The user who created the title event',
-      resolve: (projectEvent, args, context) => {
-        return new DAO(context.rootValue.user).User(projectEvent.id).outEventAuthor();
-      }
     }
   }),
   interfaces: [nodeInterface],
@@ -447,9 +443,6 @@ let fulfillmentEventType = new GraphQLObjectType({
     author: {
       type: userType,
       description: 'The user who created the title event',
-      resolve: (fulfillmentEvent, args, context) => {
-        return new DAO(context.rootValue.user).User(fulfillmentEvent.id).outEventAuthor();
-      }
     }
   }),
   interfaces: [nodeInterface],
