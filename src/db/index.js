@@ -122,38 +122,6 @@ OrientDB.Statement.prototype.inCreatesFromNode = function(id) {
   .where({'@class': this.db.SMTINode})
 }
 
-OrientDB.Statement.prototype.outLeadsFromNode = function(id) {
-  return this.from(function (s) {
-    s
-    .select('expand(out("Leads"))')
-    .from(function (s) {
-      s
-      .select()
-      .from('indexvalues:V.uuid ')
-      .where({uuid: id})
-      .limit(1)
-    })
-    .order('createdAt DESC')
-  })
-  .where({'@class': this.db.SMTINode})
-}
-
-OrientDB.Statement.prototype.inLeadsFromNode = function(id) {
-  return this.from(function (s) {
-    s
-    .select('expand(in("Leads"))')
-    .from(function (s) {
-      s
-      .select()
-      .from('indexvalues:V.uuid ')
-      .where({uuid: id})
-      .limit(1)
-    })
-    .order('createdAt DESC')
-  })
-  .where({'@class': this.db.SMTINode})
-}
-
 OrientDB.Statement.prototype.getFulfillment = function() {
   return this.select('uuid as id, status, reason, createdAt, updatedAt, $file[0] as file')
     .let('file', function(s) {
@@ -179,6 +147,36 @@ OrientDB.Db.prototype.getFulfillment = function() {
         .from('$parent.$current')
         .limit(1)
       })
+    })
+}
+
+OrientDB.Db.prototype.getCollaborator = function() {
+  return this.select('uuid as id, role, createdAt, updatedAt, $profile[0] as profile')
+    .let('profile', function(s) {
+      s
+      .getUser()
+      .from(function (s) {
+        s
+        .select('expand(out[@class = "User"])')
+        .from('$parent.$current')
+        .limit(1)
+      })
+      .limit(1)
+    })
+}
+
+OrientDB.Statement.prototype.getCollaborator = function() {
+  return this.select('uuid as id, role, createdAt, updatedAt, $profile[0] as profile')
+    .let('profile', function(s) {
+      s
+      .getUser()
+      .from(function (s) {
+        s
+        .select('expand(out[@class = "User"])')
+        .from('$parent.$current')
+        .limit(1)
+      })
+      .limit(1)
     })
 }
 
@@ -366,26 +364,32 @@ OrientDB.Statement.prototype.inCoversFromNode = function(id) {
   .where({'@class': this.db.SMTINode})
 }
 
-OrientDB.Statement.prototype.outCollaboratesOnFromNode = function(id) {
+OrientDB.Statement.prototype.outCollaboratesOnFromNode = function(id, role) {
   return this.from(function (s) {
     s
-    .select('expand(out("CollaboratesOn"))')
+    .select('expand(in[@class = "Project"])')
     .from(function (s) {
       s
-      .select()
-      .from('indexvalues:V.uuid ')
-      .where({uuid: id})
-      .limit(1)
+      .select('expand(out_CollaboratesOn)')
+      .from(function (s) {
+        s
+        .select()
+        .from('indexvalues:V.uuid ')
+        .where({uuid: id})
+        .limit(1)
+      })
+    })
+    .where({
+      role
     })
     .order('createdAt DESC')
   })
-  .where({'@class': this.db.SMTINode})
 }
 
 OrientDB.Statement.prototype.inCollaboratesOnFromNode = function(id) {
   return this.from(function (s) {
     s
-    .select('expand(in("CollaboratesOn"))')
+    .select('expand(in_CollaboratesOn)')
     .from(function (s) {
       s
       .select()
@@ -395,7 +399,6 @@ OrientDB.Statement.prototype.inCollaboratesOnFromNode = function(id) {
     })
     .order('createdAt DESC')
   })
-  .where({'@class': this.db.SMTINode})
 }
 
 OrientDB.Statement.prototype.inTestCaseEvent = function(id) {

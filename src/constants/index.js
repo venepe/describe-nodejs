@@ -5,3 +5,8 @@ export const fulfillmentStatus = {
   REJECTED: 1,
   ACCEPTED: 2
 }
+
+export const collaboratorRoles = {
+  AUTHOR: 0,
+  CONTRIBUTOR: 1
+}

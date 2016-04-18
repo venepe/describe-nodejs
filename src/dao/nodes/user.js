@@ -415,47 +415,10 @@ class UserDAO {
       let id = this.targetId;
 
       db
-      .getUser()
+      .getCollaborator()
       .inCollaboratesOnFromNode(id)
       .where(
-        `not ( id = "${userId}" )`
-      )
-      .skip(pageObject.skip)
-      .limit(pageObject.limit)
-      .order(pageObject.orderBy)
-      .transform((record) => {
-        return filteredObject(record, '@.*|rid');
-      })
-      .all()
-      .then((payload) => {
-        let meta = GraphQLHelper.getMeta(pageObject, payload);
-        resolve({
-          payload,
-          meta
-        });
-      })
-      .catch((e) => {
-        reject();
-
-      })
-      .done();
-    });
-  }
-
-  getEdgeLeaders(args) {
-    let pageObject = Pagination.getOrientDBPageFromGraphQL(args);
-
-    return new Promise((resolve, reject) => {
-      let user = this.user;
-      let userId = this.user.id;
-      let db = this.db;
-      let id = this.targetId;
-
-      db
-      .getUser()
-      .inLeadsFromNode(id)
-      .where(
-        `not ( id = "${userId}" )`
+        `not ( $profile[0].id = "${userId}" )`
       )
       .skip(pageObject.skip)
       .limit(pageObject.limit)

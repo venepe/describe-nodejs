@@ -6,6 +6,7 @@ import { filteredObject, Pagination, GraphQLHelper, uuidToId } from '../../utili
 import { roles, permissions, regExRoles } from '../permissions';
 import * as events from '../../events';
 import { offsetToCursor } from 'graphql-relay';
+import { collaboratorRoles } from '../../constants';
 
 import {
   Project
@@ -54,7 +55,7 @@ class ProjectDAO {
 
       db
       .getProject()
-      .outCreatesFromNode(id)
+      .outCollaboratesOnFromNode(id, 0)
       .skip(pageObject.skip)
       .limit(pageObject.limit)
       .order(pageObject.orderBy)
@@ -86,12 +87,13 @@ class ProjectDAO {
       let id = this.targetId;
 
       db
-      .getProject()
-      .outCollaboratesOnFromNode(id)
+      .select()
+      .outCollaboratesOnFromNode(id, 1)
       .skip(pageObject.skip)
       .limit(pageObject.limit)
       .order(pageObject.orderBy)
       .transform((record) => {
+        console.log(record);
         return filteredObject(record, '@.*|rid');
       })
       .all()
@@ -156,11 +158,13 @@ class ProjectDAO {
             .from('$user')
             .to('$project')
           })
-          .let('leads', (s) => {
+          .let('collaborateson', (s) => {
             s
-            .create('edge', 'Leads')
+            .create('edge', 'CollaboratesOn')
             .from('$user')
             .to('$project')
+            .set({ _allow })
+            .set({role: collaboratorRoles.AUTHOR})
           })
           .let('cursor', s => {
             s

@@ -59,6 +59,8 @@ var {nodeInterface, nodeField} = nodeDefinitions(
       return new DAO(user).Fulfillment(id).get();
     } else if (type === 'User') {
       return new DAO(user).User(id).get();
+    } else if (type === 'Collaborator') {
+      return new DAO(user).Collaboration(id).get();
     } else if (type === 'TestCaseEvent') {
       return new DAO(user).TestCaseEvent(id).get();
     } else if (type === 'ProjectEvent') {
@@ -81,6 +83,8 @@ var {nodeInterface, nodeField} = nodeDefinitions(
       return fulfillmentType;
     } else if (obj instanceof User) {
       return userType;
+    } else if (obj instanceof Collaborator) {
+      return collaboratorType;
     } else if (obj instanceof TestCaseEvent) {
       return testCaseEventType;
     } else if (obj instanceof ProjectEvent) {
@@ -163,6 +167,40 @@ let userType = new GraphQLObjectType({
   interfaces: [nodeInterface],
 });
 
+
+var collaboratorRoles = new GraphQLEnumType({
+  name: 'CollaboratorRoles',
+  values: {
+    AUTHOR: { value: 0 },
+    CONTRIBUTOR: { value: 1 }
+  }
+});
+
+let collaboratorType = new GraphQLObjectType({
+  name: 'Collaborator',
+  description: 'Collaborator object',
+  fields: () => ({
+    id: globalIdField('Collaborator'),
+    profile: {
+      type: userType,
+      description: 'Who the collaborator is.',
+    },
+    role: {
+      type: collaboratorRoles,
+      description: 'The role of the collaborator.',
+    },
+    createdAt: {
+      type: GraphQLString,
+      description: 'The timestamp when the collaborator was created.',
+    },
+    updatedAt: {
+      type: GraphQLString,
+      description: 'The timestamp when the collaborator was last updated.',
+    },
+  }),
+  interfaces: [nodeInterface],
+});
+
 let projectType = new GraphQLObjectType({
   name: 'Project',
   description: 'Project object',
@@ -204,27 +242,12 @@ let projectType = new GraphQLObjectType({
       }
     },
     collaborators: {
-      type: userConnection,
+      type: collaboratorConnection,
       description: 'The collaborators of the project.',
       args: connectionArgs,
       resolve: (project, args, context) => {
         return new Promise((resolve, reject) => {
           new DAO(context.rootValue.user).User(project.id).getEdgeCollaborators(args).then((result) => {
-            resolve(connectionFromArraySlice(result.payload, args, result.meta));
-          })
-          .catch((e) => {
-            reject(e);
-          })
-        });
-      }
-    },
-    leaders: {
-      type: userConnection,
-      description: 'The leaders of the project.',
-      args: connectionArgs,
-      resolve: (project, args, context) => {
-        return new Promise((resolve, reject) => {
-          new DAO(context.rootValue.user).User(project.id).getEdgeLeaders(args).then((result) => {
             resolve(connectionFromArraySlice(result.payload, args, result.meta));
           })
           .catch((e) => {
@@ -469,8 +492,8 @@ var {connectionType: fulfillConnection, edgeType: GraphQLFulfillEdge} =
 var {connectionType: fulfillEventConnection, edgeType: GraphQLFulfillEventEdge} =
   connectionDefinitions({name: 'FulfillsEvent', nodeType: fulfillmentEventType});
 
-var {connectionType: userConnection, edgeType: GraphQLUserEdge} =
-  connectionDefinitions({name: 'Users', nodeType: userType});
+var {connectionType: collaboratorConnection, edgeType: GraphQLCollaboratorEdge} =
+  connectionDefinitions({name: 'Collaborator', nodeType: collaboratorType});
 
 var updateUser = mutationWithClientMutationId({
   name: 'UpdateUser',
@@ -824,7 +847,7 @@ var introduceCollaborator = mutationWithClientMutationId({
   },
   outputFields: {
     collaboratorEdge: {
-      type: GraphQLUserEdge,
+      type: GraphQLCollaboratorEdge,
       resolve: ({collaboratorEdge}) => { return collaboratorEdge; }
     },
     project: {
@@ -852,7 +875,7 @@ var deleteCollaborator = mutationWithClientMutationId({
     deletedCollaboratorId: {
       type: GraphQLID,
       resolve: ({deletedCollaboratorId}) => {
-        return toGlobalId('User', deletedCollaboratorId);
+        return toGlobalId('Collaborator', deletedCollaboratorId);
       },
     },
     project: {
@@ -1113,7 +1136,7 @@ var didIntroduceCollaborator = subscriptionWithClientSubscriptionId({
   },
   outputFields: {
     collaboratorEdge: {
-      type: GraphQLUserEdge,
+      type: GraphQLCollaboratorEdge,
       resolve: ({collaboratorEdge}) => { return collaboratorEdge; }
     },
     project: {
@@ -1146,7 +1169,7 @@ var didDeleteCollaborator = subscriptionWithClientSubscriptionId({
     deletedCollaboratorId: {
       type: GraphQLID,
       resolve: ({deletedCollaboratorId}) => {
-        return toGlobalId('User', deletedCollaboratorId);
+        return toGlobalId('Collaborator', deletedCollaboratorId);
       },
     },
     project: {

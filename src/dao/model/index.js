@@ -1,5 +1,6 @@
 'use strict';
 
+export class Collaborator {}
 export class File {}
 export class Fulfillment {}
 export class FulfillmentEvent {}

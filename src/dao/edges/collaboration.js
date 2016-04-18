@@ -5,15 +5,43 @@ import { filteredObject } from '../../utilities';
 import { roles, permissions, regExRoles } from '../permissions';
 import * as events from '../../events';
 import { offsetToCursor } from 'graphql-relay';
+import { collaboratorRoles } from '../../constants';
 
 import {
-  Project
+  Collaborator
 } from '../model';
 
 class CollaborationDAO {
   constructor(targetId, params) {
     this.targetId = targetId;
     this.params = params;
+  }
+
+  get() {
+    return new Promise((resolve, reject) => {
+      let user = this.user;
+      let db = this.db;
+      let id = this.targetId;
+
+      db
+      .getCollaborator()
+      .from('CollaboratesOn')
+      .where({uuid: id})
+      .limit(1)
+      .transform((record) => {
+        let collaborator = new Collaborator();
+        return filteredObject(record, '@.*|rid', collaborator);
+      })
+      .one()
+      .then((record) => {
+        resolve(record);
+      })
+      .catch((e) => {
+        reject();
+
+      })
+      .done();
+    });
   }
 
   create(object) {
@@ -78,6 +106,7 @@ class CollaborationDAO {
               .from('$collaborator')
               .to('$project')
               .set('_allow = $project._allow[0]')
+              .set({role: collaboratorRoles.CONTRIBUTOR})
             })
             .let('testCases', (s) => {
               s
@@ -134,8 +163,13 @@ class CollaborationDAO {
               s
               .update(`$collaborateson PUT _allow = "${collaboratorRole}", ${roles.owner}`)
             })
+            .let('newCollaborator', (s) => {
+              s
+              .getCollaborator()
+              .from('$collaborateson')
+            })
             .commit()
-            .return(['$collaborator', '$project', '$cursor'])
+            .return(['$newCollaborator', '$project', '$cursor'])
             .all()
             .then((result) => {
               let collaborator = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
@@ -207,19 +241,12 @@ class CollaborationDAO {
           uuid: projectId
         })
       })
-      .let('collaborator', (s) => {
-        s
-        .select()
-        .from('User')
-        .where({
-          uuid: targetId
-        })
-      })
       .let('deletes', (s) => {
         s
         .delete('edge', 'CollaboratesOn')
-        .from('$collaborator')
-        .to('$project')
+        .where({
+          uuid: targetId
+        })
         .where(
           `_allow["${role}"].asString() MATCHES "${regExRoles.deleteNode}"`
         )
