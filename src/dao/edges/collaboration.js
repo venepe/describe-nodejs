@@ -73,8 +73,8 @@ class CollaborationDAO {
           .limit(1)
           .one()
           .then((record) => {
-            let collaboratorId = record.id
-            let collaboratorRole = record.role
+            let collaboratorId = record.uuid;
+            let collaboratorRole = record.role;
 
             db
             .let('collaborator', (s) => {
@@ -135,14 +135,6 @@ class CollaborationDAO {
                 uuid: relationalId
               })
             })
-            .let('coverImages', (s) => {
-              s
-              .select('expand(in(\'Covers\'))')
-              .from('Project')
-              .where({
-                uuid: relationalId
-              })
-            })
             .let('updateTestCases', (s) => {
               s
               .update(`$testCases PUT _allow = "${collaboratorRole}", ${roles.owner}`)
@@ -150,10 +142,6 @@ class CollaborationDAO {
             .let('updateFiles', (s) => {
               s
               .update(`$files PUT _allow = "${collaboratorRole}", ${roles.owner}`)
-            })
-            .let('updateCoverImages', (s) => {
-              s
-              .update(`$coverImages PUT _allow = "${collaboratorRole}", ${roles.owner}`)
             })
             .let('updateProject', (s) => {
               s
@@ -175,6 +163,7 @@ class CollaborationDAO {
               let collaborator = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
               let project = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
               let cursor = offsetToCursor(result[2].cursor);
+              let profile = collaborator.profile;
 
               //Add collaborator to project
               events.publish(events.didIntroduceCollaboratorChannel(relationalId), {
@@ -186,7 +175,7 @@ class CollaborationDAO {
               });
 
               //Add collaboration to user
-              events.publish(events.didIntroduceCollaborationChannel(collaborator.id), {
+              events.publish(events.didIntroduceCollaborationChannel(profile.id), {
                 collaborationEdge: project,
                 me: collaborator
               });
@@ -223,13 +212,11 @@ class CollaborationDAO {
 
   del(projectId) {
     return new Promise((resolve, reject) => {
-      var del = require('del');
       var targetId = this.targetId;
       var db = this.db;
       var user = this.user;
       var userId = this.user.id;
       var role = this.user.role;
-      let collaboratorRole = targetId.replace(/[-]/g, '_');
 
       db
       .let('project', (s) => {
@@ -241,12 +228,132 @@ class CollaborationDAO {
           uuid: projectId
         })
       })
+      .let('profile', (s) => {
+        s
+        .select('role')
+        .from(function (s) {
+          s
+          .select('expand(out[@class = "User"])')
+          .from(function (s) {
+            s
+            .select()
+            .from('CollaboratesOn')
+            .where({
+              uuid: targetId
+            })
+          })
+          .limit(1)
+        })
+      })
       .let('deletes', (s) => {
         s
         .delete('edge', 'CollaboratesOn')
         .where({
           uuid: targetId
         })
+        .where(
+          `_allow["${role}"].asString() MATCHES "${regExRoles.deleteNode}"`
+        )
+      })
+      .let('testCases', (s) => {
+        s
+        .select('expand(outE(\'Requires\').inV(\'TestCase\'))')
+        .from('Project')
+        .where({
+          uuid: projectId
+        })
+      })
+      .let('files', (s) => {
+        s
+        .select('expand(outE(\'Requires\').inV(\'TestCase\').inE(\'Fulfills\').inV(\'File\'))')
+        .from('Project')
+        .where({
+          uuid: projectId
+        })
+      })
+      .let('updateTestCases', (s) => {
+        s
+        .update(`$testCases REMOVE _allow = $profile.role`)
+      })
+      .let('updateFiles', (s) => {
+        s
+        .update(`$files REMOVE _allow = $profile.role`)
+      })
+      .let('updateProject', (s) => {
+        s
+        .update(`$project REMOVE _allow = $profile.role`)
+      })
+      .commit()
+      .return('$project')
+      .transform((record) => {
+        return filteredObject(record, 'in_.*|out_.*|@.*|^_');
+      })
+      .one()
+      .then((project) => {
+
+        events.publish(events.didDeleteCollaboratorChannel(projectId, targetId), {
+          deletedCollaboratorId: targetId,
+          project
+        });
+
+        //Delete collaboration from user
+        events.publish(events.didDeleteCollaborationChannel(targetId, projectId), {
+          deletedCollaborationId: projectId,
+          me: {id: targetId}
+        });
+
+        resolve({
+          deletedCollaboratorId: targetId,
+          project
+        });
+      })
+      .catch((e) => {
+        console.log(`orientdb error: ${e}`);
+        reject();
+      })
+      .done();
+    });
+  }
+
+  leave() {
+    return new Promise((resolve, reject) => {
+      var projectId = this.targetId;
+      var db = this.db;
+      var user = this.user;
+      var userId = this.user.id;
+      var role = this.user.role;
+
+      db
+      .let('project', (s) => {
+        s
+        .select()
+        .getProject()
+        .from('Project')
+        .where({
+          uuid: projectId
+        })
+      })
+      .let('user', (s) => {
+        s
+        .select()
+        .from('User')
+        .where({
+          uuid: userId
+        })
+      })
+      .let('collaborator', (s) => {
+        s
+        .getCollaborator()
+        .inCollaboratesOnFromNode(projectId)
+        .where(
+          `$profile[0].id = "${userId}"`
+        )
+      })
+      .let('deletes', (s) => {
+        s
+        .delete('edge', 'CollaboratesOn')
+        .from('$user')
+        .to('$project')
         .where(
           `_allow["${role}"].asString() MATCHES "${regExRoles.deleteNode}"`
         )
@@ -277,41 +384,41 @@ class CollaborationDAO {
       })
       .let('updateTestCases', (s) => {
         s
-        .update(`$testCases REMOVE _allow = "${collaboratorRole}"`)
+        .update(`$testCases REMOVE _allow = "${role}"`)
       })
       .let('updateFiles', (s) => {
         s
-        .update(`$files REMOVE _allow = "${collaboratorRole}"`)
+        .update(`$files REMOVE _allow = "${role}"`)
       })
       .let('updateCoverImages', (s) => {
         s
-        .update(`$coverImages REMOVE _allow = "${collaboratorRole}"`)
+        .update(`$coverImages REMOVE _allow = "${role}"`)
       })
       .let('updateProject', (s) => {
         s
-        .update(`$project REMOVE _allow = "${collaboratorRole}"`)
+        .update(`$project REMOVE _allow = "${role}"`)
       })
       .commit()
-      .return('$project')
-      .transform((record) => {
-        return filteredObject(record, 'in_.*|out_.*|@.*|^_');
-      })
-      .one()
-      .then((project) => {
+      .return(['$project', '$collaborator'])
+      .all()
+      .then((result) => {
+        let project = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+        let collaborator = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
+        let collaboratorId = collaborator.id;
 
-        events.publish(events.didDeleteCollaboratorChannel(projectId, targetId), {
-          deletedCollaboratorId: targetId,
+        events.publish(events.didDeleteCollaboratorChannel(projectId, collaboratorId), {
+          deletedCollaboratorId: collaboratorId,
           project
         });
 
         //Delete collaboration from user
-        events.publish(events.didDeleteCollaborationChannel(targetId, projectId), {
+        events.publish(events.didDeleteCollaborationChannel(userId, projectId), {
           deletedCollaborationId: projectId,
-          me: {id: targetId}
+          me: {id: userId}
         });
 
         resolve({
-          deletedCollaboratorId: targetId,
+          deletedCollaboratorId: userId,
           project
         });
       })

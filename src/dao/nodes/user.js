@@ -1,6 +1,7 @@
 'use strict';
 
 const _class = 'User';
+import uuid from 'node-uuid';
 import { SMTIValidator } from '../validator';
 import { authToken, filteredObject, SMTICrypt, Base64, Pagination, GraphQLHelper, uuidToId } from '../../utilities';
 import { roles } from '../permissions';
@@ -89,7 +90,7 @@ class UserDAO {
         })
         .then((object) => {
           let _allow = {};
-          let role = object.id.replace(/[-]/g, '_');
+          let role = uuid.v4().replace(/[-]/g, '_');
           _allow[role] = roles.owner;
           object.role = role;
 

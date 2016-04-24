@@ -908,9 +908,8 @@ var deleteCollaboration = mutationWithClientMutationId({
     }
   },
   mutateAndGetPayload: ({id}, context) => {
-    var localId = context.rootValue.user.id;
-    var localProjectId = fromGlobalId(id).id;
-    return new DAO(context.rootValue.user).Collaboration(localId).del(localProjectId).then(function (data) {
+    var localId = fromGlobalId(id).id;
+    return new DAO(context.rootValue.user).Collaboration(localId).leave().then(function (data) {
       return {id};
     });
   }

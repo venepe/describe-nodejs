@@ -93,7 +93,6 @@ class ProjectDAO {
       .limit(pageObject.limit)
       .order(pageObject.orderBy)
       .transform((record) => {
-        console.log(record);
         return filteredObject(record, '@.*|rid');
       })
       .all()
