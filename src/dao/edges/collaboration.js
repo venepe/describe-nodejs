@@ -333,14 +333,6 @@ class CollaborationDAO {
           uuid: projectId
         })
       })
-      .let('user', (s) => {
-        s
-        .select()
-        .from('User')
-        .where({
-          uuid: userId
-        })
-      })
       .let('collaborator', (s) => {
         s
         .getCollaborator()
@@ -348,12 +340,27 @@ class CollaborationDAO {
         .where(
           `$profile[0].id = "${userId}"`
         )
+        .limit(1)
       })
       .let('deletes', (s) => {
         s
         .delete('edge', 'CollaboratesOn')
-        .from('$user')
-        .to('$project')
+        .from(function (s) {
+          s
+          .select()
+          .from('User')
+          .where({
+            uuid: userId
+          })
+        })
+        .to(function (s) {
+          s
+          .select()
+          .from('Project')
+          .where({
+            uuid: projectId
+          })
+        })
         .where(
           `_allow["${role}"].asString() MATCHES "${regExRoles.deleteNode}"`
         )
@@ -374,14 +381,6 @@ class CollaborationDAO {
           uuid: projectId
         })
       })
-      .let('coverImages', (s) => {
-        s
-        .select('expand(in(\'Covers\'))')
-        .from('Project')
-        .where({
-          uuid: projectId
-        })
-      })
       .let('updateTestCases', (s) => {
         s
         .update(`$testCases REMOVE _allow = "${role}"`)
@@ -389,10 +388,6 @@ class CollaborationDAO {
       .let('updateFiles', (s) => {
         s
         .update(`$files REMOVE _allow = "${role}"`)
-      })
-      .let('updateCoverImages', (s) => {
-        s
-        .update(`$coverImages REMOVE _allow = "${role}"`)
       })
       .let('updateProject', (s) => {
         s
