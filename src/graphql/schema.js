@@ -32,6 +32,7 @@ import {
 } from 'graphql-relay';
 
 import {
+  Collaborator,
   File,
   Fulfillment,
   FulfillmentEvent,
