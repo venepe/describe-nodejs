@@ -1,4 +1,5 @@
 import { graphql } from 'graphql';
+import { fromGlobalId } from 'graphql-relay';
 
 import * as events from './src/events';
 import schema from './src/graphql/schema';
@@ -6,7 +7,11 @@ import schema from './src/graphql/schema';
 export const connect = socket => {
 
   let subscriptions = {};
-  let rootValue = {};
+  let user = socket.decoded_token || {};
+  if (user.id) {
+    user.id = fromGlobalId(user.id).id;
+  }
+  let rootValue = {user};
 
   socket.on('disconnect', () => {
     Object.values(subscriptions).forEach(({channel, listener}) =>

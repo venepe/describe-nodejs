@@ -177,7 +177,7 @@ class CollaborationDAO {
               //Add collaboration to user
               events.publish(events.didIntroduceCollaborationChannel(profile.id), {
                 collaborationEdge: project,
-                me: collaborator
+                me: profile
               });
 
               //Return the collaborator we added to the project
@@ -230,7 +230,7 @@ class CollaborationDAO {
       })
       .let('profile', (s) => {
         s
-        .select('role')
+        .select('role, uuid')
         .from(function (s) {
           s
           .select('expand(out[@class = "User"])')
@@ -284,12 +284,12 @@ class CollaborationDAO {
         .update(`$project REMOVE _allow = $profile.role`)
       })
       .commit()
-      .return('$project')
-      .transform((record) => {
-        return filteredObject(record, 'in_.*|out_.*|@.*|^_');
-      })
-      .one()
-      .then((project) => {
+      .return(['$project', '$profile'])
+      .all()
+      .then((result) => {
+        let project = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+        let profile = result[1] || {};
+        let profileId = profile.uuid;
 
         events.publish(events.didDeleteCollaboratorChannel(projectId, targetId), {
           deletedCollaboratorId: targetId,
@@ -297,9 +297,9 @@ class CollaborationDAO {
         });
 
         //Delete collaboration from user
-        events.publish(events.didDeleteCollaborationChannel(targetId, projectId), {
+        events.publish(events.didDeleteCollaborationChannel(profileId, projectId), {
           deletedCollaborationId: projectId,
-          me: {id: targetId}
+          me: {id: profileId}
         });
 
         resolve({

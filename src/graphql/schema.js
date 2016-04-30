@@ -1200,7 +1200,9 @@ var didIntroduceCollaboration = subscriptionWithClientSubscriptionId({
     collaborationEdge: {
       type: GraphQLProjectEdge,
       resolve: ({collaborationEdge}) => {
+        collaborationEdge.collaborators = {pageInfo: {hasNextPage: false, hasPreviousPage: false}, edges: []};
         collaborationEdge.testCases = {pageInfo: {hasNextPage: false, hasPreviousPage: false}, edges: []};
+        collaborationEdge.events = {pageInfo: {hasNextPage: false, hasPreviousPage: false}, edges: []};
         return {
           cursor: cursorForObjectInConnection([collaborationEdge], collaborationEdge),
           node: collaborationEdge,
@@ -1302,6 +1304,7 @@ var didIntroduceProject = subscriptionWithClientSubscriptionId({
     projectEdge: {
       type: GraphQLProjectEdge,
       resolve: ({projectEdge}) => {
+        projectEdge.node.collaborators = {pageInfo: {hasNextPage: false, hasPreviousPage: false}, edges: []};
         projectEdge.node.testCases = {pageInfo: {hasNextPage: false, hasPreviousPage: false}, edges: []};
         projectEdge.node.events = {pageInfo: {hasNextPage: false, hasPreviousPage: false}, edges: []};
 

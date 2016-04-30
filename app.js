@@ -4,6 +4,7 @@ import LE from 'letsencrypt';
 import http from 'http';
 import https from 'https';
 import SocketIO from 'socket.io';
+import socketioJwt from 'socketio-jwt';
 import express from 'express';
 import graphqlHTTP from 'express-graphql';
 import bodyParser from 'body-parser';
@@ -291,14 +292,20 @@ if (port === 80) {
   const httpsServer = https.createServer(sslOptions, app);
 
   const IO = new SocketIO(httpsServer);
-  IO.on('connect', connect);
+  IO.on('connect', socketioJwt.authorize({
+    secret: process.env.JWT_SECRET,
+    timeout: 15000
+  })).on('authenticated', connect);
 
   httpServer.listen(80);
   httpsServer.listen(443);
 
 } else {
   const IO = new SocketIO(httpServer);
-  IO.on('connect', connect);
+  IO.on('connect', socketioJwt.authorize({
+    secret: process.env.JWT_SECRET,
+    timeout: 15000
+  })).on('authenticated', connect);
 
   httpServer.listen(port);
 
