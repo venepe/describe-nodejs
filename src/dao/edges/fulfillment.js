@@ -7,6 +7,7 @@ import { roles, regExRoles } from '../permissions';
 import * as events from '../../events';
 import { offsetToCursor } from 'graphql-relay';
 import { fulfillmentStatus } from '../../constants';
+import { push } from '../../notification';
 
 import {
   Fulfillment
@@ -165,6 +166,12 @@ class FulfillmentDAO {
               project
             });
 
+            //Start push notification
+            let title = `Fulfillment submitted for "${testCase.it}"`;
+            let message = `${project.numOfTestCasesFulfilled}" / ${project.numOfTestCases}" test cases fulfilled`;
+            push(user, project.id, {title, message});
+            //End push notification
+
             resolve({
               fulfillmentEdge: {
                 cursor,
@@ -313,6 +320,12 @@ class FulfillmentDAO {
             events.publish(events.didUpdateProjectChannel(project.id), {
               project
             });
+
+            //Start push notification
+            let title = `Fulfillment rejected for "${testCase.it}"`;
+            let message = `${project.numOfTestCasesFulfilled}" / ${project.numOfTestCases}" test cases fulfilled`;
+            push(user, project.id, {title, message});
+            //End push notification
 
             resolve({
               fulfillment,

@@ -35,6 +35,7 @@
     "moment": "^2.10.3",
     "multer": "^1.0.3",
     "mv": "^2.1.1",
+    "node-pushnotifications": "https://github.com/venepe/node-pushnotifications.git",
     "node-uuid": "^1.4.3",
     "node-validator": "^0.1.19",
     "nodemailer": "^1.10.0",

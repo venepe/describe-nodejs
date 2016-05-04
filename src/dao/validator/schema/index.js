@@ -3,6 +3,8 @@
 export { default as isValidCollaboration } from './collaboration';
 export { default as isValidCredential } from './credential';
 export { default as isValidFile } from './file';
+export { default as isValidNotificationOptional } from './notification-optional';
+export { default as isValidNotification } from './notification';
 export { default as isValidPassword } from './password';
 export { default as isValidProjectOptional } from './project-optional';
 export { default as isValidProject } from './project';

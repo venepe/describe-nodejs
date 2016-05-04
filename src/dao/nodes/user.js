@@ -375,6 +375,134 @@ class UserDAO {
     });
   }
 
+  registerNotification(object) {
+    return new Promise((resolve, reject) => {
+      let db = this.db;
+      let user = this.user;
+      let userId = this.user.id;
+      let role = this.user.role;
+
+      let validator = new SMTIValidator(object);
+
+      validator
+      .isNotification()
+      .then(({notification}) => {
+        let _notification = {};
+        _notification[notification.notificationId] = notification.platform;
+        db
+        .let('registerNotification', (s) => {
+          s
+          .update('User')
+          .put('_notification', _notification)
+          .where({
+            uuid: userId
+          })
+          .where(
+            `_allow["${role}"] = ${roles.owner}`
+          )
+        })
+        .commit()
+        .return('$registerNotification')
+        .one()
+        .then((record) => {
+          resolve(notification);
+        })
+        .catch((e) => {
+          console.log(`orientdb error: ${e}`);
+          reject();
+        })
+        .done();
+      })
+      .catch((errors) => {
+        console.log(errors);
+        reject(errors);
+      });
+    });
+  }
+
+  unregisterNotification(object) {
+    return new Promise((resolve, reject) => {
+      let db = this.db;
+      let user = this.user;
+      let userId = this.user.id;
+      let role = this.user.role;
+
+      let validator = new SMTIValidator(object, true);
+
+      validator
+      .isNotification()
+      .then(({notification}) => {
+        db
+        .let('unregisterNotification', (s) => {
+          s
+          .update('User')
+          .remove('_notification', notification.notificationId)
+          .where({
+            uuid: userId
+          })
+          .where(
+            `_allow["${role}"] = ${roles.owner}`
+          )
+        })
+        .commit()
+        .return('$unregisterNotification')
+        .one()
+        .then((record) => {
+          resolve(notification);
+        })
+        .catch((e) => {
+          console.log(`orientdb error: ${e}`);
+          reject();
+        })
+        .done();
+      })
+      .catch((errors) => {
+        console.log(errors);
+        reject(errors);
+      });
+    });
+  }
+
+  getNotifiableFromProject() {
+    return new Promise((resolve, reject) => {
+      let user = this.user;
+      let userId = this.user.id;
+      let db = this.db;
+      let projectId = this.targetId;
+
+      db
+      .select('$profile[0].notification.keys() as notificationIds')
+        .let('profile', function(s) {
+          s
+          .select('uuid as id, _notification as notification')
+          .from(function (s) {
+            s
+            .select('expand(out[@class = "User"])')
+            .from('$parent.$current')
+            .limit(1)
+          })
+          .limit(1)
+        })
+      .inCollaboratesOnFromNode(projectId)
+      .where(
+        `not ( $profile[0].id = "${userId}" ) and $profile[0].notification IS NOT NULL`
+      )
+      .skip(0)
+      .limit(30)
+      .all()
+      .then((notifications) => {
+        resolve({
+          notifications
+        });
+      })
+      .catch((e) => {
+        reject();
+
+      })
+      .done();
+    });
+  }
+
   del() {
     return new Promise((resolve, reject) => {
       let targetId = this.targetId;

@@ -70,6 +70,26 @@ class SMTIValidator {
     });
   }
 
+  isNotification() {
+    return new Promise((resolve, reject) => {
+      let isOptional = this.isOptional;
+      let obj = this.obj;
+      let isValid;
+      if (isOptional) {
+        isValid = schema.isValidNotificationOptional;
+      } else {
+        isValid = schema.isValidNotification;
+      }
+      isValid(obj, (errorCount, errors) => {
+        if (errorCount === 0) {
+          resolve({notification: obj});
+        } else {
+          reject(errors);
+        }
+      });
+    });
+  }
+
   isProject() {
     return new Promise((resolve, reject) => {
       let isOptional = this.isOptional;

@@ -18,6 +18,7 @@ import schema from './src/graphql/schema';
 import { connect } from './socket';
 import multer from 'multer';
 import { authenticate, deletAccount, forgotPassword, passwordReset, passwordUpdate, signUp } from './src/auth';
+import { registerNotification, unregisterNotification } from './src/notification';
 import fs from 'fs';
 import mmm from 'mmmagic';
 import del from 'del';
@@ -185,6 +186,34 @@ app.post('/reset', bodyParser.json(), function(req, res) {
     let errors = [{message: 'Invalid entry.'}]
     res.status(400).json({errors});
   });
+});
+
+app.post('/notification', bodyParser.json(), function(req, res) {
+  let notification = req.body.notification || {};
+  let user = req.user;
+  let userId = user.id;
+  registerNotification(user, userId, notification)
+  .then(function(notification) {
+    res.status(200).json({notification});
+  })
+  .catch(function(err) {
+    let errors = [{message: 'Invalid email or password.'}]
+    res.status(400).json({errors});
+  })
+});
+
+app.delete('/notification/:notificationId', function(req, res) {
+  let notificationId = req.params.notificationId;
+  let user = req.user;
+  let userId = user.id;
+  unregisterNotification(user, userId, notificationId)
+  .then(function(notification) {
+    res.status(200).json({notification});
+  })
+  .catch(function(err) {
+    let errors = [{message: 'Unable to delete'}]
+    res.status(400).json({errors});
+  })
 });
 
 app.post('/graphql', upload.single('0'), function(req, res, next){

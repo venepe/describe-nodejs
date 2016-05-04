@@ -6,6 +6,7 @@ import { filteredObject, Pagination, GraphQLHelper, uuidToId } from '../../utili
 import { roles, regExRoles } from '../permissions';
 import * as events from '../../events';
 import { offsetToCursor } from 'graphql-relay';
+import { push } from '../../notification';
 
 import {
   TestCase
@@ -204,6 +205,12 @@ class TestCaseDAO {
             events.publish(events.didUpdateProjectChannel(relationalId), {
               ...project
             });
+        
+            //Start push notification
+            let title = `Test case added to "${project.title}"`;
+            let message = `It should "${node.it}"`;
+            push(user, relationalId, {title, message});
+            //End push notification
 
             resolve({
               testCaseEdge: {
