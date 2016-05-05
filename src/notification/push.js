@@ -18,7 +18,7 @@ const settings = {
     }
   },
   apn: {
-    gateway: 'gateway.push.apple.com',
+    gateway: AppConfig.APNS_GATEWAY,
     badge: 0,
     defaultData: {
       expiry: 4 * 7 * 24 * 3600,
