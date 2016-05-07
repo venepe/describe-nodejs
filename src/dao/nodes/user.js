@@ -463,6 +463,29 @@ class UserDAO {
     });
   }
 
+  _unregisterMultipleNotificationIds(notificationIds) {
+    let index = 0;
+    let count = notificationIds.length || 0;
+    let db = this.db;
+    function unregister(index) {
+      if (index < count) {
+        let notificationId = notificationIds[index];
+        index++;
+        db
+        .update('User')
+        .remove('_notification', notificationId)
+        .scalar()
+        .then(() => {
+          unregister(index);
+        })
+        .catch((e) => {
+          console.log(`orientdb error: ${e}`);
+        });
+      }
+    }
+    unregister(index);
+  }
+
   getNotifiableFromProject() {
     return new Promise((resolve, reject) => {
       let user = this.user;

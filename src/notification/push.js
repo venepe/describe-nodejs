@@ -6,6 +6,9 @@ import PushNotifications from 'node-pushnotifications';
 import _ from 'lodash';
 import path from 'path';
 
+const gcmNotRegistered = 'NotRegistered';
+const apnsNotRegistered = 8;
+
 const settings = {
   gcm: {
     id: AppConfig.GCMToken,
@@ -44,10 +47,31 @@ export const push = (user, projectId, payload) => {
   .then(({notifications}) => {
     let notificationIds =  _.flatten(_.map(notifications, 'notificationIds'));
     if (notificationIds.length > 0) {
-      notificationHub.send(notificationIds, payload, (result) => {
-        console.log('=========');
-        console.log(result);
-        console.log('=========');
+      notificationHub.send(notificationIds, payload, (err, result) => {
+        if (err) {
+          console.log(err);
+        } else {
+          let unregisterNotificationIds = [];
+          _(result).forEach((value) => {
+            if (value.failure > 0) {
+              //check for devices to unregister
+              let results = value.results;
+              _.forEach((value) => {
+                if (value.error === gcmNotRegistered || value.error === apnsNotRegistered) {
+                  if (value.registration_id) {
+                    unregisterNotificationIds.push(value.registration_id);
+                  }
+                }
+              });
+            }
+          });
+
+          if (unregisterNotificationIds.length > 0) {
+            new DAO()
+              .User()
+              ._unregisterMultipleNotificationIds(unregisterNotificationIds);
+          }
+        }
       });
     }
   })
