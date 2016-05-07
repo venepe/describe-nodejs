@@ -10,7 +10,7 @@ export { default as Generate } from './lib/generate';
 export { isValidPassword } from './lib/is-valid-password';
 export { default as Constants} from './lib/constants';
 export { default as SMTICrypt } from './lib/SMTICrypt';
-export { default as SMTIEmailTemplate } from './lib/SMTIEmailTemplate';
+export { SMTIEmailTemplate } from './lib/SMTIEmailTemplate';
 export { ensureHttps } from './lib/ensure-https';
 export { delFile } from './lib/SMTIDelFile';
 export { uuidToId } from './lib/uuid-to-id';

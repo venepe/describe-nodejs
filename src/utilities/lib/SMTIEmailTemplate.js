@@ -61,6 +61,6 @@ const forgotPasswordEmail = (user) => {
           </table>`
 }
 
-const SMTIEmailTemplate = {
+export const SMTIEmailTemplate = {
   forgotPasswordEmail
 }
