@@ -87,7 +87,7 @@ class ProjectDAO {
       let id = this.targetId;
 
       db
-      .select()
+      .getProject()
       .outCollaboratesOnFromNode(id, 1)
       .skip(pageObject.skip)
       .limit(pageObject.limit)
