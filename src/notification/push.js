@@ -21,7 +21,7 @@ const settings = {
     }
   },
   apn: {
-    gateway: AppConfig.APNS_GATEWAY,
+    gateway: AppConfig.APNSGateway,
     badge: 0,
     defaultData: {
       expiry: 4 * 7 * 24 * 3600,
