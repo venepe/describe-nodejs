@@ -88,10 +88,10 @@ class ProjectDAO {
 
       db
       .getProject()
-      .outCollaboratesOnFromNode(id, 1)
+      .select('in_CollaboratesOn.createdAt')
+      .outCollaboratesOnFromNode(id, 1, pageObject.orderBy)
       .skip(pageObject.skip)
       .limit(pageObject.limit)
-      .order(pageObject.orderBy)
       .transform((record) => {
         return filteredObject(record, '@.*|rid');
       })

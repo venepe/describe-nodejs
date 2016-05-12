@@ -364,7 +364,7 @@ OrientDB.Statement.prototype.inCoversFromNode = function(id) {
   .where({'@class': this.db.SMTINode})
 }
 
-OrientDB.Statement.prototype.outCollaboratesOnFromNode = function(id, role) {
+OrientDB.Statement.prototype.outCollaboratesOnFromNode = function(id, role, order) {
   return this.from(function (s) {
     s
     .select('expand(in[@class = "Project"])')
@@ -378,11 +378,11 @@ OrientDB.Statement.prototype.outCollaboratesOnFromNode = function(id, role) {
         .where({uuid: id})
         .limit(1)
       })
+      .order(order)
     })
     .where({
       role
     })
-    .order('createdAt DESC')
   })
 }
 
