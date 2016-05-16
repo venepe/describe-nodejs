@@ -217,6 +217,22 @@ class SMTIValidator {
       });
     });
   }
+
+  isInvitation() {
+    return new Promise((resolve, reject) => {
+      let obj = this.obj;
+      let isValid = schema.isValidInvitation;
+
+      isValid(obj, (errorCount, errors) => {
+        if (errorCount === 0) {
+          obj.email = validator.normalizeEmail(obj.email);
+          resolve({invitation: obj, invitationEvent: obj});
+        } else {
+          reject(errors);
+        }
+      });
+    });
+  }
 }
 
 export default SMTIValidator;

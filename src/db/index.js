@@ -180,6 +180,76 @@ OrientDB.Statement.prototype.getCollaborator = function() {
     })
 }
 
+OrientDB.Db.prototype.getInvitation = function() {
+  return this.select('uuid as id, role, sponsorId, createdAt, updatedAt, $sponsor[0] as sponsor, $project[0] as project, $recipient[0] as recipient')
+    .let('sponsor', function(s) {
+      s
+      .getUser()
+      .from('User')
+      .where(
+        '$parent.$current.sponsorId = $current.uuid'
+      )
+      .limit(1)
+    })
+    .let('project', function(s) {
+      s
+      .getProject()
+      .from(function (s) {
+        s
+        .select('expand(out[@class = "Project"])')
+        .from('$parent.$current')
+        .limit(1)
+      })
+      .limit(1)
+    })
+    .let('recipient', function(s) {
+      s
+      .getUser()
+      .from(function (s) {
+        s
+        .select('expand(in[@class = "User"])')
+        .from('$parent.$current')
+        .limit(1)
+      })
+      .limit(1)
+    })
+}
+
+OrientDB.Statement.prototype.getInvitation = function() {
+  return this.select('uuid as id, role, sponsorId, createdAt, updatedAt, $sponsor[0] as sponsor, $project[0] as project, $recipient[0] as recipient')
+    .let('sponsor', function(s) {
+      s
+      .getUser()
+      .from('User')
+      .where({
+        uuid: '$parent.sponsorId'
+      })
+      .limit(1)
+    })
+    .let('project', function(s) {
+      s
+      .getProject()
+      .from(function (s) {
+        s
+        .select('expand(out[@class = "Project"])')
+        .from('$parent.$current')
+        .limit(1)
+      })
+      .limit(1)
+    })
+    .let('recipient', function(s) {
+      s
+      .getUser()
+      .from(function (s) {
+        s
+        .select('expand(in[@class = "User"])')
+        .from('$parent.$current')
+        .limit(1)
+      })
+      .limit(1)
+    })
+}
+
 OrientDB.Db.prototype.getProjectEvent = function() {
   return this.select('uuid as id, title, createdAt, $author[0] as author')
     .let('author', function(s) {
@@ -390,6 +460,36 @@ OrientDB.Statement.prototype.inCollaboratesOnFromNode = function(id) {
   return this.from(function (s) {
     s
     .select('expand(in_CollaboratesOn)')
+    .from(function (s) {
+      s
+      .select()
+      .from('indexvalues:V.uuid ')
+      .where({uuid: id})
+      .limit(1)
+    })
+    .order('createdAt DESC')
+  })
+}
+
+OrientDB.Statement.prototype.outInvitesOnFromNode = function(id, role, order) {
+  return this.from(function (s) {
+    s
+    .select('expand(out_Invites)')
+    .from(function (s) {
+      s
+      .select()
+      .from('indexvalues:V.uuid ')
+      .where({uuid: id})
+      .limit(1)
+    })
+    .order('createdAt DESC')
+  })
+}
+
+OrientDB.Statement.prototype.inInvitesFromNode = function(id) {
+  return this.from(function (s) {
+    s
+    .select('expand(in_Invites)')
     .from(function (s) {
       s
       .select()
