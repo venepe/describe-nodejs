@@ -222,6 +222,31 @@ let collaboratorType = new GraphQLObjectType({
   interfaces: [nodeInterface],
 });
 
+let inviteeType = new GraphQLObjectType({
+  name: 'Invitee',
+  description: 'Invitee object',
+  fields: () => ({
+    id: globalIdField('Invitee'),
+    profile: {
+      type: userType,
+      description: 'Who the invitee is.',
+    },
+    role: {
+      type: collaboratorRoles,
+      description: 'The proposed role of the invitee.',
+    },
+    createdAt: {
+      type: GraphQLString,
+      description: 'The timestamp when the collaborator was created.',
+    },
+    updatedAt: {
+      type: GraphQLString,
+      description: 'The timestamp when the collaborator was last updated.',
+    },
+  }),
+  interfaces: [nodeInterface],
+});
+
 let projectType = new GraphQLObjectType({
   name: 'Project',
   description: 'Project object',
@@ -269,6 +294,21 @@ let projectType = new GraphQLObjectType({
       resolve: (project, args, context) => {
         return new Promise((resolve, reject) => {
           new DAO(context.rootValue.user).User(project.id).getEdgeCollaborators(args).then((result) => {
+            resolve(connectionFromArraySlice(result.payload, args, result.meta));
+          })
+          .catch((e) => {
+            reject(e);
+          })
+        });
+      }
+    },
+    invitees: {
+      type: inviteeConnection,
+      description: 'The invitees of the project.',
+      args: connectionArgs,
+      resolve: (project, args, context) => {
+        return new Promise((resolve, reject) => {
+          new DAO(context.rootValue.user).User(project.id).getEdgeInvitees(args).then((result) => {
             resolve(connectionFromArraySlice(result.payload, args, result.meta));
           })
           .catch((e) => {
@@ -516,10 +556,6 @@ let invitationType = new GraphQLObjectType({
     sponsor: {
       type: userType,
       description: 'The collaborator who invited the user',
-    },
-    recipient: {
-      type: userType,
-      description: 'The user receiving the invitation',
     }
   }),
   interfaces: [nodeInterface],
@@ -551,6 +587,9 @@ var {connectionType: fulfillEventConnection, edgeType: GraphQLFulfillEventEdge} 
 
 var {connectionType: collaboratorConnection, edgeType: GraphQLCollaboratorEdge} =
   connectionDefinitions({name: 'Collaborator', nodeType: collaboratorType});
+
+var {connectionType: inviteeConnection, edgeType: GraphQLInviteeEdge} =
+  connectionDefinitions({name: 'Invitee', nodeType: inviteeType});
 
 var updateUser = mutationWithClientMutationId({
   name: 'UpdateUser',
@@ -972,21 +1011,21 @@ var deleteCollaboration = mutationWithClientMutationId({
   }
 });
 
-var introduceInvitation = mutationWithClientMutationId({
-  name: 'IntroduceInvitation',
+var introduceInvitee = mutationWithClientMutationId({
+  name: 'IntroduceInvitee',
   inputFields: {
     projectId: {
       type: new GraphQLNonNull(GraphQLID)
     },
     email: {
       type: new GraphQLNonNull(GraphQLString),
-      description: 'The email of the collaborator.',
+      description: 'The email of the invitee.',
     }
   },
   outputFields: {
-    invitationEdge: {
-      type: GraphQLInvitationEdge,
-      resolve: ({invitationEdge}) => { return invitationEdge; }
+    inviteeEdge: {
+      type: GraphQLInviteeEdge,
+      resolve: ({inviteeEdge}) => { return inviteeEdge; }
     },
     project: {
       type: projectType,
@@ -1025,6 +1064,64 @@ var acceptInvitation = mutationWithClientMutationId({
   mutateAndGetPayload: ({id}, context) => {
     var localId = fromGlobalId(id).id;
     return new DAO(context.rootValue.user).Invitation(localId).accept();
+  }
+});
+
+var declineInvitation = mutationWithClientMutationId({
+  name: 'DeclineInvitation',
+  inputFields: {
+    id: {
+      type: new GraphQLNonNull(GraphQLID)
+    }
+  },
+  outputFields: {
+    invitationEdge: {
+      type: GraphQLInvitationEdge,
+      resolve: ({invitationEdge}) => { return invitationEdge; }
+    },
+    declinedInvitationId: {
+      type: GraphQLID,
+      resolve: ({declinedInvitationId}) => {
+        return toGlobalId('Invitation', declinedInvitationId);
+      },
+    },
+    me: {
+      type: userType,
+      resolve: ({me}) => { return me },
+    },
+  },
+  mutateAndGetPayload: ({id}, context) => {
+    var localId = fromGlobalId(id).id;
+    return new DAO(context.rootValue.user).Invitation(localId).decline();
+  }
+});
+
+var deleteInvitee = mutationWithClientMutationId({
+  name: 'DeleteInvitee',
+  inputFields: {
+    id: {
+      type: new GraphQLNonNull(GraphQLID)
+    },
+    projectId: {
+      type: new GraphQLNonNull(GraphQLID)
+    }
+  },
+  outputFields: {
+    deletedInviteeId: {
+      type: GraphQLID,
+      resolve: ({deletedInviteeId}) => {
+        return toGlobalId('Invitee', deletedInviteeId);
+      },
+    },
+    project: {
+      type: projectType,
+      resolve: ({project}) => { return project; },
+    },
+  },
+  mutateAndGetPayload: ({id, projectId}, context) => {
+    var localId = fromGlobalId(id).id;
+    var localProjectId = fromGlobalId(projectId).id;
+    return new DAO(context.rootValue.user).Invitation(localId).del(localProjectId);
   }
 });
 
@@ -1373,6 +1470,183 @@ var didDeleteCollaboration = subscriptionWithClientSubscriptionId({
   }
 });
 
+var didIntroduceInvitee = subscriptionWithClientSubscriptionId({
+  name: 'DidIntroduceInvitee',
+  inputFields: {
+    projectId: {
+      type: new GraphQLNonNull(GraphQLID)
+    },
+  },
+  outputFields: {
+    inviteeEdge: {
+      type: GraphQLInviteeEdge,
+      resolve: ({inviteeEdge}) => { return inviteeEdge; }
+    },
+    project: {
+      type: projectType,
+      resolve: ({project}) => { return project; },
+    }
+  },
+  mutateAndGetPayload: ({projectId}, {rootValue}) => {
+    if (rootValue.event) {
+      return rootValue.event;
+    } else {
+      var localId = fromGlobalId(projectId).id;
+      rootValue.channel = channels.didIntroduceInviteeChannel(localId);
+      return {projectId};
+    }
+  }
+});
+
+var didDeleteInvitee = subscriptionWithClientSubscriptionId({
+  name: 'DidDeleteInvitee',
+  inputFields: {
+    id: {
+      type: new GraphQLNonNull(GraphQLID)
+    },
+    projectId: {
+      type: new GraphQLNonNull(GraphQLID)
+    },
+  },
+  outputFields: {
+    deletedInviteeId: {
+      type: GraphQLID,
+      resolve: ({deletedInviteeId}) => {
+        return toGlobalId('Invitee', deletedInviteeId);
+      },
+    },
+    project: {
+      type: projectType,
+      resolve: ({project}) => { return project; },
+    },
+  },
+  mutateAndGetPayload: ({id, projectId}, {rootValue}) => {
+    if (rootValue.event) {
+      return rootValue.event;
+    } else {
+      var localId = fromGlobalId(id).id;
+      var localProjectId = fromGlobalId(projectId).id;
+      rootValue.channel = channels.didDeleteInviteeChannel(localProjectId, localId);
+      return {id};
+    }
+  }
+});
+
+var didIntroduceInvitation = subscriptionWithClientSubscriptionId({
+  name: 'DidIntroduceInvitation',
+  inputFields: {
+    meId: {
+      type: new GraphQLNonNull(GraphQLID)
+    }
+  },
+  outputFields: {
+    invitationEdge: {
+      type: GraphQLInvitationEdge,
+      resolve: ({invitationEdge}) => {
+        return {
+          cursor: cursorForObjectInConnection([invitationEdge], invitationEdge),
+          node: invitationEdge,
+        };
+      }
+    },
+    me: {
+      type: userType,
+      resolve: (payload) => {
+        return payload.me;
+      },
+    }
+  },
+  mutateAndGetPayload: ({meId}, {rootValue}) => {
+    if (rootValue.event) {
+      return rootValue.event;
+    } else {
+      var localId = fromGlobalId(meId).id;
+      rootValue.channel = channels.didIntroduceInvitationChannel(localId);
+      return {meId};
+    }
+  }
+});
+
+var didDeclineInvitation = subscriptionWithClientSubscriptionId({
+  name: 'DidDeclineInvitation',
+  inputFields: {
+    id: {
+      type: new GraphQLNonNull(GraphQLID)
+    },
+    meId: {
+      type: new GraphQLNonNull(GraphQLID)
+    }
+  },
+  outputFields: {
+    declinedInvitationId: {
+      type: GraphQLID,
+      resolve: ({declinedInvitationId}) => {
+        return toGlobalId('Invitation', declinedInvitationId);
+      },
+    },
+    me: {
+      type: userType,
+      resolve: ({me}) => { return me; },
+    },
+  },
+  mutateAndGetPayload: ({id, meId}, {rootValue}) => {
+    if (rootValue.event) {
+      return rootValue.event;
+    } else {
+      var localId = fromGlobalId(id).id;
+      var localMeId = fromGlobalId(meId).id;
+      rootValue.channel = channels.didDeclineInvitationChannel(localMeId, localId);
+      return {id};
+    }
+  }
+});
+
+var didAcceptInvitation = subscriptionWithClientSubscriptionId({
+  name: 'DidAcceptInvitation',
+  inputFields: {
+    id: {
+      type: new GraphQLNonNull(GraphQLID)
+    },
+    meId: {
+      type: new GraphQLNonNull(GraphQLID)
+    }
+  },
+  outputFields: {
+    collaborationEdge: {
+      type: GraphQLProjectEdge,
+      resolve: ({collaborationEdge}) => {
+        collaborationEdge.collaborators = {pageInfo: {hasNextPage: false, hasPreviousPage: false}, edges: []};
+        collaborationEdge.testCases = {pageInfo: {hasNextPage: false, hasPreviousPage: false}, edges: []};
+        collaborationEdge.events = {pageInfo: {hasNextPage: false, hasPreviousPage: false}, edges: []};
+        return {
+          cursor: cursorForObjectInConnection([collaborationEdge], collaborationEdge),
+          node: collaborationEdge,
+        };
+      }
+    },
+    acceptedInvitationId: {
+      type: GraphQLID,
+      resolve: ({acceptedInvitationId}) => {
+        return toGlobalId('Invitation', acceptedInvitationId);
+      },
+    },
+    me: {
+      type: userType,
+      resolve: ({me}) => { return me; },
+    },
+  },
+  mutateAndGetPayload: ({id, meId}, {rootValue}) => {
+    if (rootValue.event) {
+      return rootValue.event;
+    } else {
+      var localId = fromGlobalId(id).id;
+      var localMeId = fromGlobalId(meId).id;
+      rootValue.channel = channels.didAcceptInvitationChannel(localMeId, localId);
+      return {id};
+    }
+  }
+});
+
 var didDeleteProject = subscriptionWithClientSubscriptionId({
   name: 'DidDeleteProject',
   inputFields: {
@@ -1461,8 +1735,10 @@ var schema = new GraphQLSchema({
     name: 'Mutation',
     fields: {
       acceptInvitation,
+      declineInvitation,
       deleteCollaboration,
       deleteCollaborator,
+      deleteInvitee,
       deleteUserCover,
       deleteProject,
       deleteTestCase,
@@ -1470,7 +1746,7 @@ var schema = new GraphQLSchema({
       introduceCollaborator,
       introduceUserCover,
       introduceFulfillment,
-      introduceInvitation,
+      introduceInvitee,
       introduceProject,
       introduceTestCase,
       updateFulfillment,

@@ -47,3 +47,23 @@ export const didIntroduceProjectChannel = (userId) => {
 export const didDeleteProjectChannel = (projectId) => {
   return `/projects/${projectId}/delete`;
 }
+
+export const didIntroduceInviteeChannel = (projectId) => {
+  return `/projects/${projectId}/invitees`;
+}
+
+export const didDeleteInviteeChannel = (projectId, inviteeId) => {
+  return `/projects/${projectId}/invitees/${inviteeId}/delete`;
+}
+
+export const didIntroduceInvitationChannel = (userId) => {
+  return `/users/${userId}/invitations`;
+}
+
+export const didDeclineInvitationChannel = (userId, inviteeId) => {
+  return `/users/${userId}/invitations/${inviteeId}/decline`;
+}
+
+export const didAcceptInvitationChannel = (userId, inviteeId) => {
+  return `/users/${userId}/invitations/${inviteeId}/accept`;
+}

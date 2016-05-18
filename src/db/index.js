@@ -181,7 +181,7 @@ OrientDB.Statement.prototype.getCollaborator = function() {
 }
 
 OrientDB.Db.prototype.getInvitation = function() {
-  return this.select('uuid as id, role, sponsorId, createdAt, updatedAt, $sponsor[0] as sponsor, $project[0] as project, $recipient[0] as recipient')
+  return this.select('uuid as id, role, sponsorId, createdAt, updatedAt, $sponsor[0] as sponsor, $project[0] as project')
     .let('sponsor', function(s) {
       s
       .getUser()
@@ -202,21 +202,10 @@ OrientDB.Db.prototype.getInvitation = function() {
       })
       .limit(1)
     })
-    .let('recipient', function(s) {
-      s
-      .getUser()
-      .from(function (s) {
-        s
-        .select('expand(in[@class = "User"])')
-        .from('$parent.$current')
-        .limit(1)
-      })
-      .limit(1)
-    })
 }
 
 OrientDB.Statement.prototype.getInvitation = function() {
-  return this.select('uuid as id, role, sponsorId, createdAt, updatedAt, $sponsor[0] as sponsor, $project[0] as project, $recipient[0] as recipient')
+  return this.select('uuid as id, role, sponsorId, createdAt, updatedAt, $sponsor[0] as sponsor, $project[0] as project')
     .let('sponsor', function(s) {
       s
       .getUser()
@@ -237,7 +226,44 @@ OrientDB.Statement.prototype.getInvitation = function() {
       })
       .limit(1)
     })
-    .let('recipient', function(s) {
+}
+
+OrientDB.Db.prototype.getInvitee = function() {
+  return this.select('uuid as id, role, sponsorId, createdAt, updatedAt, $sponsor[0] as sponsor, $profile[0] as profile')
+    .let('sponsor', function(s) {
+      s
+      .getUser()
+      .from('User')
+      .where(
+        '$parent.$current.sponsorId = $current.uuid'
+      )
+      .limit(1)
+    })
+    .let('profile', function(s) {
+      s
+      .getUser()
+      .from(function (s) {
+        s
+        .select('expand(in[@class = "User"])')
+        .from('$parent.$current')
+        .limit(1)
+      })
+      .limit(1)
+    })
+}
+
+OrientDB.Statement.prototype.getInvitee = function() {
+  return this.select('uuid as id, role, sponsorId, createdAt, updatedAt, $sponsor[0] as sponsor, $profile[0] as profile')
+    .let('sponsor', function(s) {
+      s
+      .getUser()
+      .from('User')
+      .where({
+        uuid: '$parent.sponsorId'
+      })
+      .limit(1)
+    })
+    .let('profile', function(s) {
       s
       .getUser()
       .from(function (s) {

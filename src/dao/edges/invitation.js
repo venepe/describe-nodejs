@@ -161,34 +161,41 @@ class InvitationDAO {
               .getInvitation()
               .from('$invites')
             })
+            .let('newInvitee', (s) => {
+              s
+              .getInvitee()
+              .from('$invites')
+            })
             .commit()
-            .return(['$newInvitation', '$project', '$cursor'])
+            .return(['$newInvitation', '$newInvitee', '$project', '$cursor'])
             .all()
             .then((result) => {
               let invitation = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
-              let project = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
-              let cursor = offsetToCursor(result[2].cursor);
+              let invitee = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
+              let project = filteredObject(result[2], 'in_.*|out_.*|@.*|^_');
+              let cursor = offsetToCursor(result[3].cursor);
+              let profile = invitee.profile;
 
               // TODO: Add invitation to project
-              // events.publish(events.didIntroduceInvitationChannel(relationalId), {
-              //   invitationEdge: {
-              //     node: invitation,
-              //     cursor,
-              //   },
-              //   project
-              // });
+              events.publish(events.didIntroduceInviteeChannel(relationalId), {
+                inviteeEdge: {
+                  node: invitee,
+                  cursor,
+                },
+                project
+              });
 
-              //Add invitation to invitee
+              // Add invitation to invitee
               events.publish(events.didIntroduceInvitationChannel(inviteeId), {
-                invitationEdge: project,
+                invitationEdge: invitation,
                 me: profile
               });
 
               //Return the invitation we added to the project
               // TODO: get the correct cursor length
               resolve({
-                invitationEdge: {
-                  node: invitation,
+                inviteeEdge: {
+                  node: invitee,
                   cursor,
                 },
                 project
@@ -320,9 +327,10 @@ class InvitationDAO {
         let project = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
         let cursor = offsetToCursor(result[2].cursor);
         let profile = collaborator.profile;
+        let projectId = project.id;
 
         //Add collaborator to project
-        events.publish(events.didIntroduceCollaboratorChannel(relationalId), {
+        events.publish(events.didIntroduceCollaboratorChannel(projectId), {
           collaboratorEdge: {
             node: collaborator,
             cursor,
@@ -330,11 +338,18 @@ class InvitationDAO {
           project
         });
 
-        //Add collaboration to user
-        // events.publish(events.didIntroduceCollaborationChannel(profile.id), {
-        //   collaborationEdge: project,
-        //   me: profile
-        // });
+        // Add collaboration and acceptedInvitationId to user
+        events.publish(events.didAcceptInvitationChannel(profile.id), {
+          collaborationEdge: project,
+          acceptedInvitationId: relationalId,
+          me: profile
+        });
+
+        // Delete invitee from project
+        events.publish(events.didDeleteInviteeChannel(projectId, relationalId), {
+          deletedInvitationId: relationalId,
+          project
+        });
 
         //Return the collaboration we added to the user
         resolve({
@@ -344,6 +359,76 @@ class InvitationDAO {
           },
           acceptedInvitationId: relationalId,
           me: profile
+        });
+      })
+      .catch((e) => {
+        console.log(`orientdb error: ${e}`);
+        reject();
+      })
+      .done();
+
+    });
+  }
+
+  decline() {
+    return new Promise((resolve, reject) => {
+      var db = this.db;
+      var targetId = this.targetId;
+      var user = this.user;
+      var userId = this.user.id;
+      var role = this.user.role;
+
+      db
+      .let('invitation', (s) => {
+        s
+        .select()
+        .from('Invites')
+        .where({
+          uuid: targetId
+        })
+        .where(
+          `_allow["${role}"] = ${roles.owner}`
+        )
+      })
+      .let('project', (s) => {
+        s
+        .select()
+        .getProject()
+        .from('Project')
+        .where(
+          '@rid = $invitation[0].out'
+        )
+      })
+      .let('deletes', (s) => {
+        s
+        .delete('edge', 'Invites')
+        .where({
+          uuid: targetId
+        })
+      })
+      .commit()
+      .return(['$project'])
+      .all()
+      .then((result) => {
+        let project = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+        let projectId = project.id;
+
+        //Delete invitee from project
+        events.publish(events.didDeleteInviteeChannel(projectId, targetId), {
+          deletedInviteeId: targetId,
+          project
+        });
+
+        //Decline invitation from user
+        events.publish(events.didDeclineInvitationChannel(userId, targetId), {
+          declinedInvitationId: targetId,
+          me: {id: userId}
+        });
+
+        //Return the collaboration we added to the user
+        resolve({
+          declinedInvitationId: targetId,
+          me: {id: userId}
         });
       })
       .catch((e) => {
@@ -407,20 +492,22 @@ class InvitationDAO {
         let project = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
         let invitee = result[1] || {};
         let inviteeId = invitee.uuid;
+        let projectId = project.id;
 
-        events.publish(events.didDeleteInvitationChannel(projectId, targetId), {
-          deletedInvitationId: targetId,
+        //Delete invitee from project
+        events.publish(events.didDeleteInviteeChannel(projectId, targetId), {
+          deletedInviteeId: targetId,
           project
         });
 
-        //Delete invitation from user
-        events.publish(events.didDeleteInvitationChannel(inviteeId, projectId), {
-          deletedInvitationId: targetId,
+        //Decline invitation from user
+        events.publish(events.didDeclineInvitationChannel(inviteeId, targetId), {
+          declinedInvitationId: targetId,
           me: {id: inviteeId}
         });
 
         resolve({
-          deletedInvitationId: targetId,
+          deletedInviteeId: targetId,
           project
         });
       })
