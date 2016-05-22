@@ -358,7 +358,7 @@ class InvitationDAO {
 
         // Delete invitee from project
         events.publish(events.didDeleteInviteeChannel(projectId, relationalId), {
-          deletedInvitationId: relationalId,
+          deletedInviteeId: relationalId,
           project
         });
 
