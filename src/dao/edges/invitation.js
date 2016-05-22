@@ -166,15 +166,26 @@ class InvitationDAO {
               .getInvitee()
               .from('$invites')
             })
+            .let('sponsor', (s) => {
+              s
+              .getUser()
+              .from('User')
+              .where({
+                uuid: userId
+              })
+            })
             .commit()
-            .return(['$newInvitation', '$newInvitee', '$project', '$cursor'])
+            .return(['$newInvitation', '$newInvitee', '$project', '$sponsor', '$cursor'])
             .all()
             .then((result) => {
               let invitation = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
               let invitee = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
               let project = filteredObject(result[2], 'in_.*|out_.*|@.*|^_');
-              let cursor = offsetToCursor(result[3].cursor);
+              let sponsor = filteredObject(result[3], 'in_.*|out_.*|@.*|^_');
+              let cursor = offsetToCursor(result[4].cursor);
               let profile = invitee.profile;
+
+              invitation.sponsor = sponsor;
 
               // TODO: Add invitation to project
               events.publish(events.didIntroduceInviteeChannel(relationalId), {

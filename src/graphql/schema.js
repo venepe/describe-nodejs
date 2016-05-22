@@ -1760,12 +1760,17 @@ var schema = new GraphQLSchema({
   subscription: new GraphQLObjectType({
     name: 'Subscription',
     fields: {
+      didAcceptInvitation,
+      didDeclineInvitation,
       didDeleteCollaboration,
       didDeleteCollaborator,
+      didDeleteInvitee,
       didDeleteProject,
       didDeleteTestCase,
       didIntroduceCollaborator,
       didIntroduceCollaboration,
+      didIntroduceInvitation,
+      didIntroduceInvitee,
       didIntroduceFulfillment,
       didIntroduceProject,
       didIntroduceTestCase,
