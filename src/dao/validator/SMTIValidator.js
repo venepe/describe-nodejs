@@ -233,6 +233,21 @@ class SMTIValidator {
       });
     });
   }
+
+  isMessage() {
+    return new Promise((resolve, reject) => {
+      let obj = this.obj;
+      let isValid = schema.isValidMessage;
+
+      isValid(obj, (errorCount, errors) => {
+        if (errorCount === 0) {
+          resolve({message: obj, messageEvent: obj});
+        } else {
+          reject(errors);
+        }
+      });
+    });
+  }
 }
 
 export default SMTIValidator;

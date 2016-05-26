@@ -276,6 +276,36 @@ OrientDB.Statement.prototype.getInvitee = function() {
     })
 }
 
+OrientDB.Db.prototype.getMessage = function() {
+  return this.select('uuid as id, text, createdAt, updatedAt, $author[0] as author')
+    .let('author', function(s) {
+      s
+      .getUser()
+      .from(function (s) {
+        s
+        .select('expand(out[@class = "User"])')
+        .from('$parent.$current')
+        .limit(1)
+      })
+      .limit(1)
+    })
+}
+
+OrientDB.Statement.prototype.getMessage = function() {
+  return this.select('uuid as id, text, createdAt, updatedAt, $author[0] as author')
+    .let('author', function(s) {
+      s
+      .getUser()
+      .from(function (s) {
+        s
+        .select('expand(out[@class = "User"])')
+        .from('$parent.$current')
+        .limit(1)
+      })
+      .limit(1)
+    })
+}
+
 OrientDB.Db.prototype.getProjectEvent = function() {
   return this.select('uuid as id, title, createdAt, $author[0] as author')
     .let('author', function(s) {
@@ -479,6 +509,21 @@ OrientDB.Statement.prototype.outCollaboratesOnFromNode = function(id, role, orde
     .where({
       role
     })
+  })
+}
+
+OrientDB.Statement.prototype.inMessageFromNode = function(id) {
+  return this.from(function (s) {
+    s
+    .select('expand(in_Message)')
+    .from(function (s) {
+      s
+      .select()
+      .from('indexvalues:V.uuid ')
+      .where({uuid: id})
+      .limit(1)
+    })
+    .order('createdAt DESC')
   })
 }
 

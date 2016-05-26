@@ -9,6 +9,7 @@ import Cover from './edges/cover.js';
 import Fulfillment from './edges/fulfillment.js';
 import FulfillmentEvent from './events/fulfillment-event.js';
 import Invitation from './edges/invitation.js';
+import Message from './edges/message.js';
 import Project from './nodes/project.js';
 import ProjectEvent from './events/project-event.js';
 import Search from './nodes/search.js';
@@ -64,6 +65,13 @@ class DAO {
     invt.db = this.db;
     invt.user = this.user;
     return invt;
+  }
+
+  Message(targetId, params) {
+    const msg = new Message(targetId, params);
+    msg.db = this.db;
+    msg.user = this.user;
+    return msg;
   }
 
   Project(targetId, params) {

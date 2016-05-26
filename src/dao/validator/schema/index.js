@@ -4,6 +4,7 @@ export { default as isValidCollaboration } from './collaboration';
 export { default as isValidCredential } from './credential';
 export { default as isValidFile } from './file';
 export { default as isValidInvitation } from './invitation';
+export { default as isValidMessage } from './message';
 export { default as isValidNotificationOptional } from './notification-optional';
 export { default as isValidNotification } from './notification';
 export { default as isValidPassword } from './password';

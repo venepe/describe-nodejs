@@ -11,6 +11,7 @@ import {
   GraphQLNonNull,
   GraphQLList,
   GraphQLInputObjectType,
+  GraphQLInterfaceType,
   GraphQLEnumType,
   GraphQLBoolean,
   GraphQLFloat,
@@ -36,6 +37,7 @@ import {
   File,
   Fulfillment,
   FulfillmentEvent,
+  Message,
   Invitation,
   Project,
   ProjectEvent,
@@ -63,6 +65,8 @@ var {nodeInterface, nodeField} = nodeDefinitions(
       return new DAO(user).User(id).get();
     } else if (type === 'Collaborator') {
       return new DAO(user).Collaboration(id).get();
+    } else if (type === 'Message') {
+      return new DAO(user).Message(id).get();
     } else if (type === 'TestCaseEvent') {
       return new DAO(user).TestCaseEvent(id).get();
     } else if (type === 'ProjectEvent') {
@@ -89,6 +93,8 @@ var {nodeInterface, nodeField} = nodeDefinitions(
       return userType;
     } else if (obj instanceof Collaborator) {
       return collaboratorType;
+    } else if (obj instanceof Message) {
+      return messageType;
     } else if (obj instanceof TestCaseEvent) {
       return testCaseEventType;
     } else if (obj instanceof ProjectEvent) {
@@ -102,6 +108,34 @@ var {nodeInterface, nodeField} = nodeDefinitions(
     }
   }
 );
+
+let channelInterface = new GraphQLInterfaceType({
+  name: 'Channel',
+  description: 'A channel to communicate over.',
+  fields: () => ({
+    id: {
+      type: new GraphQLNonNull(GraphQLID),
+      description: 'The id of the channel.',
+    },
+    messages: {
+      type: messageConnection,
+      description: 'The messages of the channel.',
+      args: connectionArgs,
+    },
+  }),
+  resolveType: channel => {
+    var {type, id} = fromGlobalId(channel.id);
+    if (type === 'Project') {
+      return projectType;
+    } else if (type === 'TestCase') {
+      return testCaseType;
+    } else if (type === 'Fulfillment') {
+      return fulfillmentType;
+    } else {
+      return null;
+    }
+  }
+});
 
 let userType = new GraphQLObjectType({
   name: 'User',
@@ -317,6 +351,21 @@ let projectType = new GraphQLObjectType({
         });
       }
     },
+    messages: {
+      type: messageConnection,
+      description: 'The messages of the project.',
+      args: connectionArgs,
+      resolve: (project, args, context) => {
+        return new Promise((resolve, reject) => {
+          new DAO(context.rootValue.user).Message(project.id).getEdgeMessages(args).then((result) => {
+            resolve(connectionFromArraySlice(result.payload, args, result.meta));
+          })
+          .catch((e) => {
+            reject(e);
+          })
+        });
+      }
+    },
     events: {
       type: projectEventConnection,
       description: 'The changes made on the project.',
@@ -333,7 +382,7 @@ let projectType = new GraphQLObjectType({
       }
     }
   }),
-  interfaces: [nodeInterface],
+  interfaces: [nodeInterface, channelInterface],
 });
 
 let projectEventType = new GraphQLObjectType({
@@ -393,6 +442,21 @@ let testCaseType = new GraphQLObjectType({
         });
       }
     },
+    messages: {
+      type: messageConnection,
+      description: 'The messages of the test case.',
+      args: connectionArgs,
+      resolve: (testCase, args, context) => {
+        return new Promise((resolve, reject) => {
+          new DAO(context.rootValue.user).Message(testCase.id).getEdgeMessages(args).then((result) => {
+            resolve(connectionFromArraySlice(result.payload, args, result.meta));
+          })
+          .catch((e) => {
+            reject(e);
+          })
+        });
+      }
+    },
     events: {
       type: testCaseEventConnection,
       description: 'The changes made on the test case.',
@@ -409,7 +473,7 @@ let testCaseType = new GraphQLObjectType({
       }
     }
   }),
-  interfaces: [nodeInterface],
+  interfaces: [nodeInterface, channelInterface],
 });
 
 let testCaseEventType = new GraphQLObjectType({
@@ -488,6 +552,21 @@ let fulfillmentType = new GraphQLObjectType({
       type: GraphQLString,
       description: 'The timestamp when the fulfillment was last updated.',
     },
+    messages: {
+      type: messageConnection,
+      description: 'The messages of the fulfillment.',
+      args: connectionArgs,
+      resolve: (project, args, context) => {
+        return new Promise((resolve, reject) => {
+          new DAO(context.rootValue.user).Message(project.id).getEdgeMessages(args).then((result) => {
+            resolve(connectionFromArraySlice(result.payload, args, result.meta));
+          })
+          .catch((e) => {
+            reject(e);
+          })
+        });
+      }
+    },
     events: {
       type: fulfillEventConnection,
       description: 'The changes made on the fulfillment.',
@@ -561,6 +640,31 @@ let invitationType = new GraphQLObjectType({
   interfaces: [nodeInterface],
 });
 
+let messageType = new GraphQLObjectType({
+  name: 'Message',
+  description: 'Message object',
+  fields: () => ({
+    id: globalIdField('Message'),
+    text: {
+      type: GraphQLString,
+      description: 'The text of the message.',
+    },
+    updatedAt: {
+      type: GraphQLString,
+      description: 'The timestamp when the message was updated.',
+    },
+    createdAt: {
+      type: GraphQLString,
+      description: 'The timestamp when the message was created.',
+    },
+    author: {
+      type: userType,
+      description: 'The user who created the message.',
+    }
+  }),
+  interfaces: [nodeInterface],
+});
+
 var {connectionType: testCaseConnection, edgeType: GraphQLTestCaseEdge} =
   connectionDefinitions({name: 'TestCase', nodeType: testCaseType});
 
@@ -575,6 +679,9 @@ var {connectionType: projectConnection, edgeType: GraphQLProjectEdge} =
 
 var {connectionType: invitationConnection, edgeType: GraphQLInvitationEdge} =
   connectionDefinitions({name: 'Invitation', nodeType: invitationType});
+
+var {connectionType: messageConnection, edgeType: GraphQLMessageEdge} =
+  connectionDefinitions({name: 'Message', nodeType: messageType});
 
 var {connectionType: coverImageConnection, edgeType: GraphQLCoverImageEdge} =
   connectionDefinitions({name: 'CoverImages', nodeType: fileType});
@@ -1122,6 +1229,33 @@ var deleteInvitee = mutationWithClientMutationId({
     var localId = fromGlobalId(id).id;
     var localProjectId = fromGlobalId(projectId).id;
     return new DAO(context.rootValue.user).Invitation(localId).del(localProjectId);
+  }
+});
+
+var introduceMessage = mutationWithClientMutationId({
+  name: 'IntroduceMessage',
+  inputFields: {
+    channelId: {
+      type: new GraphQLNonNull(GraphQLID)
+    },
+    text: {
+      type: new GraphQLNonNull(GraphQLString),
+      description: 'The text of the message.',
+    }
+  },
+  outputFields: {
+    messageEdge: {
+      type: GraphQLMessageEdge,
+      resolve: ({messageEdge}) => { return messageEdge; }
+    },
+    channel: {
+      type: channelInterface,
+      resolve: ({channel}) => { return channel },
+    },
+  },
+  mutateAndGetPayload: ({channelId, text}, context) => {
+    var localId = fromGlobalId(channelId).id;
+    return new DAO(context.rootValue.user).Message(localId).create({text});
   }
 });
 
@@ -1747,6 +1881,7 @@ var schema = new GraphQLSchema({
       introduceUserCover,
       introduceFulfillment,
       introduceInvitee,
+      introduceMessage,
       introduceProject,
       introduceTestCase,
       updateFulfillment,

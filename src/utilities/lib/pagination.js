@@ -35,10 +35,18 @@ const getOrientDBPageFromGraphQL = (args) => {
     }
     limit = first;
   } else if (args.last && args.before) {
-    skip = (before > last) ? before - last : 0;
+    skip = before;
+    if (skip > 0) {
+      skip++;
+    }
     limit = last;
+    orderBy = 'createdAt DESC';
   } else if (args.last && args.after) {
     skip = (after > limit) ? after - last : 0;
+    limit = last;
+    orderBy = 'createdAt DESC';
+  } else if (args.last) {
+    skip = 0;
     limit = last;
     orderBy = 'createdAt DESC';
   }
