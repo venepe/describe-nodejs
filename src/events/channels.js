@@ -67,3 +67,7 @@ export const didDeclineInvitationChannel = (userId, inviteeId) => {
 export const didAcceptInvitationChannel = (userId, inviteeId) => {
   return `/users/${userId}/invitations/${inviteeId}/accept`;
 }
+
+export const didIntroduceMessageChannel = (channelId) => {
+  return `/channels/${channelId}/messages`;
+}

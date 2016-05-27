@@ -109,12 +109,13 @@ class MessageDAO {
             let cursor = offsetToCursor(result[2].cursor);
             channel = uuidToId(channel);
 
-            // events.publish(events.didUpdateUserChannel(relationalId), {
-            // user: {
-            //   id: relationalId,
-            //   cover
-            // }
-            // });
+            events.publish(events.didIntroduceMessageChannel(relationalId), {
+              messageEdge: {
+                cursor,
+                node
+              },
+              channel
+            });
 
             resolve({
               messageEdge: {
@@ -138,6 +139,7 @@ class MessageDAO {
     });
   }
 
+  // TODO: order by backwards pagination fails
   getEdgeMessages(args) {
     let pageObject = Pagination.getOrientDBPageFromGraphQL(args);
 
@@ -152,15 +154,12 @@ class MessageDAO {
       .inMessageFromNode(id)
       .skip(pageObject.skip)
       .limit(pageObject.limit)
-      .order(pageObject.orderBy)
+      .order('createdAt DESC')
       .transform((record) => {
         return filteredObject(record, '@.*|rid');
       })
       .all()
       .then((payload) => {
-        if (args.last) {
-          payload.reverse();
-        }
         let meta = GraphQLHelper.getMeta(pageObject, payload);
         resolve({
           payload,

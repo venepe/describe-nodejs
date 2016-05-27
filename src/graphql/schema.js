@@ -556,9 +556,9 @@ let fulfillmentType = new GraphQLObjectType({
       type: messageConnection,
       description: 'The messages of the fulfillment.',
       args: connectionArgs,
-      resolve: (project, args, context) => {
+      resolve: (fulfillment, args, context) => {
         return new Promise((resolve, reject) => {
-          new DAO(context.rootValue.user).Message(project.id).getEdgeMessages(args).then((result) => {
+          new DAO(context.rootValue.user).Message(fulfillment.id).getEdgeMessages(args).then((result) => {
             resolve(connectionFromArraySlice(result.payload, args, result.meta));
           })
           .catch((e) => {
@@ -1849,6 +1849,34 @@ var didIntroduceProject = subscriptionWithClientSubscriptionId({
   }
 });
 
+var didIntroduceMessage = subscriptionWithClientSubscriptionId({
+  name: 'DidIntroduceMessage',
+  inputFields: {
+    channelId: {
+      type: new GraphQLNonNull(GraphQLID)
+    }
+  },
+  outputFields: {
+    messageEdge: {
+      type: GraphQLMessageEdge,
+      resolve: ({messageEdge}) => { return messageEdge; }
+    },
+    channel: {
+      type: channelInterface,
+      resolve: ({channel}) => { return channel },
+    },
+  },
+  mutateAndGetPayload: ({channelId}, {rootValue}) => {
+    if (rootValue.event) {
+      return rootValue.event;
+    } else {
+      var localId = fromGlobalId(channelId).id;
+      rootValue.channel = channels.didIntroduceMessageChannel(localId);
+      return {channelId};
+    }
+  }
+});
+
 var schema = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: 'RootQueryType',
@@ -1907,6 +1935,7 @@ var schema = new GraphQLSchema({
       didIntroduceInvitation,
       didIntroduceInvitee,
       didIntroduceFulfillment,
+      didIntroduceMessage,
       didIntroduceProject,
       didIntroduceTestCase,
       didUpdateFulfillment,
