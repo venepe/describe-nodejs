@@ -129,8 +129,8 @@ let channelInterface = new GraphQLInterfaceType({
       return projectType;
     } else if (type === 'TestCase') {
       return testCaseType;
-    } else if (type === 'Fulfillment') {
-      return fulfillmentType;
+    } else if (type === 'File') {
+      return fileType;
     } else {
       return null;
     }
@@ -506,6 +506,21 @@ let fileType = new GraphQLObjectType({
       type: GraphQLString,
       description: 'The uri of the file.',
     },
+    messages: {
+      type: messageConnection,
+      description: 'The messages of the file.',
+      args: connectionArgs,
+      resolve: (file, args, context) => {
+        return new Promise((resolve, reject) => {
+          new DAO(context.rootValue.user).Message(file.id).getEdgeMessages(args).then((result) => {
+            resolve(connectionFromArraySlice(result.payload, args, result.meta));
+          })
+          .catch((e) => {
+            reject(e);
+          })
+        });
+      }
+    },
     createdAt: {
       type: GraphQLString,
       description: 'The timestamp when the file was created.',
@@ -515,7 +530,7 @@ let fileType = new GraphQLObjectType({
       description: 'The timestamp when the file was last updated.',
     }
   }),
-  interfaces: [nodeInterface],
+  interfaces: [nodeInterface, channelInterface],
 });
 
 var fulfillmentStatus = new GraphQLEnumType({
@@ -551,21 +566,6 @@ let fulfillmentType = new GraphQLObjectType({
     updatedAt: {
       type: GraphQLString,
       description: 'The timestamp when the fulfillment was last updated.',
-    },
-    messages: {
-      type: messageConnection,
-      description: 'The messages of the fulfillment.',
-      args: connectionArgs,
-      resolve: (fulfillment, args, context) => {
-        return new Promise((resolve, reject) => {
-          new DAO(context.rootValue.user).Message(fulfillment.id).getEdgeMessages(args).then((result) => {
-            resolve(connectionFromArraySlice(result.payload, args, result.meta));
-          })
-          .catch((e) => {
-            reject(e);
-          })
-        });
-      }
     },
     events: {
       type: fulfillEventConnection,
