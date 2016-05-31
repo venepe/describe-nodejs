@@ -248,6 +248,7 @@ app.post('/graphql', upload.single('0'), function(req, res, next){
             let s3obj = new AWS.S3({params: {Bucket: 'sumseti', Key: key, ContentType: result, ACL: 'public-read'}});
             s3obj.upload({Body: body})
               .send((err, data) => {
+                del([filePath]);
                    if (err) {
                      console.log(`Failed to upload image to s3: ${err}`);
                      let errors = [{message: 'Error on upload.'}];
