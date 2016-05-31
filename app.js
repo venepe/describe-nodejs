@@ -25,6 +25,8 @@ import del from 'del';
 import mv from 'mv';
 import { SMTIEmailTemplate } from './src/utilities';
 import nodemailer from 'nodemailer';
+import AWS from 'aws-sdk';
+AWS.config.region = 'us-west-2';
 
 const app = express();
 const upload = multer({ dest: __dirname + FileConfig.TempDir});
@@ -238,20 +240,40 @@ app.post('/graphql', upload.single('0'), function(req, res, next){
               res.status(400).json({errors});
             });
         } else {
-          mv(filePath, finalFilePath, function(err) {
-            if (err) {
-              console.log(`Failed to move image: ${filePath}`);
-              let errors = [{message: 'Error on upload.'}];
-              res.status(400).json({errors});
-            } else {
-              let input = variables.input || variables.input_0;
-              input.uri = finalFilePath.replace(__dirname + '/public' , baseImageUrl);
-              variables.input = input;
-              variables = JSON.stringify(variables);
-              req.body.variables = variables;
-              next();
-            }
-          });
+          if (process.env.NODE_ENV === 'production') {
+            let body = fs.createReadStream(filePath);
+            let s3obj = new AWS.S3({params: {Bucket: 'sumseti', Key: filename, ContentType: result, ACL: 'public-read'}});
+            s3obj.upload({Body: body})
+              .send((err, data) => {
+                   if (err) {
+                     console.log(`Failed to upload image to s3: ${err}`);
+                     let errors = [{message: 'Error on upload.'}];
+                     res.status(400).json({errors});
+                   } else {
+                     let input = variables.input || variables.input_0;
+                     input.uri = data.Location;
+                     variables.input = input;
+                     variables = JSON.stringify(variables);
+                     req.body.variables = variables;
+                     next();
+                   }
+               });
+          } else {
+            mv(filePath, finalFilePath, function(err) {
+              if (err) {
+                console.log(`Failed to move image: ${filePath}`);
+                let errors = [{message: 'Error on upload.'}];
+                res.status(400).json({errors});
+              } else {
+                let input = variables.input || variables.input_0;
+                input.uri = finalFilePath.replace(__dirname + '/public' , baseImageUrl);
+                variables.input = input;
+                variables = JSON.stringify(variables);
+                req.body.variables = variables;
+                next();
+              }
+            });
+          }
         }
       });
     } else {
