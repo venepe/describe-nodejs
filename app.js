@@ -244,8 +244,8 @@ app.post('/graphql', upload.single('0'), function(req, res, next){
         } else {
           if (process.env.NODE_ENV === 'production') {
             let body = fs.createReadStream(filePath);
-            let filename = 'default/images/shaded-accent.png';
-            let s3obj = new AWS.S3({params: {Bucket: 'sumseti', Key: filename, ContentType: result, ACL: 'public-read'}});
+            let key = `uploads/images/${filename}`;
+            let s3obj = new AWS.S3({params: {Bucket: 'sumseti', Key: key, ContentType: result, ACL: 'public-read'}});
             s3obj.upload({Body: body})
               .send((err, data) => {
                    if (err) {
