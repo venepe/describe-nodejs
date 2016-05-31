@@ -10,7 +10,7 @@ RUN apt-get update && \
         apt-get -y install git && \
         apt-get -y install curl && \
         apt-get -y install sudo && \
-        curl -sL https://deb.nodesource.com/setup_5.x | sudo bash - && \
+        curl -sL https://deb.nodesource.com/setup_6.x | sudo bash - && \
         apt-get -y install python build-essential nodejs
 
 RUN npm install -g node-gyp && \
