@@ -86,9 +86,9 @@ app.post('/authenticate', bodyParser.json(), function(req, res) {
 app.get('/default/images/:id', function(req, res) {
   let id = req.params.id;
   if (id.match(/^[A-Za-z][A-Za-z0-9 -]*$/)) {
-    res.sendFile(__dirname + '/public/default/images/shaded-primary.png');
+    res.redirect('https://s3-us-west-2.amazonaws.com/sumseti/default/images/shaded-primary.png');
   } else {
-    res.sendFile(__dirname + '/public/default/images/shaded-accent.png');
+    res.redirect('https://s3-us-west-2.amazonaws.com/sumseti/default/images/shaded-accent.png');
   }
 });
 
@@ -242,6 +242,7 @@ app.post('/graphql', upload.single('0'), function(req, res, next){
         } else {
           if (process.env.NODE_ENV === 'production') {
             let body = fs.createReadStream(filePath);
+            let filename = 'default/images/shaded-accent.png';
             let s3obj = new AWS.S3({params: {Bucket: 'sumseti', Key: filename, ContentType: result, ACL: 'public-read'}});
             s3obj.upload({Body: body})
               .send((err, data) => {
