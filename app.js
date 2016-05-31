@@ -41,12 +41,14 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-app.use(function(req, res, next) {
-  if(!req.secure) {
-    return res.redirect(['https://', req.get('Host'), req.url].join(''));
-  }
-  next();
-});
+if (process.env.NODE_ENV === 'production') {
+  app.use(function(req, res, next) {
+    if(!req.secure) {
+      return res.redirect(['https://', req.get('Host'), req.url].join(''));
+    }
+    next();
+  });
+}
 
 app.use(jwt({
   secret: AppConfig.JWTSecret,
