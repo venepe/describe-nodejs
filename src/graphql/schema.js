@@ -555,10 +555,6 @@ let fulfillmentType = new GraphQLObjectType({
       type: fulfillmentStatus,
       description: 'The status of the fulfillment.',
     },
-    reason: {
-      type: GraphQLString,
-      description: 'The reason for the status.',
-    },
     createdAt: {
       type: GraphQLString,
       description: 'The timestamp when the fulfillment was created.',
@@ -594,10 +590,6 @@ let fulfillmentEventType = new GraphQLObjectType({
     status: {
       type: fulfillmentStatus,
       description: 'The status of the fulfillment.',
-    },
-    reason: {
-      type: GraphQLString,
-      description: 'The reason for the status.',
     },
     createdAt: {
       type: GraphQLString,
@@ -955,10 +947,6 @@ var updateFulfillment = mutationWithClientMutationId({
     status: {
       type: fulfillmentStatus,
       description: 'The status of the update.',
-    },
-    reason: {
-      type: new GraphQLNonNull(GraphQLString),
-      description: 'The reason for a rejection.',
     }
   },
   outputFields: {
@@ -988,10 +976,10 @@ var updateFulfillment = mutationWithClientMutationId({
       },
     },
   },
-  mutateAndGetPayload: ({id, testCaseId, reason, status}, context) => {
+  mutateAndGetPayload: ({id, testCaseId, status}, context) => {
     var localId = fromGlobalId(id).id;
     var localTestCaseId = fromGlobalId(testCaseId).id;
-    return new DAO(context.rootValue.user).Fulfillment(localId).update(localTestCaseId, {reason, status});
+    return new DAO(context.rootValue.user).Fulfillment(localId).update(localTestCaseId, {status});
   }
 });
 

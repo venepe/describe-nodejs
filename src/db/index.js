@@ -123,7 +123,7 @@ OrientDB.Statement.prototype.inCreatesFromNode = function(id) {
 }
 
 OrientDB.Statement.prototype.getFulfillment = function() {
-  return this.select('uuid as id, status, reason, createdAt, updatedAt, $file[0] as file')
+  return this.select('uuid as id, status, createdAt, updatedAt, $file[0] as file')
     .let('file', function(s) {
       s
       .getFile()
@@ -137,7 +137,7 @@ OrientDB.Statement.prototype.getFulfillment = function() {
 }
 
 OrientDB.Db.prototype.getFulfillment = function() {
-  return this.select('uuid as id, status, reason, createdAt, updatedAt, $file[0] as file')
+  return this.select('uuid as id, status, createdAt, updatedAt, $file[0] as file')
     .let('file', function(s) {
       s
       .getFile()
@@ -367,7 +367,7 @@ OrientDB.Statement.prototype.getTestCaseEvent = function() {
 }
 
 OrientDB.Db.prototype.getFulfillmentEvent = function() {
-  return this.select('uuid as id, status, reason, createdAt, $author[0] as author')
+  return this.select('uuid as id, status, createdAt, $author[0] as author')
     .let('author', function(s) {
       s
       .getUser()
@@ -382,7 +382,7 @@ OrientDB.Db.prototype.getFulfillmentEvent = function() {
 }
 
 OrientDB.Statement.prototype.getFulfillmentEvent = function() {
-  return this.select('uuid as id, status, reason, createdAt, $author[0] as author')
+  return this.select('uuid as id, status, createdAt, $author[0] as author')
     .let('author', function(s) {
       s
       .getUser()
