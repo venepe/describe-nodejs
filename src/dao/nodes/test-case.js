@@ -205,10 +205,10 @@ class TestCaseDAO {
             events.publish(events.didUpdateProjectChannel(relationalId), {
               ...project
             });
-        
+
             //Start push notification
-            let title = `Test case added to "${project.title}"`;
-            let message = `It should "${node.it}"`;
+            let title = `Test case added to "${project.text}"`;
+            let message = `It should "${node.text}"`;
             push(user, relationalId, {title, message});
             //End push notification
 

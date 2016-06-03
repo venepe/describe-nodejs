@@ -286,9 +286,9 @@ let projectType = new GraphQLObjectType({
   description: 'Project object',
   fields: () => ({
     id: globalIdField('Project'),
-    title: {
+    text: {
       type: GraphQLString,
-      description: 'The title of the project.',
+      description: 'The text of the project.',
     },
     numOfTestCases: {
       type: GraphQLInt,
@@ -390,9 +390,9 @@ let projectEventType = new GraphQLObjectType({
   description: 'Project event object',
   fields: () => ({
     id: globalIdField('ProjectEvent'),
-    title: {
+    text: {
       type: GraphQLString,
-      description: 'The title of the project event.',
+      description: 'The text of the project event.',
     },
     createdAt: {
       type: GraphQLString,
@@ -400,7 +400,7 @@ let projectEventType = new GraphQLObjectType({
     },
     author: {
       type: userType,
-      description: 'The user who created the title event',
+      description: 'The user who created the text event',
     }
   }),
   interfaces: [nodeInterface],
@@ -411,7 +411,7 @@ let testCaseType = new GraphQLObjectType({
   description: 'Test case object',
   fields: () => ({
     id: globalIdField('TestCase'),
-    it: {
+    text: {
       type: GraphQLString,
       description: 'The \"it\" or what a test case should do.',
     },
@@ -481,7 +481,7 @@ let testCaseEventType = new GraphQLObjectType({
   description: 'Test case event object',
   fields: () => ({
     id: globalIdField('TestCaseEvent'),
-    it: {
+    text: {
       type: GraphQLString,
       description: 'The \"it\" or what a test case should do.',
     },
@@ -491,7 +491,7 @@ let testCaseEventType = new GraphQLObjectType({
     },
     author: {
       type: userType,
-      description: 'The user who created the title event',
+      description: 'The user who created the text event',
     }
   }),
   interfaces: [nodeInterface],
@@ -597,7 +597,7 @@ let fulfillmentEventType = new GraphQLObjectType({
     },
     author: {
       type: userType,
-      description: 'The user who created the title event',
+      description: 'The user who created the event',
     }
   }),
   interfaces: [nodeInterface],
@@ -748,9 +748,9 @@ var introduceProject = mutationWithClientMutationId({
     targetId: {
       type: new GraphQLNonNull(GraphQLID)
     },
-    title: {
+    text: {
       type: new GraphQLNonNull(GraphQLString),
-      description: 'The title of the project.',
+      description: 'The text of the project.',
     }
   },
   outputFields: {
@@ -763,9 +763,9 @@ var introduceProject = mutationWithClientMutationId({
       resolve: ({me}) => { return me },
     },
   },
-  mutateAndGetPayload: ({targetId, title}, context) => {
+  mutateAndGetPayload: ({targetId, text}, context) => {
     var localId = fromGlobalId(targetId).id;
-    return new DAO(context.rootValue.user).Project(localId).create({title});
+    return new DAO(context.rootValue.user).Project(localId).create({text});
   }
 });
 
@@ -810,9 +810,9 @@ var updateProject = mutationWithClientMutationId({
     id: {
       type: new GraphQLNonNull(GraphQLID)
     },
-    title: {
+    text: {
       type: new GraphQLNonNull(GraphQLString),
-      description: 'The title of the project.',
+      description: 'The text of the project.',
     }
   },
   outputFields: {
@@ -825,9 +825,9 @@ var updateProject = mutationWithClientMutationId({
       resolve: ({projectEventEdge}) => { return projectEventEdge }
     },
   },
-  mutateAndGetPayload: ({id, title}, context) => {
+  mutateAndGetPayload: ({id, text}, context) => {
     var localId = fromGlobalId(id).id;
-    return new DAO(context.rootValue.user).Project(localId).update({title});
+    return new DAO(context.rootValue.user).Project(localId).update({text});
   }
 });
 
@@ -860,7 +860,7 @@ var introduceTestCase = mutationWithClientMutationId({
     projectId: {
       type: new GraphQLNonNull(GraphQLID)
     },
-    it: {
+    text: {
       type: new GraphQLNonNull(GraphQLString),
       description: 'What it should do.',
     }
@@ -875,9 +875,10 @@ var introduceTestCase = mutationWithClientMutationId({
       resolve: ({project}) => { return project },
     },
   },
-  mutateAndGetPayload: ({projectId, it}, context) => {
+  mutateAndGetPayload: ({projectId, text}, context) => {
+    lo
     var localId = fromGlobalId(projectId).id;
-    return new DAO(context.rootValue.user).TestCase(localId).create({it});
+    return new DAO(context.rootValue.user).TestCase(localId).create({text});
   }
 });
 
@@ -887,7 +888,7 @@ var updateTestCase = mutationWithClientMutationId({
     id: {
       type: new GraphQLNonNull(GraphQLID)
     },
-    it: {
+    text: {
       type: new GraphQLNonNull(GraphQLString),
       description: 'What it should do.',
     }
@@ -902,9 +903,9 @@ var updateTestCase = mutationWithClientMutationId({
       resolve: ({testCaseEventEdge}) => { return testCaseEventEdge }
     },
   },
-  mutateAndGetPayload: ({id, it}, context) => {
+  mutateAndGetPayload: ({id, text}, context) => {
     var localId = fromGlobalId(id).id;
-    return new DAO(context.rootValue.user).TestCase(localId).update({it});
+    return new DAO(context.rootValue.user).TestCase(localId).update({text});
   }
 });
 

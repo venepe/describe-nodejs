@@ -17,7 +17,7 @@ OrientDB.Statement.prototype.getUser = function() {
 
 OrientDB.Db.prototype.getTestCase = function() {
   this.SMTINode = 'TestCase';
-  return this.select('uuid as id, it, createdAt, updatedAt, $isFulfilled as isFulfilled')
+  return this.select('uuid as id, text, createdAt, updatedAt, $isFulfilled as isFulfilled')
   .let('isFulfilled', function(s) {
     s
     .select()
@@ -33,7 +33,7 @@ OrientDB.Db.prototype.getTestCase = function() {
 }
 
 OrientDB.Statement.prototype.getTestCase = function() {
-  return this.select('uuid as id, it, createdAt, updatedAt, $isFulfilled as isFulfilled')
+  return this.select('uuid as id, text, createdAt, updatedAt, $isFulfilled as isFulfilled')
   .let('isFulfilled', function(s) {
     s
     .select()
@@ -59,7 +59,7 @@ OrientDB.Statement.prototype.getFile = function() {
 
 OrientDB.Db.prototype.getProject = function() {
   this.SMTINode = 'Project';
-  return this.select('uuid as id, title, createdAt, updatedAt, outE(\'Requires\').size() as numOfTestCases, $tcF.size() as numOfTestCasesFulfilled')
+  return this.select('uuid as id, text, createdAt, updatedAt, outE(\'Requires\').size() as numOfTestCases, $tcF.size() as numOfTestCasesFulfilled')
     .let('tcF', function(s) {
       s
       .select()
@@ -75,7 +75,7 @@ OrientDB.Db.prototype.getProject = function() {
 }
 
 OrientDB.Statement.prototype.getProject = function() {
-  return this.select('uuid as id, title, createdAt, updatedAt, outE(\'Requires\').size() as numOfTestCases, $tcF.size() as numOfTestCasesFulfilled')
+  return this.select('uuid as id, text, createdAt, updatedAt, outE(\'Requires\').size() as numOfTestCases, $tcF.size() as numOfTestCasesFulfilled')
     .let('tcF', function(s) {
       s
       .select()
@@ -307,7 +307,7 @@ OrientDB.Statement.prototype.getMessage = function() {
 }
 
 OrientDB.Db.prototype.getProjectEvent = function() {
-  return this.select('uuid as id, title, createdAt, $author[0] as author')
+  return this.select('uuid as id, text, createdAt, $author[0] as author')
     .let('author', function(s) {
       s
       .getUser()
@@ -322,7 +322,7 @@ OrientDB.Db.prototype.getProjectEvent = function() {
 }
 
 OrientDB.Statement.prototype.getProjectEvent = function() {
-  return this.select('uuid as id, title, createdAt, $author[0] as author')
+  return this.select('uuid as id, text, createdAt, $author[0] as author')
     .let('author', function(s) {
       s
       .getUser()
@@ -337,7 +337,7 @@ OrientDB.Statement.prototype.getProjectEvent = function() {
 }
 
 OrientDB.Db.prototype.getTestCaseEvent = function() {
-  return this.select('uuid as id, it, createdAt, $author[0] as author')
+  return this.select('uuid as id, text, createdAt, $author[0] as author')
     .let('author', function(s) {
       s
       .getUser()
@@ -352,7 +352,7 @@ OrientDB.Db.prototype.getTestCaseEvent = function() {
 }
 
 OrientDB.Statement.prototype.getTestCaseEvent = function() {
-  return this.select('uuid as id, it, createdAt, $author[0] as author')
+  return this.select('uuid as id, text, createdAt, $author[0] as author')
     .let('author', function(s) {
       s
       .getUser()
@@ -407,7 +407,7 @@ OrientDB.Statement.prototype.inFulfillsFromNode = function(id) {
       .where({uuid: id})
       .limit(1)
     })
-    .order('createdAt DESC')
+    .order('createdAt ASC')
   })
 }
 

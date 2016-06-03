@@ -5,7 +5,7 @@ import validator from 'node-validator';
 const isValid = (obj = {}, callback) => {
   let check = validator
               .isObject()
-              .withRequired('it', validator.isString({ regex: /^.{1,150}$/ }));
+              .withRequired('text', validator.isString({ regex: /^.{1,150}$/ }));
 
   validator.run(check, obj, callback);
 }

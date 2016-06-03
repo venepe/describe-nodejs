@@ -167,7 +167,7 @@ class FulfillmentDAO {
             });
 
             //Start push notification
-            let title = `Fulfillment submitted for "${testCase.it}"`;
+            let title = `Fulfillment submitted for "${testCase.text}"`;
             let message = `${project.numOfTestCasesFulfilled}" / ${project.numOfTestCases}" test cases fulfilled`;
             push(user, project.id, {title, message});
             //End push notification
@@ -322,7 +322,7 @@ class FulfillmentDAO {
             });
 
             //Start push notification
-            let title = `Fulfillment rejected for "${testCase.it}"`;
+            let title = `Fulfillment rejected for "${testCase.text}"`;
             let message = `${project.numOfTestCasesFulfilled}" / ${project.numOfTestCases}" test cases fulfilled`;
             push(user, project.id, {title, message});
             //End push notification
