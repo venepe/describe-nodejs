@@ -163,7 +163,7 @@ class FileDAO {
       .inFulfillsFromNode(id)
       .skip(pageObject.skip)
       .limit(pageObject.limit)
-      .order('createdAt ASC')
+      .order('createdAt DESC')
       .transform((record) => {
         return filteredObject(record, '@.*|rid');
       })

@@ -876,7 +876,6 @@ var introduceTestCase = mutationWithClientMutationId({
     },
   },
   mutateAndGetPayload: ({projectId, text}, context) => {
-    lo
     var localId = fromGlobalId(projectId).id;
     return new DAO(context.rootValue.user).TestCase(localId).create({text});
   }

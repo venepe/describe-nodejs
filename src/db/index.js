@@ -407,7 +407,7 @@ OrientDB.Statement.prototype.inFulfillsFromNode = function(id) {
       .where({uuid: id})
       .limit(1)
     })
-    .order('createdAt ASC')
+    .order('createdAt DESC')
   })
 }
 
