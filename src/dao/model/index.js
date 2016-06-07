@@ -1,7 +1,7 @@
 'use strict';
 
 export class Collaborator {}
-export class File {}
+export class Cover {}
 export class Fulfillment {}
 export class FulfillmentEvent {}
 export class Invitation {}

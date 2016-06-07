@@ -5,6 +5,8 @@ import { SMTIValidator } from '../validator';
 import { filteredObject, Pagination, GraphQLHelper, uuidToId } from '../../utilities';
 import { roles, regExRoles } from '../permissions';
 import * as events from '../../events';
+import { fulfillmentStatus } from '../../constants';
+import { FileConfig } from '../../config';
 import { offsetToCursor } from 'graphql-relay';
 import { push } from '../../notification';
 
@@ -30,8 +32,6 @@ class TestCaseDAO {
       .where({uuid: id})
       .limit(1)
       .transform((record) => {
-        let isFulfilled = record.isFulfilled;
-        record.isFulfilled = (isFulfilled.length > 0) ? true : false;
         let testCase = new TestCase();
         return filteredObject(record, '@.*|rid', testCase);
       })
@@ -62,8 +62,6 @@ class TestCaseDAO {
       .limit(pageObject.limit)
       .order(pageObject.orderBy)
       .transform((record) => {
-        let isFulfilled = record.isFulfilled;
-        record.isFulfilled = (isFulfilled.length > 0) ? true : false;
         return filteredObject(record, '@.*|rid');
       })
       .all()
@@ -97,8 +95,6 @@ class TestCaseDAO {
       .limit(pageObject.limit)
       .order(pageObject.orderBy)
       .transform((record) => {
-        let isFulfilled = record.isFulfilled;
-        record.isFulfilled = (isFulfilled.length > 0) ? true : false;
         return filteredObject(record, '@.*|rid');
       })
       .all()
@@ -126,6 +122,10 @@ class TestCaseDAO {
       let role = this.user.role;
 
       let validator = new SMTIValidator(object);
+      let fulfillment = {
+        status: fulfillmentStatus.INCOMPLETE,
+        uri: FileConfig.DefaultImageUrl + 'fulfillment'
+      };
 
       validator
         .isTestCase()
@@ -173,6 +173,30 @@ class TestCaseDAO {
             .from('$project')
             .to('$testCase')
           })
+          .let('file', (s) => {
+            s
+            .create('vertex', 'File')
+            .set({
+              uri: fulfillment.uri
+            })
+            .set('_allow = $project._allow[0]')
+          })
+          .let('fulfillmentEvent', (s) => {
+            s
+            .create('edge', 'FulfillmentEvent')
+            .from('$user')
+            .to('$file')
+            .set(fulfillment)
+          })
+          .let('fulfills', (s) => {
+            s
+            .create('edge', 'Fulfills')
+            .from('$file')
+            .to('$testCase')
+            .set({
+              status: fulfillment.status
+            })
+          })
           .let('cursor', s => {
             s
             .select('outE(\'Requires\').size() as cursor')
@@ -187,7 +211,6 @@ class TestCaseDAO {
           .then((result) => {
             let node = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
             node = uuidToId(node);
-            node.isFulfilled = false;
             let project = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
             let cursor = offsetToCursor(result[2].cursor);
             let numOfTestCases = project.numOfTestCases;
@@ -302,8 +325,6 @@ class TestCaseDAO {
           .all()
           .then((result) => {
             let testCase = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
-            let isFulfilled = testCase.isFulfilled;
-            testCase.isFulfilled = (isFulfilled.length > 0) ? true : false;
             let testCaseEvent = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
             let cursor = offsetToCursor(result[2].cursor);
             testCaseEvent = uuidToId(testCaseEvent);
@@ -385,7 +406,7 @@ class TestCaseDAO {
         let numOfTestCases = project.numOfTestCases;
         numOfTestCases--;
         project.numOfTestCases = numOfTestCases;
-        if (testCase.isFulfilled.length > 0) {
+        if (testCase.status === fulfillmentStatus.SUBMITTED) {
           let numOfTestCasesFulfilled = project.numOfTestCasesFulfilled;
           numOfTestCasesFulfilled--;
           project.numOfTestCasesFulfilled = numOfTestCasesFulfilled;

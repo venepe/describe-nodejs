@@ -5,7 +5,7 @@ import { filteredObject, Pagination, GraphQLHelper } from '../../utilities';
 import { FileConfig } from '../../config';
 
 import {
-  File
+  Cover
 } from '../model';
 
 class FileDAO {
@@ -21,13 +21,13 @@ class FileDAO {
       let id = this.targetId;
 
       db
-      .getFile()
+      .getCover()
       .from(_class)
       .where({uuid: id})
       .limit(1)
       .transform((record) => {
-        let file = new File();
-        return filteredObject(record, '@.*|rid', file);
+        let cover = new Cover();
+        return filteredObject(record, '@.*|rid', cover);
       })
       .one()
       .then((record) => {
@@ -150,7 +150,7 @@ class FileDAO {
     });
   }
 
-  inEdgeFulfilled(args) {
+  getEdgeFulfilled(args) {
     let pageObject = Pagination.getOrientDBPageFromGraphQL(args);
 
     return new Promise((resolve, reject) => {

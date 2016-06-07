@@ -34,7 +34,7 @@ import {
 
 import {
   Collaborator,
-  File,
+  Cover,
   Fulfillment,
   FulfillmentEvent,
   Message,
@@ -85,8 +85,8 @@ var {nodeInterface, nodeField} = nodeDefinitions(
       return projectType;
     } else if (obj instanceof TestCase) {
       return testCaseType;
-    } else if (obj instanceof File) {
-      return fileType;
+    } else if (obj instanceof Cover) {
+      return coverType;
     } else if (obj instanceof Fulfillment) {
       return fulfillmentType;
     } else if (obj instanceof User) {
@@ -129,8 +129,41 @@ let channelInterface = new GraphQLInterfaceType({
       return projectType;
     } else if (type === 'TestCase') {
       return testCaseType;
-    } else if (type === 'File') {
-      return fileType;
+    } else if (type === 'Fulfillment') {
+      return fulfillmentType;
+    } else {
+      return null;
+    }
+  }
+});
+
+let fileInterface = new GraphQLInterfaceType({
+  name: 'File',
+  description: 'An object point to an uri.',
+  fields: () => ({
+    id: {
+      type: new GraphQLNonNull(GraphQLID),
+      description: 'The id of the file.',
+    },
+    uri: {
+      type: GraphQLString,
+      description: 'The uri of the file.',
+    },
+    createdAt: {
+      type: GraphQLString,
+      description: 'The timestamp when the file was created.',
+    },
+    updatedAt: {
+      type: GraphQLString,
+      description: 'The timestamp when the file was last updated.',
+    }
+  }),
+  resolveType: file => {
+    var {type, id} = fromGlobalId(file.id);
+    if (type === 'Fulfillment') {
+      return fulfillmentType;
+    } else if (type === 'Cover') {
+      return coverType;
     } else {
       return null;
     }
@@ -167,7 +200,7 @@ let userType = new GraphQLObjectType({
       description: 'The timestamp when the user was last updated.',
     },
     cover: {
-      type: fileType,
+      type: coverType,
       description: 'The cover image of the user.',
       resolve: (user, args, context) => {
         return new DAO(context.rootValue.user).File(user.id).getCover();
@@ -415,9 +448,9 @@ let testCaseType = new GraphQLObjectType({
       type: GraphQLString,
       description: 'The \"it\" or what a test case should do.',
     },
-    isFulfilled: {
-      type: GraphQLBoolean,
-      description: 'Whether the test case is fulfilled.',
+    status: {
+      type: fulfillmentStatus,
+      description: 'The status of the fulfillment.',
     },
     createdAt: {
       type: GraphQLString,
@@ -433,7 +466,7 @@ let testCaseType = new GraphQLObjectType({
       args: connectionArgs,
       resolve: (testCase, args, context) => {
         return new Promise((resolve, reject) => {
-          new DAO(context.rootValue.user).File(testCase.id).inEdgeFulfilled(args).then((result) => {
+          new DAO(context.rootValue.user).File(testCase.id).getEdgeFulfilled(args).then((result) => {
             resolve(connectionFromArraySlice(result.payload, args, result.meta));
           })
           .catch((e) => {
@@ -497,29 +530,14 @@ let testCaseEventType = new GraphQLObjectType({
   interfaces: [nodeInterface],
 });
 
-let fileType = new GraphQLObjectType({
-  name: 'File',
-  description: 'File object',
+let coverType = new GraphQLObjectType({
+  name: 'Cover',
+  description: 'Cover object',
   fields: () => ({
-    id: globalIdField('File'),
+    id: globalIdField('Cover'),
     uri: {
       type: GraphQLString,
-      description: 'The uri of the file.',
-    },
-    messages: {
-      type: messageConnection,
-      description: 'The messages of the file.',
-      args: connectionArgs,
-      resolve: (file, args, context) => {
-        return new Promise((resolve, reject) => {
-          new DAO(context.rootValue.user).Message(file.id).getEdgeMessages(args).then((result) => {
-            resolve(connectionFromArraySlice(result.payload, args, result.meta));
-          })
-          .catch((e) => {
-            reject(e);
-          })
-        });
-      }
+      description: 'The uri of the cover.',
     },
     createdAt: {
       type: GraphQLString,
@@ -530,12 +548,13 @@ let fileType = new GraphQLObjectType({
       description: 'The timestamp when the file was last updated.',
     }
   }),
-  interfaces: [nodeInterface, channelInterface],
+  interfaces: [nodeInterface, fileInterface],
 });
 
 var fulfillmentStatus = new GraphQLEnumType({
   name: 'FulfillmentStatus',
   values: {
+    INCOMPLETE: { value: -1 },
     SUBMITTED: { value: 0 },
     REJECTED: { value: 1 },
     ACCEPTED: { value: 2 }
@@ -547,9 +566,9 @@ let fulfillmentType = new GraphQLObjectType({
   description: 'Fulfillment object',
   fields: () => ({
     id: globalIdField('Fulfillment'),
-    file: {
-      type: fileType,
-      description: 'The file possibly fulfilling the test case.',
+    uri: {
+      type: GraphQLString,
+      description: 'The uri of the fulfillment.',
     },
     status: {
       type: fulfillmentStatus,
@@ -562,6 +581,21 @@ let fulfillmentType = new GraphQLObjectType({
     updatedAt: {
       type: GraphQLString,
       description: 'The timestamp when the fulfillment was last updated.',
+    },
+    messages: {
+      type: messageConnection,
+      description: 'The messages on the fulfillment.',
+      args: connectionArgs,
+      resolve: (fulfillment, args, context) => {
+        return new Promise((resolve, reject) => {
+          new DAO(context.rootValue.user).Message(fulfillment.id).getEdgeMessages(args).then((result) => {
+            resolve(connectionFromArraySlice(result.payload, args, result.meta));
+          })
+          .catch((e) => {
+            reject(e);
+          })
+        });
+      }
     },
     events: {
       type: fulfillEventConnection,
@@ -579,7 +613,7 @@ let fulfillmentType = new GraphQLObjectType({
       }
     }
   }),
-  interfaces: [nodeInterface],
+  interfaces: [nodeInterface, channelInterface, fileInterface],
 });
 
 let fulfillmentEventType = new GraphQLObjectType({
@@ -587,6 +621,10 @@ let fulfillmentEventType = new GraphQLObjectType({
   description: 'Fulfillment event object',
   fields: () => ({
     id: globalIdField('FulfillmentEvent'),
+    uri: {
+      type: GraphQLString,
+      description: 'The uri of the fulfillment.',
+    },
     status: {
       type: fulfillmentStatus,
       description: 'The status of the fulfillment.',
@@ -676,7 +714,7 @@ var {connectionType: messageConnection, edgeType: GraphQLMessageEdge} =
   connectionDefinitions({name: 'Message', nodeType: messageType});
 
 var {connectionType: coverImageConnection, edgeType: GraphQLCoverImageEdge} =
-  connectionDefinitions({name: 'CoverImages', nodeType: fileType});
+  connectionDefinitions({name: 'CoverImages', nodeType: coverType});
 
 var {connectionType: fulfillConnection, edgeType: GraphQLFulfillEdge} =
   connectionDefinitions({name: 'Fulfills', nodeType: fulfillmentType});
@@ -775,6 +813,10 @@ var introduceFulfillment = mutationWithClientMutationId({
     testCaseId: {
       type: new GraphQLNonNull(GraphQLID)
     },
+    status: {
+      type: new GraphQLNonNull(fulfillmentStatus),
+      description: 'The status of the fulfillment.',
+    },
     uri: {
       type: new GraphQLNonNull(GraphQLString),
       description: 'The uri of the file.',
@@ -798,9 +840,9 @@ var introduceFulfillment = mutationWithClientMutationId({
       },
     },
   },
-  mutateAndGetPayload: ({testCaseId, uri}, context) => {
+  mutateAndGetPayload: ({testCaseId, status, uri}, context) => {
     var localId = fromGlobalId(testCaseId).id;
-    return new DAO(context.rootValue.user).Fulfillment(localId).create({uri});
+    return new DAO(context.rootValue.user).Fulfillment(localId).create({status, uri});
   }
 });
 
@@ -947,6 +989,10 @@ var updateFulfillment = mutationWithClientMutationId({
     status: {
       type: fulfillmentStatus,
       description: 'The status of the update.',
+    },
+    uri: {
+      type: GraphQLString,
+      description: 'The uri of the fulfillment.',
     }
   },
   outputFields: {
@@ -976,10 +1022,10 @@ var updateFulfillment = mutationWithClientMutationId({
       },
     },
   },
-  mutateAndGetPayload: ({id, testCaseId, status}, context) => {
+  mutateAndGetPayload: ({id, testCaseId, status, uri}, context) => {
     var localId = fromGlobalId(id).id;
     var localTestCaseId = fromGlobalId(testCaseId).id;
-    return new DAO(context.rootValue.user).Fulfillment(localId).update(localTestCaseId, {status});
+    return new DAO(context.rootValue.user).Fulfillment(localId).update(localTestCaseId, {status, uri});
   }
 });
 

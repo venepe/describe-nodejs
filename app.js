@@ -87,7 +87,9 @@ app.post('/authenticate', bodyParser.json(), function(req, res) {
 
 app.get('/default/images/:id', function(req, res) {
   let id = req.params.id;
-  if (id.match(/^[A-Za-z][A-Za-z0-9 -]*$/)) {
+  if (id === 'fulfillment') {
+    res.redirect('https://s3-us-west-2.amazonaws.com/sumseti/default/images/shaded-fulfillment.png');
+  } else if (id.match(/^[A-Za-z][A-Za-z0-9 -]*$/)) {
     res.redirect('https://s3-us-west-2.amazonaws.com/sumseti/default/images/shaded-primary.png');
   } else {
     res.redirect('https://s3-us-west-2.amazonaws.com/sumseti/default/images/shaded-accent.png');

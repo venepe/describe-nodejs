@@ -9,7 +9,7 @@ import * as events from '../../events';
 import { offsetToCursor } from 'graphql-relay';
 
 import {
-  File
+  Cover
 } from '../model';
 
 class CoverDAO {

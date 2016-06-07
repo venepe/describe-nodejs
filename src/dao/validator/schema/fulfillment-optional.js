@@ -6,7 +6,7 @@ const isValid = (obj = {}, callback) => {
   let check = validator
               .isObject()
               .withRequired('status', validator.isInteger())
-              .withRequired('uri', validator.isString());
+              .withOptional('uri', validator.isString());
 
   validator.run(check, obj, callback);
 }

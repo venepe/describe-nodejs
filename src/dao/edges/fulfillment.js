@@ -27,7 +27,7 @@ class FulfillmentDAO {
 
       db
       .getFulfillment()
-      .from('Fulfills')
+      .from('File')
       .where({uuid: id})
       .limit(1)
       .transform((record) => {
@@ -57,10 +57,8 @@ class FulfillmentDAO {
       let validator = new SMTIValidator(object);
 
       validator
-        .isFile()
-        .then(({file}) => {
-          let fulfillment = {status: fulfillmentStatus.SUBMITTED, file};
-          let fulfillmentEvent = fulfillment;
+        .isFulfillment()
+        .then(({fulfillment, fulfillmentEvent}) => {
           db
           .let('testCase', (s) => {
             s
@@ -101,7 +99,9 @@ class FulfillmentDAO {
           .let('file', (s) => {
             s
             .create('vertex', 'File')
-            .set(file)
+            .set({
+              uri: fulfillment.uri
+            })
             .set('_allow = $testCase._allow[0]')
           })
           .let('fulfillmentEvent', (s) => {
@@ -116,7 +116,9 @@ class FulfillmentDAO {
             .create('edge', 'Fulfills')
             .from('$file')
             .to('$testCase')
-            .set(fulfillment)
+            .set({
+              status: fulfillment.status
+            })
           })
           .let('cursor', s => {
             s
@@ -127,27 +129,26 @@ class FulfillmentDAO {
             })
           })
           .commit()
-          .return(['$fulfills', '$file', '$testCase', '$project', '$cursor'])
+          .return(['$file', '$fulfills', '$testCase', '$project', '$cursor'])
           .all()
           .then((result) => {
             let node = filteredObject(result[0], 'in.*|out.*|@.*|^_');
-            let file = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
+            let fulfills = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
             let testCase = filteredObject(result[2], 'in_.*|out_.*|@.*|^_');
             let project = filteredObject(result[3], 'in_.*|out_.*|@.*|^_');
             let cursor = offsetToCursor(result[4].cursor);
 
             node = uuidToId(node);
-            file = uuidToId(file);
 
-            node.file = file;
+            node.status = fulfills.status;
 
-            if (testCase.isFulfilled.length === 0) {
+            if (testCase.status !== fulfillmentStatus.SUBMITTED) {
               let numOfTestCasesFulfilled = project.numOfTestCasesFulfilled;
               numOfTestCasesFulfilled++;
               project.numOfTestCasesFulfilled = numOfTestCasesFulfilled;
             }
 
-            testCase.isFulfilled = true;
+            testCase.status = fulfillmentStatus.SUBMITTED;
 
             events.publish(events.didIntroduceFulfillmentChannel(relationalId), {
               fulfillmentEdge: {
@@ -201,24 +202,28 @@ class FulfillmentDAO {
       var userId = this.user.id;
       var role = this.user.role;
 
-      let validator = new SMTIValidator(object);
+      let validator = new SMTIValidator(object, true);
 
       validator
         .isFulfillment()
         .then(({fulfillment, fulfillmentEvent}) => {
+          let file = {};
+          if (fulfillment.uri) {
+            file.uri = fulfillment.uri;
+          }
           db
-          .let('fulfillment', (s) => {
+          .let('file', (s) => {
             s
             .select()
-            .from('Fulfills')
+            .from('File')
             .where({
               uuid: targetId
             })
           })
-          .let('file', (s) => {
+          .let('fulfillment', (s) => {
             s
-            .select('expand(out)')
-            .from('$fulfillment')
+            .select('expand(outE("Fulfills"))')
+            .from('$file')
           })
           .let('user', (s) => {
             s
@@ -237,6 +242,28 @@ class FulfillmentDAO {
             .from('$user')
             .to('$file')
             .set(fulfillmentEvent)
+          })
+          .let('updateFulfillment', (s) => {
+            s
+            .update('$fulfillment')
+            .set({
+              status: fulfillment.status
+            })
+          })
+          .let('updateFile', (s) => {
+            s
+            .update('$file')
+            .set(file)
+          })
+          .let('newFulfillment', (s) => {
+            s
+            .getFulfillment()
+            .from('$file')
+          })
+          .let('newFulfillmentEvent', (s) => {
+            s
+            .getFulfillmentEvent()
+            .from('$fulfillmentEvent')
           })
           .let('testCase', (s) => {
             s
@@ -260,21 +287,6 @@ class FulfillmentDAO {
               .limit(1)
             })
           })
-          .let('update', (s) => {
-            s
-            .update('$fulfillment')
-            .set(fulfillment)
-          })
-          .let('newFulfillment', (s) => {
-            s
-            .getFulfillment()
-            .from('$fulfillment')
-          })
-          .let('newFulfillmentEvent', (s) => {
-            s
-            .getFulfillmentEvent()
-            .from('$fulfillmentEvent')
-          })
           .let('cursor', s => {
             s
             .select('inE(\'Fulfills\').size() as cursor')
@@ -294,16 +306,21 @@ class FulfillmentDAO {
             let fulfillmentEventEdge = filteredObject(result[4], 'in_.*|out_.*|@.*|^_');
 
             let numOfTestCasesFulfilled = project.numOfTestCasesFulfilled;
-            let isFulfilled = testCase.isFulfilled;
 
             testCase = uuidToId(testCase);
 
-            //Because the test case is pull before the fulfillment is deleted
-            testCase.isFulfilled = (isFulfilled.length > 1) ? true : false;
-            if (!testCase.isFulfilled) {
-              let numOfTestCasesFulfilled = project.numOfTestCasesFulfilled;
-              numOfTestCasesFulfilled--;
-              project.numOfTestCasesFulfilled = numOfTestCasesFulfilled;
+
+            if (testCase.status !== fulfillment.status) {
+              testCase.status = fulfillment.status;
+              if (fulfillment.status === fulfillmentStatus.SUBMITTED) {
+                let numOfTestCasesFulfilled = project.numOfTestCasesFulfilled;
+                numOfTestCasesFulfilled++;
+                project.numOfTestCasesFulfilled = numOfTestCasesFulfilled;
+              } else {
+                let numOfTestCasesFulfilled = project.numOfTestCasesFulfilled;
+                numOfTestCasesFulfilled--;
+                project.numOfTestCasesFulfilled = numOfTestCasesFulfilled;
+              }
             }
 
             events.publish(events.didUpdateFulfillmentChannel(testCaseId, targetId), {

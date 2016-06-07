@@ -56,7 +56,7 @@ class SMTIValidator {
       let obj = this.obj;
       let isValid;
       if (this.isOptional) {
-        isValid = schema.isValidFulfillment;
+        isValid = schema.isValidFulfillmentOptional;
       } else {
         isValid = schema.isValidFulfillment;
       }

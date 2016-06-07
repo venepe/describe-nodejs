@@ -299,7 +299,7 @@ class InvitationDAO {
       })
       .let('files', (s) => {
         s
-        .select('expand(outE(\'Requires\').inV(\'TestCase\').inE(\'Fulfills\').inV(\'File\'))')
+        .select('expand(outE(\'Requires\').inV(\'TestCase\').inE(\'Fulfills\').outV(\'File\'))')
         .from('$project')
       })
       .let('updateTestCases', (s) => {
