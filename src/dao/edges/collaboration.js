@@ -129,7 +129,7 @@ class CollaborationDAO {
             })
             .let('files', (s) => {
               s
-              .select('expand(outE(\'Requires\').inV(\'TestCase\').inE(\'Fulfills\').inV(\'File\'))')
+              .select('expand(outE(\'Requires\').inV(\'TestCase\').inE(\'Fulfills\').outV(\'File\'))')
               .from('Project')
               .where({
                 uuid: relationalId
