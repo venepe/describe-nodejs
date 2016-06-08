@@ -305,23 +305,7 @@ class FulfillmentDAO {
             let cursor = offsetToCursor(result[3].cursor);
             let fulfillmentEventEdge = filteredObject(result[4], 'in_.*|out_.*|@.*|^_');
 
-            let numOfTestCasesFulfilled = project.numOfTestCasesFulfilled;
-
             testCase = uuidToId(testCase);
-
-
-            if (testCase.status !== fulfillment.status) {
-              testCase.status = fulfillment.status;
-              if (fulfillment.status === fulfillmentStatus.SUBMITTED) {
-                let numOfTestCasesFulfilled = project.numOfTestCasesFulfilled;
-                numOfTestCasesFulfilled++;
-                project.numOfTestCasesFulfilled = numOfTestCasesFulfilled;
-              } else {
-                let numOfTestCasesFulfilled = project.numOfTestCasesFulfilled;
-                numOfTestCasesFulfilled--;
-                project.numOfTestCasesFulfilled = numOfTestCasesFulfilled;
-              }
-            }
 
             events.publish(events.didUpdateFulfillmentChannel(testCaseId, targetId), {
               fulfillment,
