@@ -307,6 +307,8 @@ class FulfillmentDAO {
 
             testCase = uuidToId(testCase);
 
+            testCase.status = fulfillment.status;
+
             events.publish(events.didUpdateFulfillmentChannel(testCaseId, targetId), {
               fulfillment,
               fulfillmentEventEdge,
