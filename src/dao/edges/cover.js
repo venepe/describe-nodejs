@@ -113,7 +113,7 @@ class CoverDAO {
       .let('target', (s) => {
         s
         .select('*')
-        .from(function (s) {
+        .from((s) => {
           s
           .select('expand(outE(\'Covers\').inV(\'User\'))')
           .from('File')

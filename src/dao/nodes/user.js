@@ -495,10 +495,10 @@ class UserDAO {
 
       db
       .select('$profile[0].notification.keys() as notificationIds')
-        .let('profile', function(s) {
+        .let('profile', (s) => {
           s
           .select('uuid as id, _notification as notification')
-          .from(function (s) {
+          .from((s) => {
             s
             .select('expand(out[@class = "User"])')
             .from('$parent.$current')

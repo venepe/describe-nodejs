@@ -472,10 +472,10 @@ class InvitationDAO {
       .let('invitee', (s) => {
         s
         .select('role, uuid')
-        .from(function (s) {
+        .from((s) => {
           s
           .select('expand(in[@class = "User"])')
-          .from(function (s) {
+          .from((s) => {
             s
             .select()
             .from('Invites')

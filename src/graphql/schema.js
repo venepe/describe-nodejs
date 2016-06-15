@@ -122,9 +122,14 @@ let channelInterface = new GraphQLInterfaceType({
       description: 'The messages of the channel.',
       args: connectionArgs,
     },
+    numOfMessages: {
+      type: GraphQLInt,
+      description: 'The total number of messages for the channel.',
+    },
   }),
   resolveType: channel => {
     var {type, id} = fromGlobalId(channel.id);
+    channel.id = id;
     if (type === 'Project') {
       return projectType;
     } else if (type === 'TestCase') {
@@ -339,6 +344,10 @@ let projectType = new GraphQLObjectType({
       type: GraphQLString,
       description: 'The timestamp when the project was last updated.',
     },
+    numOfMessages: {
+      type: GraphQLInt,
+      description: 'The total number of messages for the project.',
+    },
     testCases: {
       type: testCaseConnection,
       description: 'The test cases of the project.',
@@ -459,6 +468,10 @@ let testCaseType = new GraphQLObjectType({
     updatedAt: {
       type: GraphQLString,
       description: 'The timestamp when the test case was last updated.',
+    },
+    numOfMessages: {
+      type: GraphQLInt,
+      description: 'The total number of messages for the test case.',
     },
     fulfillments: {
       type: fulfillConnection,
@@ -581,6 +594,10 @@ let fulfillmentType = new GraphQLObjectType({
     updatedAt: {
       type: GraphQLString,
       description: 'The timestamp when the fulfillment was last updated.',
+    },
+    numOfMessages: {
+      type: GraphQLInt,
+      description: 'The total number of messages for the fulfillment.',
     },
     messages: {
       type: messageConnection,
@@ -774,7 +791,7 @@ var deleteUser = mutationWithClientMutationId({
   },
   mutateAndGetPayload: ({id}, context) => {
     var localId = fromGlobalId(id).id;
-    return new DAO(context.rootValue.user).User(localId).del().then(function (data) {
+    return new DAO(context.rootValue.user).User(localId).del().then((data) => {
       return {id};
     });
   }
@@ -1146,7 +1163,7 @@ var deleteCollaboration = mutationWithClientMutationId({
   },
   mutateAndGetPayload: ({id}, context) => {
     var localId = fromGlobalId(id).id;
-    return new DAO(context.rootValue.user).Collaboration(localId).leave().then(function (data) {
+    return new DAO(context.rootValue.user).Collaboration(localId).leave().then((data) => {
       return {id};
     });
   }
@@ -1288,8 +1305,9 @@ var introduceMessage = mutationWithClientMutationId({
     },
   },
   mutateAndGetPayload: ({channelId, text}, context) => {
-    var localId = fromGlobalId(channelId).id;
-    return new DAO(context.rootValue.user).Message(localId).create({text});
+    var {type, id} = fromGlobalId(channelId);
+    var payload = {text};
+    return new DAO(context.rootValue.user).Message(id).create({payload, channelType: type});
   }
 });
 
@@ -1438,7 +1456,7 @@ var didUpdateFulfillment = subscriptionWithClientSubscriptionId({
     } else {
       var localId = fromGlobalId(id).id;
       var localTestCaseId = fromGlobalId(testCaseId).id;
-      rootValue.channel = channels.didUpdateFulfillmentChannel(localTestCaseId, localId);
+      rootValue.channel = channels.didUpdateFulfillmentChannel(localId);
       return {testCaseId};
     }
   }

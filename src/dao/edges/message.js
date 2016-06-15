@@ -4,7 +4,7 @@ import { SMTIValidator } from '../validator';
 import { filteredObject, Pagination, GraphQLHelper, uuidToId } from '../../utilities';
 import { roles, permissions, regExRoles } from '../permissions';
 import * as events from '../../events';
-import { offsetToCursor } from 'graphql-relay';
+import { offsetToCursor, toGlobalId } from 'graphql-relay';
 import { collaboratorRoles } from '../../constants';
 
 import {
@@ -44,7 +44,7 @@ class MessageDAO {
     });
   }
 
-  create(object) {
+  create({payload, channelType}) {
     return new Promise((resolve, reject) => {
       var db = this.db;
       var relationalId = this.targetId;
@@ -52,8 +52,15 @@ class MessageDAO {
       var userId = this.user.id;
       var role = this.user.role;
 
-      let validator = new SMTIValidator(object);
-
+      let validator = new SMTIValidator(payload);
+      let expandStmt = '';
+      if (channelType === 'Project') {
+        expandStmt = '*';
+      } else if (channelType === 'TestCase') {
+        expandStmt = 'expand(inE("Requires").outV("Project"))';
+      } else if (channelType === 'Fulfillment') {
+        expandStmt = 'expand(outE("Fulfills").inV("TestCase").inE("Requires").outV("Project"))';
+      }
       validator
         .isMessage()
         .then(({message}) => {
@@ -61,7 +68,7 @@ class MessageDAO {
           .let('channel', (s) => {
             s
             .select()
-            .from('indexvalues:V.uuid ')
+            .from('indexvalues:V.uuid')
             .where({
               uuid: relationalId
             })
@@ -90,7 +97,7 @@ class MessageDAO {
           .let('cursor', s => {
             s
             .select('inE(\'Message\').size() as cursor')
-            .from('TestCase')
+            .from('indexvalues:V.uuid')
             .where({
               uuid: relationalId
             })
@@ -100,14 +107,32 @@ class MessageDAO {
             .getMessage()
             .from('$message')
           })
+          .let('newChannel', (s) => {
+            s
+            .select('inE(\'Message\').size() as numOfMessages, uuid as id')
+            .from('$channel')
+          })
+          .let('project', (s) => {
+            s
+            .select('uuid as id')
+            .from((s) => {
+              s
+              .select(expandStmt)
+              .from('indexvalues:V.uuid')
+              .where({uuid: relationalId})
+            })
+            .limit(1)
+          })
           .commit()
-          .return(['$newMessage', '$channel', '$cursor'])
+          .return(['$newMessage', '$newChannel', '$cursor', '$project'])
           .all()
           .then((result) => {
             let node = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
             let channel = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
             let cursor = offsetToCursor(result[2].cursor);
-            channel = uuidToId(channel);
+            let projectId = result[3].id;
+
+            channel.id = toGlobalId(channelType, channel.id)
 
             events.publish(events.didIntroduceMessageChannel(relationalId), {
               messageEdge: {

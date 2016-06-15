@@ -231,10 +231,10 @@ class CollaborationDAO {
       .let('profile', (s) => {
         s
         .select('role, uuid')
-        .from(function (s) {
+        .from((s) => {
           s
           .select('expand(out[@class = "User"])')
-          .from(function (s) {
+          .from((s) => {
             s
             .select()
             .from('CollaboratesOn')
@@ -345,7 +345,7 @@ class CollaborationDAO {
       .let('deletes', (s) => {
         s
         .delete('edge', 'CollaboratesOn')
-        .from(function (s) {
+        .from((s) => {
           s
           .select()
           .from('User')
@@ -353,7 +353,7 @@ class CollaborationDAO {
             uuid: userId
           })
         })
-        .to(function (s) {
+        .to((s) => {
           s
           .select()
           .from('Project')

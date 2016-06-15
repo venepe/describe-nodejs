@@ -377,7 +377,7 @@ class TestCaseDAO {
       .let('project', (s) => {
         s
         .getProject()
-        .from(function (s) {
+        .from((s) => {
           s
           .select('expand(in("Requires"))')
           .from('TestCase')

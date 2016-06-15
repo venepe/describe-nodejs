@@ -75,7 +75,7 @@ class FulfillmentDAO {
           .let('project', (s) => {
             s
             .getProject()
-            .from(function (s) {
+            .from((s) => {
               s
               .select('expand(in("Requires"))')
               .from('TestCase')
@@ -277,7 +277,7 @@ class FulfillmentDAO {
           .let('project', (s) => {
             s
             .getProject()
-            .from(function (s) {
+            .from((s) => {
               s
               .select('expand(in("Requires"))')
               .from('TestCase')
@@ -309,7 +309,7 @@ class FulfillmentDAO {
 
             testCase.status = fulfillment.status;
 
-            events.publish(events.didUpdateFulfillmentChannel(testCaseId, targetId), {
+            events.publish(events.didUpdateFulfillmentChannel(targetId), {
               fulfillment,
               fulfillmentEventEdge,
               testCase,

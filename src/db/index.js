@@ -17,7 +17,7 @@ OrientDB.Statement.prototype.getUser = function() {
 
 OrientDB.Db.prototype.getTestCase = function() {
   this.SMTINode = 'TestCase';
-  return this.select('uuid as id, text, createdAt, updatedAt, ifnull($fulfillment[0].status, -1) as status')
+  return this.select('uuid as id, text, createdAt, updatedAt, ifnull($fulfillment[0].status, -1) as status, inE(\'Message\').size() as numOfMessages')
   .let('fulfillment', function(s) {
     s
     .select('status')
@@ -31,7 +31,7 @@ OrientDB.Db.prototype.getTestCase = function() {
 }
 
 OrientDB.Statement.prototype.getTestCase = function() {
-  return this.select('uuid as id, text, createdAt, updatedAt, ifnull($fulfillment[0].status, -1) as status')
+  return this.select('uuid as id, text, createdAt, updatedAt, ifnull($fulfillment[0].status, -1) as status, inE(\'Message\').size() as numOfMessages')
   .let('fulfillment', function(s) {
     s
     .select('status')
@@ -55,7 +55,7 @@ OrientDB.Statement.prototype.getFile = function() {
 
 OrientDB.Db.prototype.getProject = function() {
   this.SMTINode = 'Project';
-  return this.select('uuid as id, text, createdAt, updatedAt, outE(\'Requires\').size() as numOfTestCases, $tcF.size() as numOfTestCasesFulfilled')
+  return this.select('uuid as id, text, createdAt, updatedAt, outE(\'Requires\').size() as numOfTestCases, $tcF.size() as numOfTestCasesFulfilled, inE(\'Message\').size() as numOfMessages')
     .let('tcF', function(s) {
       s
       .select()
@@ -71,7 +71,7 @@ OrientDB.Db.prototype.getProject = function() {
 }
 
 OrientDB.Statement.prototype.getProject = function() {
-  return this.select('uuid as id, text, createdAt, updatedAt, outE(\'Requires\').size() as numOfTestCases, $tcF.size() as numOfTestCasesFulfilled')
+  return this.select('uuid as id, text, createdAt, updatedAt, outE(\'Requires\').size() as numOfTestCases, $tcF.size() as numOfTestCasesFulfilled, inE(\'Message\').size() as numOfMessages')
     .let('tcF', function(s) {
       s
       .select()
@@ -119,7 +119,7 @@ OrientDB.Statement.prototype.inCreatesFromNode = function(id) {
 }
 
 OrientDB.Statement.prototype.getFulfillment = function() {
-  return this.select('uuid as id, uri, createdAt, updatedAt, $fulfillment[0].status as status')
+  return this.select('uuid as id, uri, createdAt, updatedAt, $fulfillment[0].status as status, inE(\'Message\').size() as numOfMessages')
     .let('fulfillment', function(s) {
       s
       .select('status')
@@ -133,7 +133,7 @@ OrientDB.Statement.prototype.getFulfillment = function() {
 }
 
 OrientDB.Db.prototype.getFulfillment = function() {
-  return this.select('uuid as id, uri, createdAt, updatedAt, $fulfillment[0].status as status')
+  return this.select('uuid as id, uri, createdAt, updatedAt, $fulfillment[0].status as status, inE(\'Message\').size() as numOfMessages')
     .let('fulfillment', function(s) {
       s
       .select('status')
