@@ -291,6 +291,8 @@ class CollaborationDAO {
         let profile = result[1] || {};
         let profileId = profile.uuid;
 
+        console.log(project);
+
         events.publish(events.didDeleteCollaboratorChannel(projectId, targetId), {
           deletedCollaboratorId: targetId,
           project

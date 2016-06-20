@@ -53,7 +53,7 @@ class FulfillmentEventDAO {
       .inFulfillmentEvent(id)
       .skip(pageObject.skip)
       .limit(pageObject.limit)
-      .order(pageObject.orderBy)
+      .order('createdAt DESC')
       .all()
       .then((payload) => {
         let meta = GraphQLHelper.getMeta(pageObject, payload);

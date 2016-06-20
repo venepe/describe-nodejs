@@ -109,7 +109,7 @@ class MessageDAO {
           })
           .let('newChannel', (s) => {
             s
-            .select('inE(\'Message\').size() as numOfMessages, uuid as id')
+            .select('uuid as id')
             .from('$channel')
           })
           .let('project', (s) => {

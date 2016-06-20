@@ -122,10 +122,6 @@ let channelInterface = new GraphQLInterfaceType({
       description: 'The messages of the channel.',
       args: connectionArgs,
     },
-    numOfMessages: {
-      type: GraphQLInt,
-      description: 'The total number of messages for the channel.',
-    },
   }),
   resolveType: channel => {
     var {type, id} = fromGlobalId(channel.id);
@@ -344,10 +340,6 @@ let projectType = new GraphQLObjectType({
       type: GraphQLString,
       description: 'The timestamp when the project was last updated.',
     },
-    numOfMessages: {
-      type: GraphQLInt,
-      description: 'The total number of messages for the project.',
-    },
     testCases: {
       type: testCaseConnection,
       description: 'The test cases of the project.',
@@ -468,10 +460,6 @@ let testCaseType = new GraphQLObjectType({
     updatedAt: {
       type: GraphQLString,
       description: 'The timestamp when the test case was last updated.',
-    },
-    numOfMessages: {
-      type: GraphQLInt,
-      description: 'The total number of messages for the test case.',
     },
     fulfillments: {
       type: fulfillConnection,
@@ -594,10 +582,6 @@ let fulfillmentType = new GraphQLObjectType({
     updatedAt: {
       type: GraphQLString,
       description: 'The timestamp when the fulfillment was last updated.',
-    },
-    numOfMessages: {
-      type: GraphQLInt,
-      description: 'The total number of messages for the fulfillment.',
     },
     messages: {
       type: messageConnection,
