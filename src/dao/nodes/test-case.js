@@ -124,7 +124,7 @@ class TestCaseDAO {
       let validator = new SMTIValidator(object);
       let fulfillment = {
         status: fulfillmentStatus.INCOMPLETE,
-        uri: FileConfig.DefaultImageUrl + 'fulfillment'
+        uri: FileConfig.FulfillmentImageUrl
       };
 
       validator

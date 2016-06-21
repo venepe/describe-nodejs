@@ -18,13 +18,13 @@ OrientDB.Statement.prototype.getUser = function() {
 
 OrientDB.Db.prototype.getTestCase = function() {
   this.SMTINode = 'TestCase';
-  return this.select('uuid as id, text, createdAt, updatedAt, ifnull($fulfillment[0].status, -1) as status')
+  return this.select('uuid as id, text, createdAt, updatedAt, ifnull($fulfillment[0].status, -1) as status, $fulfillment[0] as fulfillment')
   .let('fulfillment', function(s) {
     s
-    .select('status')
+    .getFulfillment()
     .from(function (s) {
       s
-      .select('expand(in_Fulfills)')
+      .select('expand(inE(\'Fulfills\').outV(\'File\'))')
       .from('$parent.$current')
       .limit(1)
     })
@@ -32,13 +32,13 @@ OrientDB.Db.prototype.getTestCase = function() {
 }
 
 OrientDB.Statement.prototype.getTestCase = function() {
-  return this.select('uuid as id, text, createdAt, updatedAt, ifnull($fulfillment[0].status, -1) as status')
+  return this.select('uuid as id, text, createdAt, updatedAt, ifnull($fulfillment[0].status, -1) as status, $fulfillment[0] as fulfillment')
   .let('fulfillment', function(s) {
     s
-    .select('status')
+    .getFulfillment()
     .from(function (s) {
       s
-      .select('expand(in_Fulfills)')
+      .select('expand(inE(\'Fulfills\').outV(\'File\'))')
       .from('$parent.$current')
       .limit(1)
     })
