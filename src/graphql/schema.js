@@ -461,9 +461,20 @@ let testCaseType = new GraphQLObjectType({
       type: GraphQLString,
       description: 'The timestamp when the test case was last updated.',
     },
-    fulfillment: {
-      type: fulfillmentType,
-      description: 'The file fulfilling the test case.',
+    fulfillments: {
+      type: fulfillConnection,
+      description: 'The possible files fulfilling the test case.',
+      args: connectionArgs,
+      resolve: (testCase, args, context) => {
+        return new Promise((resolve, reject) => {
+          new DAO(context.rootValue.user).File(testCase.id).getEdgeFulfilled(args).then((result) => {
+            resolve(connectionFromArraySlice(result.payload, args, result.meta));
+          })
+          .catch((e) => {
+            reject(e);
+          })
+        });
+      }
     },
     messages: {
       type: messageConnection,
