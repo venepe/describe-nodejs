@@ -342,9 +342,9 @@ if (port === 80) {
 
   // your express configuration here
 
-  const key  = fs.readFileSync('./etc/letsencrypt/live/sumseti.com/privkey.pem');
-  const cert = fs.readFileSync('./etc/letsencrypt/live/sumseti.com/fullchain.pem');
-  const ca = fs.readFileSync('./etc/letsencrypt/live/sumseti.com/chain.pem');
+  const key  = fs.readFileSync('./etc/letsencrypt/live/sumseti.com-0001/privkey.pem');
+  const cert = fs.readFileSync('./etc/letsencrypt/live/sumseti.com-0001/fullchain.pem');
+  const ca = fs.readFileSync('./etc/letsencrypt/live/sumseti.com-0001/chain.pem');
   const sslOptions = {key, cert, ca};
   const httpsServer = https.createServer(sslOptions, app);
 
