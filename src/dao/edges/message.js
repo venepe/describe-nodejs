@@ -6,6 +6,7 @@ import { roles, permissions, regExRoles } from '../permissions';
 import * as events from '../../events';
 import { offsetToCursor, toGlobalId } from 'graphql-relay';
 import { collaboratorRoles } from '../../constants';
+import { push } from '../../notification';
 
 import {
   Message
@@ -109,7 +110,7 @@ class MessageDAO {
           })
           .let('newChannel', (s) => {
             s
-            .select('uuid as id')
+            .select('uuid as id, text')
             .from('$channel')
           })
           .let('project', (s) => {
@@ -141,6 +142,12 @@ class MessageDAO {
               },
               channel
             });
+
+            //Start push notification
+            let title = `${channel.text}`;
+            let message = `${node.text}`;
+            push(user, projectId, {title, message});
+            //End push notification
 
             resolve({
               messageEdge: {

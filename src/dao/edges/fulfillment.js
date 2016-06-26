@@ -325,8 +325,15 @@ class FulfillmentDAO {
             });
 
             //Start push notification
-            let title = `Fulfillment rejected for "${testCase.text}"`;
-            let message = `${project.numOfTestCasesFulfilled}" / ${project.numOfTestCases}" test cases fulfilled`;
+            let status = 'updated';
+            let statusEnum = fulfillment.status;
+            if (statusEnum === fulfillmentStatus.SUBMITTED) {
+              status = 'submitted';
+            } else if (statusEnum === fulfillmentStatus.REJECTED) {
+              status = 'rejected';
+            }
+            let title = `Fulfillment ${status} for "${testCase.text}"`;
+            let message = `${project.numOfTestCasesFulfilled} / ${project.numOfTestCases} test cases fulfilled`;
             push(user, project.id, {title, message});
             //End push notification
 
