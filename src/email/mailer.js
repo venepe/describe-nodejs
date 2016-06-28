@@ -14,7 +14,6 @@ const transporter = nodemailer.createTransport({
 const sendForgotPassword = (user, callback) => {
   let email = user.email;
   let html = templates.forgotPassword(user);
-  console.log(html);
   const mailOptions = {
       from: 'Sumseti <automated@sumseti.com>',
       to: email,
