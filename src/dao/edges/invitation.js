@@ -6,6 +6,7 @@ import { roles, permissions, regExRoles } from '../permissions';
 import * as events from '../../events';
 import { offsetToCursor } from 'graphql-relay';
 import { collaboratorRoles } from '../../constants';
+import SMTIEmail from '../../email';
 
 import {
   Invitation
@@ -92,7 +93,7 @@ class InvitationDAO {
       validator
         .isInvitation()
         .then(({invitation}) => {
-          let email = invitation.email;
+          const email = invitation.email;
 
           db
           .select('uuid, role')
@@ -201,6 +202,8 @@ class InvitationDAO {
                 invitationEdge: invitation,
                 me: profile
               });
+
+              SMTIEmail.sendInvitation({invitation, email});
 
               //Return the invitation we added to the project
               // TODO: get the correct cursor length

@@ -23,8 +23,7 @@ import fs from 'fs';
 import mmm from 'mmmagic';
 import del from 'del';
 import mv from 'mv';
-import { SMTIEmailTemplate } from './src/utilities';
-import nodemailer from 'nodemailer';
+import SMTIEmail from './src/email';
 import AWS from 'aws-sdk';
 AWS.config.region = 'us-west-2';
 
@@ -33,13 +32,6 @@ const upload = multer({ dest: __dirname + FileConfig.TempDir});
 const port = process.env.PORT || 80;
 const baseImageUrl = FileConfig.BaseImageUrl;
 const Magic = mmm.Magic;
-const transporter = nodemailer.createTransport({
-    service: 'Gmail',
-    auth: {
-        user: process.env.GMAIL_ACCOUNT,
-        pass: process.env.GMAIL_APP_PASSWORD
-    }
-});
 
 if (process.env.NODE_ENV === 'production') {
   app.use(function(req, res, next) {
@@ -153,19 +145,8 @@ app.post('/forgot', bodyParser.json(), function(req, res) {
   let forgot = req.body.forgot || {};
   forgotPassword(forgot)
   .then(function(user) {
-    // setup e-mail data with unicode symbols
-    let authenticate = user.authenticate || {};
-    let email = user.email;
-    let html = SMTIEmailTemplate.forgotPasswordEmail(user);
-    const mailOptions = {
-        from: 'Sumseti <automated@sumseti.com>',
-        to: email,
-        subject: 'Reset Password',
-        html
-    };
-
     // send mail with defined transport object
-    transporter.sendMail(mailOptions, function(error, info){
+    SMTIEmail.sendForgotPassword(user, function(error, info){
         if (error){
           console.log(error);
           res.status(400).json({errors: []});
