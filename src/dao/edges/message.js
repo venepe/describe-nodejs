@@ -173,7 +173,7 @@ class MessageDAO {
 
   // TODO: order by backwards pagination fails
   getEdgeMessages(args) {
-    let pageObject = Pagination.getOrientDBPageFromGraphQL(args);
+    let pageObject = Pagination.getDescOrientDBPageFromGraphQL(args);
 
     return new Promise((resolve, reject) => {
       let user = this.user;
@@ -184,19 +184,22 @@ class MessageDAO {
       db
       .getMessage()
       .inMessageFromNode(id)
-      .skip(pageObject.skip)
+      .where(
+        pageObject.where
+      )
       .limit(pageObject.limit)
-      .order('createdAt DESC')
+      .order(pageObject.orderBy)
       .transform((record) => {
-        return filteredObject(record, '@.*|rid');
+        let node = filteredObject(record, '@.*|rid');
+        return {
+          node,
+          cursor: node.createdAt,
+        };
       })
       .all()
-      .then((payload) => {
-        let meta = GraphQLHelper.getMeta(pageObject, payload);
-        resolve({
-          payload,
-          meta
-        });
+      .then((edges) => {
+        let payload = GraphQLHelper.connectionFromDbArray({edges, args});
+        resolve(payload);
       })
       .catch((e) => {
         reject();

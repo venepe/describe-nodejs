@@ -6,6 +6,7 @@ import { roles, permissions, regExRoles } from '../permissions';
 import * as events from '../../events';
 import { offsetToCursor } from 'graphql-relay';
 import { collaboratorRoles } from '../../constants';
+import moment from 'moment';
 
 import {
   Collaborator
@@ -115,17 +116,6 @@ class CollaborationDAO {
               .where({
                 uuid: relationalId
               })
-            })
-            .let('cursor', s => {
-              s
-              .select('inE(\'CollaboratesOn\').size() as cursor')
-              .from('Project')
-              .where({
-                uuid: relationalId
-              })
-              .where(
-                `not ( id = "${userId}" )`
-              )
             })
             .let('files', (s) => {
               s

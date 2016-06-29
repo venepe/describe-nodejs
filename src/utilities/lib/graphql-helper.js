@@ -9,8 +9,29 @@ const getMeta = (pageObject, payload) => {
   };
 }
 
+const connectionFromDbArray = ({edges = [], args = {}}) => {
+  let firstEdge = (edges.length > 0) ? edges[0] : null;
+  let lastEdge = (edges.length > 0) ? edges[edges.length - 1] : null;
+  let hasNextPage = (edges.length === args.first) ? true : false;
+  let hasPreviousPage = (edges.length === args.last) ? true : false;
+  if (args.last) {
+    edges = edges.reverse();
+  }
+
+  return {
+    edges,
+    pageInfo: {
+      hasNextPage,
+      hasPreviousPage,
+      startCursor: firstEdge ? firstEdge.cursor : null,
+      endCursor: lastEdge ? lastEdge.cursor : null
+    }
+  };
+}
+
 const GraphQLHelper = {
-  getMeta
+  getMeta,
+  connectionFromDbArray
 }
 
 export default GraphQLHelper;

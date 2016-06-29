@@ -46,7 +46,7 @@ class InvitationDAO {
   }
 
   getEdgeInvitations(args) {
-    let pageObject = Pagination.getOrientDBPageFromGraphQL(args);
+    let pageObject = Pagination.getAscOrientDBPageFromGraphQL(args);
 
     return new Promise((resolve, reject) => {
       let user = this.user;
@@ -56,19 +56,22 @@ class InvitationDAO {
       db
       .getInvitation()
       .inInvitesFromNode(id)
-      .skip(pageObject.skip)
+      .where(
+        pageObject.where
+      )
       .limit(pageObject.limit)
       .order(pageObject.orderBy)
       .transform((record) => {
-        return filteredObject(record, '@.*|rid');
+        let node = filteredObject(record, '@.*|rid');
+        return {
+          node,
+          cursor: node.createdAt,
+        };
       })
       .all()
-      .then((payload) => {
-        let meta = GraphQLHelper.getMeta(pageObject, payload);
-        resolve({
-          payload,
-          meta
-        });
+      .then((edges) => {
+        let payload = GraphQLHelper.connectionFromDbArray({edges, args});
+        resolve(payload);
       })
       .catch((e) => {
         reject();

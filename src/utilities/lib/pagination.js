@@ -1,6 +1,6 @@
 'use strict';
 
-import { cursorToOffset } from './cursor-to-offset';
+import moment from 'moment';
 
 // before > after
 //
@@ -55,7 +55,59 @@ const getOrientDBPageFromGraphQL = (args) => {
   return {skip, limit, orderBy};
 }
 
+const getAscOrientDBPageFromGraphQL = (args) => {
+  const now = moment(moment()).toISOString();
+  const past = '1970-01-01T00:00:00.000Z';
+  let limit = 25;
+  let orderBy = 'createdAt ASC';
+  let where = `createdAt > "${past}"`;
+
+  let first = args.first || 0;
+  let last = args.last || 0;
+  let after = args.after || past;
+  let before = args.before || now;
+
+  if (args.first) {
+    where = `createdAt > "${after}"`;
+    limit = first;
+    orderBy = 'createdAt ASC';
+  } else if (args.last) {
+    limit = last;
+    where = `createdAt < "${before}"`;
+    orderBy = 'createdAt DESC';
+  }
+
+  return {where, limit, orderBy};
+}
+
+const getDescOrientDBPageFromGraphQL = (args) => {
+  const now = moment(moment()).toISOString();
+  const past = '1970-01-01T00:00:00.000Z';
+  let limit = 25;
+  let orderBy = 'createdAt DESC';
+  let where = `createdAt < "${now}"`;
+
+  let first = args.first || 0;
+  let last = args.last || 0;
+  let after = args.after || now;
+  let before = args.before || past;
+
+  if (args.first) {
+    where = `createdAt < "${after}"`;
+    limit = first;
+    orderBy = 'createdAt DESC';
+  } else if (args.last) {
+    limit = last;
+    where = `createdAt > "${before}"`;
+    orderBy = 'createdAt ASC';
+  }
+
+  return {where, limit, orderBy};
+}
+
 const Pagination = {
+  getAscOrientDBPageFromGraphQL,
+  getDescOrientDBPageFromGraphQL,
   getOrientDBPageFromGraphQL
 }
 

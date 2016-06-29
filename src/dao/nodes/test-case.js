@@ -47,41 +47,8 @@ class TestCaseDAO {
     });
   }
 
-  getEdgeCreated(args) {
-    let pageObject = Pagination.getOrientDBPageFromGraphQL(args);
-
-    return new Promise((resolve, reject) => {
-      let user = this.user;
-      let db = this.db;
-      let id = this.targetId;
-
-      db
-      .getTestCase()
-      .outCreatesFromNode(id)
-      .skip(pageObject.skip)
-      .limit(pageObject.limit)
-      .order(pageObject.orderBy)
-      .transform((record) => {
-        return filteredObject(record, '@.*|rid');
-      })
-      .all()
-      .then((payload) => {
-        let meta = GraphQLHelper.getMeta(pageObject, payload);
-        resolve({
-          payload,
-          meta
-        });
-      })
-      .catch((e) => {
-        reject();
-
-      })
-      .done();
-    });
-  }
-
   getEdgeRequired(args) {
-    let pageObject = Pagination.getOrientDBPageFromGraphQL(args);
+    let pageObject = Pagination.getAscOrientDBPageFromGraphQL(args);
 
     return new Promise((resolve, reject) => {
       let user = this.user;
@@ -91,19 +58,22 @@ class TestCaseDAO {
       db
       .getTestCase()
       .outRequiresFromNode(id)
-      .skip(pageObject.skip)
+      .where(
+        pageObject.where
+      )
       .limit(pageObject.limit)
       .order(pageObject.orderBy)
       .transform((record) => {
-        return filteredObject(record, '@.*|rid');
+        let node = filteredObject(record, '@.*|rid');
+        return {
+          node,
+          cursor: node.createdAt,
+        };
       })
       .all()
-      .then((payload) => {
-        let meta = GraphQLHelper.getMeta(pageObject, payload);
-        resolve({
-          payload,
-          meta
-        });
+      .then((edges) => {
+        let payload = GraphQLHelper.connectionFromDbArray({edges, args});
+        resolve(payload);
       })
       .catch((e) => {
         reject();

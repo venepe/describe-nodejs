@@ -212,14 +212,7 @@ let userType = new GraphQLObjectType({
       description: 'The projects created by the user.',
       args: connectionArgs,
       resolve: (user, args, context) => {
-        return new Promise((resolve, reject) => {
-          new DAO(context.rootValue.user).Project(user.id).getEdgeCreated(args).then((result) => {
-            resolve(connectionFromArraySlice(result.payload, args, result.meta));
-          })
-          .catch((e) => {
-            reject(e);
-          })
-        });
+        return new DAO(context.rootValue.user).Project(user.id).getEdgeCreated(args);
       }
     },
     collaborations: {
@@ -227,14 +220,7 @@ let userType = new GraphQLObjectType({
       description: 'The projects the user is collaborating on.',
       args: connectionArgs,
       resolve: (user, args, context) => {
-        return new Promise((resolve, reject) => {
-          new DAO(context.rootValue.user).Project(user.id).getEdgeCollaborations(args).then((result) => {
-            resolve(connectionFromArraySlice(result.payload, args, result.meta));
-          })
-          .catch((e) => {
-            reject(e);
-          })
-        });
+        return new DAO(context.rootValue.user).Project(user.id).getEdgeCollaborations(args);
       }
     },
     invitations: {
@@ -242,14 +228,7 @@ let userType = new GraphQLObjectType({
       description: 'The invites the user recieved.',
       args: connectionArgs,
       resolve: (user, args, context) => {
-        return new Promise((resolve, reject) => {
-          new DAO(context.rootValue.user).Invitation(user.id).getEdgeInvitations(args).then((result) => {
-            resolve(connectionFromArraySlice(result.payload, args, result.meta));
-          })
-          .catch((e) => {
-            reject(e);
-          })
-        });
+        return new DAO(context.rootValue.user).Invitation(user.id).getEdgeInvitations(args);
       }
     }
   }),
@@ -345,14 +324,7 @@ let projectType = new GraphQLObjectType({
       description: 'The test cases of the project.',
       args: connectionArgs,
       resolve: (project, args, context) => {
-        return new Promise((resolve, reject) => {
-          new DAO(context.rootValue.user).TestCase(project.id).getEdgeRequired(args).then((result) => {
-            resolve(connectionFromArraySlice(result.payload, args, result.meta));
-          })
-          .catch((e) => {
-            reject(e);
-          })
-        });
+        return new DAO(context.rootValue.user).TestCase(project.id).getEdgeRequired(args);
       }
     },
     collaborators: {
@@ -360,14 +332,7 @@ let projectType = new GraphQLObjectType({
       description: 'The collaborators of the project.',
       args: connectionArgs,
       resolve: (project, args, context) => {
-        return new Promise((resolve, reject) => {
-          new DAO(context.rootValue.user).User(project.id).getEdgeCollaborators(args).then((result) => {
-            resolve(connectionFromArraySlice(result.payload, args, result.meta));
-          })
-          .catch((e) => {
-            reject(e);
-          })
-        });
+        return new DAO(context.rootValue.user).User(project.id).getEdgeCollaborators(args);
       }
     },
     invitees: {
@@ -375,14 +340,7 @@ let projectType = new GraphQLObjectType({
       description: 'The invitees of the project.',
       args: connectionArgs,
       resolve: (project, args, context) => {
-        return new Promise((resolve, reject) => {
-          new DAO(context.rootValue.user).User(project.id).getEdgeInvitees(args).then((result) => {
-            resolve(connectionFromArraySlice(result.payload, args, result.meta));
-          })
-          .catch((e) => {
-            reject(e);
-          })
-        });
+        return new DAO(context.rootValue.user).User(project.id).getEdgeInvitees(args);
       }
     },
     messages: {
@@ -390,14 +348,7 @@ let projectType = new GraphQLObjectType({
       description: 'The messages of the project.',
       args: connectionArgs,
       resolve: (project, args, context) => {
-        return new Promise((resolve, reject) => {
-          new DAO(context.rootValue.user).Message(project.id).getEdgeMessages(args).then((result) => {
-            resolve(connectionFromArraySlice(result.payload, args, result.meta));
-          })
-          .catch((e) => {
-            reject(e);
-          })
-        });
+        return new DAO(context.rootValue.user).Message(project.id).getEdgeMessages(args);
       }
     },
     events: {
@@ -405,14 +356,7 @@ let projectType = new GraphQLObjectType({
       description: 'The changes made on the project.',
       args: connectionArgs,
       resolve: (project, args, context) => {
-        return new Promise((resolve, reject) => {
-          new DAO(context.rootValue.user).ProjectEvent(project.id).getProjectEvents(args).then((result) => {
-            resolve(connectionFromArraySlice(result.payload, args, result.meta));
-          })
-          .catch((e) => {
-            reject(e);
-          })
-        });
+        return new DAO(context.rootValue.user).ProjectEvent(project.id).getProjectEvents(args);
       }
     }
   }),
@@ -466,14 +410,7 @@ let testCaseType = new GraphQLObjectType({
       description: 'The possible files fulfilling the test case.',
       args: connectionArgs,
       resolve: (testCase, args, context) => {
-        return new Promise((resolve, reject) => {
-          new DAO(context.rootValue.user).File(testCase.id).getEdgeFulfilled(args).then((result) => {
-            resolve(connectionFromArraySlice(result.payload, args, result.meta));
-          })
-          .catch((e) => {
-            reject(e);
-          })
-        });
+        return new DAO(context.rootValue.user).File(testCase.id).getEdgeFulfilled(args);
       }
     },
     messages: {
@@ -481,14 +418,7 @@ let testCaseType = new GraphQLObjectType({
       description: 'The messages of the test case.',
       args: connectionArgs,
       resolve: (testCase, args, context) => {
-        return new Promise((resolve, reject) => {
-          new DAO(context.rootValue.user).Message(testCase.id).getEdgeMessages(args).then((result) => {
-            resolve(connectionFromArraySlice(result.payload, args, result.meta));
-          })
-          .catch((e) => {
-            reject(e);
-          })
-        });
+        return new DAO(context.rootValue.user).Message(testCase.id).getEdgeMessages(args);
       }
     },
     events: {
@@ -496,14 +426,7 @@ let testCaseType = new GraphQLObjectType({
       description: 'The changes made on the test case.',
       args: connectionArgs,
       resolve: (testCase, args, context) => {
-        return new Promise((resolve, reject) => {
-          new DAO(context.rootValue.user).TestCaseEvent(testCase.id).getTestCaseEvents(args).then((result) => {
-            resolve(connectionFromArraySlice(result.payload, args, result.meta));
-          })
-          .catch((e) => {
-            reject(e);
-          })
-        });
+        return new DAO(context.rootValue.user).TestCaseEvent(testCase.id).getTestCaseEvents(args);
       }
     }
   }),
@@ -588,14 +511,7 @@ let fulfillmentType = new GraphQLObjectType({
       description: 'The messages on the fulfillment.',
       args: connectionArgs,
       resolve: (fulfillment, args, context) => {
-        return new Promise((resolve, reject) => {
-          new DAO(context.rootValue.user).Message(fulfillment.id).getEdgeMessages(args).then((result) => {
-            resolve(connectionFromArraySlice(result.payload, args, result.meta));
-          })
-          .catch((e) => {
-            reject(e);
-          })
-        });
+        return new DAO(context.rootValue.user).Message(fulfillment.id).getEdgeMessages(args);
       }
     },
     events: {
@@ -603,14 +519,7 @@ let fulfillmentType = new GraphQLObjectType({
       description: 'The changes made on the fulfillment.',
       args: connectionArgs,
       resolve: (fulfillment, args, context) => {
-        return new Promise((resolve, reject) => {
-          new DAO(context.rootValue.user).FulfillmentEvent(fulfillment.id).getFulfillmentEvents(args).then((result) => {
-            resolve(connectionFromArraySlice(result.payload, args, result.meta));
-          })
-          .catch((e) => {
-            reject(e);
-          })
-        });
+        return new DAO(context.rootValue.user).FulfillmentEvent(fulfillment.id).getFulfillmentEvents(args);
       }
     }
   }),

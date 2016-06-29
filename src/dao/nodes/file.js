@@ -78,80 +78,8 @@ class FileDAO {
     });
   }
 
-  getEdgeCreated(args) {
-    let pageObject = Pagination.getOrientDBPageFromGraphQL(args);
-
-    return new Promise((resolve, reject) => {
-      let user = this.user;
-      let db = this.db;
-      let id = this.targetId;
-
-      db
-      .getFile()
-      .outCreatesFromNode(id)
-      .skip(pageObject.skip)
-      .limit(pageObject.limit)
-      .order(pageObject.orderBy)
-      .transform((record) => {
-        return filteredObject(record, '@.*|rid');
-      })
-      .all()
-      .then((payload) => {
-        let meta = GraphQLHelper.getMeta(pageObject, payload);
-        resolve({
-          payload,
-          meta
-        });
-      })
-      .catch((e) => {
-        reject();
-
-      })
-      .done();
-    });
-  }
-
-  getEdgeCovered(args) {
-    let pageObject = Pagination.getOrientDBPageFromGraphQL(args);
-
-    return new Promise((resolve, reject) => {
-      let id = this.targetId;
-      let user = this.user;
-      let db = this.db;
-
-      db
-      .getFile()
-      .inCoversFromNode(id)
-      .skip(pageObject.skip)
-      .limit(pageObject.limit)
-      .order(pageObject.orderBy)
-      .transform((record) => {
-        return filteredObject(record, '@.*|rid');
-      })
-      .all()
-      .then((records) => {
-        if (records && records.length > 0) {
-          resolve(records);
-        } else {
-          let defaultCoverFile = {
-            id: id,
-            uri: FileConfig.DefaultImageUrl + id
-          };
-          resolve([
-            defaultCoverFile
-          ]);
-        }
-      })
-      .catch((e) => {
-        reject();
-
-      })
-      .done();
-    });
-  }
-
   getEdgeFulfilled(args) {
-    let pageObject = Pagination.getOrientDBPageFromGraphQL(args);
+    let pageObject = Pagination.getDescOrientDBPageFromGraphQL(args);
 
     return new Promise((resolve, reject) => {
       let user = this.user;
@@ -161,52 +89,22 @@ class FileDAO {
       db
       .getFulfillment()
       .inFulfillsFromNode(id)
-      .skip(pageObject.skip)
-      .limit(pageObject.limit)
-      .order('createdAt DESC')
-      .transform((record) => {
-        return filteredObject(record, '@.*|rid');
-      })
-      .all()
-      .then((payload) => {
-        let meta = GraphQLHelper.getMeta(pageObject, payload);
-        resolve({
-          payload,
-          meta
-        });
-      })
-      .catch((e) => {
-        reject();
-
-      })
-      .done();
-    });
-  }
-
-  inEdgeRejected(args) {
-    let pageObject = Pagination.getOrientDBPageFromGraphQL(args);
-
-    return new Promise((resolve, reject) => {
-      let user = this.user;
-      let db = this.db;
-      let id = this.targetId;
-
-      db
-      .getRejection()
-      .inRejectsFromNode(id)
-      .skip(pageObject.skip)
+      .where(
+        pageObject.where
+      )
       .limit(pageObject.limit)
       .order(pageObject.orderBy)
       .transform((record) => {
-        return filteredObject(record, '@.*|rid');
+        let node = filteredObject(record, '@.*|rid');
+        return {
+          node,
+          cursor: node.createdAt,
+        };
       })
       .all()
-      .then((payload) => {
-        let meta = GraphQLHelper.getMeta(pageObject, payload);
-        resolve({
-          payload,
-          meta
-        });
+      .then((edges) => {
+        let payload = GraphQLHelper.connectionFromDbArray({edges, args});
+        resolve(payload);
       })
       .catch((e) => {
         reject();
