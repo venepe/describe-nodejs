@@ -6,7 +6,6 @@ import { filteredObject, uuidToId } from '../../utilities';
 import { roles, regExRoles } from '../permissions';
 import { FileConfig } from '../../config';
 import * as events from '../../events';
-import { offsetToCursor } from 'graphql-relay';
 
 import {
   Cover

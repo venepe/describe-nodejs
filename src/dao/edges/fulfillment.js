@@ -5,9 +5,9 @@ import { SMTIValidator } from '../validator';
 import { filteredObject, uuidToId } from '../../utilities';
 import { roles, regExRoles } from '../permissions';
 import * as events from '../../events';
-import { offsetToCursor } from 'graphql-relay';
 import { fulfillmentStatus } from '../../constants';
 import { push } from '../../notification';
+import moment from 'moment';
 
 import {
   Fulfillment
@@ -120,23 +120,15 @@ class FulfillmentDAO {
               status: fulfillment.status
             })
           })
-          .let('cursor', s => {
-            s
-            .select('inE(\'Fulfills\').size() as cursor')
-            .from('TestCase')
-            .where({
-              uuid: relationalId
-            })
-          })
           .commit()
-          .return(['$file', '$fulfills', '$testCase', '$project', '$cursor'])
+          .return(['$file', '$fulfills', '$testCase', '$project'])
           .all()
           .then((result) => {
             let node = filteredObject(result[0], 'in.*|out.*|@.*|^_');
             let fulfills = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
             let testCase = filteredObject(result[2], 'in_.*|out_.*|@.*|^_');
             let project = filteredObject(result[3], 'in_.*|out_.*|@.*|^_');
-            let cursor = offsetToCursor(result[4].cursor);
+            let cursor = moment(moment()).toISOString();
 
             node = uuidToId(node);
 
@@ -287,23 +279,15 @@ class FulfillmentDAO {
               .limit(1)
             })
           })
-          .let('cursor', s => {
-            s
-            .select('inE(\'Fulfills\').size() as cursor')
-            .from('TestCase')
-            .where({
-              uuid: testCaseId
-            })
-          })
           .commit()
-          .return(['$newFulfillment', '$testCase', '$project', '$cursor', '$newFulfillmentEvent'])
+          .return(['$newFulfillment', '$testCase', '$project', '$newFulfillmentEvent'])
           .all()
           .then((result) => {
             let fulfillment = filteredObject(result[0], 'in.*|out.*|@.*|^_');
             let testCase = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
             let project = filteredObject(result[2], 'in_.*|out_.*|@.*|^_');
-            let cursor = offsetToCursor(result[3].cursor);
             let fulfillmentEventEdge = filteredObject(result[4], 'in_.*|out_.*|@.*|^_');
+            let cursor = fulfillmentEventEdge.createdAt;
 
             testCase = uuidToId(testCase);
 

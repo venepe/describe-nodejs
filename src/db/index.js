@@ -56,7 +56,7 @@ OrientDB.Statement.prototype.getFile = function() {
 
 OrientDB.Db.prototype.getProject = function() {
   this.SMTINode = 'Project';
-  return this.select('uuid as id, text, createdAt, updatedAt, outE(\'Requires\').size() as numOfTestCases, $tcF.size() as numOfTestCasesFulfilled')
+  return this.select('uuid as id, text, createdAt, updatedAt, outE(\'Requires\').size() as numOfTestCases, $tcF.size() as numOfTestCasesFulfilled, in_CollaboratesOn[0].role as role')
     .let('tcF', function(s) {
       s
       .select()
@@ -72,7 +72,7 @@ OrientDB.Db.prototype.getProject = function() {
 }
 
 OrientDB.Statement.prototype.getProject = function() {
-  return this.select('uuid as id, text, createdAt, updatedAt, outE(\'Requires\').size() as numOfTestCases, $tcF.size() as numOfTestCasesFulfilled')
+  return this.select('uuid as id, text, createdAt, updatedAt, outE(\'Requires\').size() as numOfTestCases, $tcF.size() as numOfTestCasesFulfilled, in_CollaboratesOn[0].role as role')
     .let('tcF', function(s) {
       s
       .select()
@@ -487,7 +487,7 @@ OrientDB.Statement.prototype.inCoversFromNode = function(id) {
   .where({'@class': this.db.SMTINode})
 }
 
-OrientDB.Statement.prototype.outCollaboratesOnFromNode = function(id, role, order) {
+OrientDB.Statement.prototype.outCollaboratesOnFromNode = function(id, order) {
   return this.from(function (s) {
     s
     .select('expand(in[@class = "Project"])')
@@ -502,9 +502,6 @@ OrientDB.Statement.prototype.outCollaboratesOnFromNode = function(id, role, orde
         .limit(1)
       })
       .order(order)
-    })
-    .where({
-      role
     })
   })
 }

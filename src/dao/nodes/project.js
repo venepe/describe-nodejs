@@ -5,7 +5,6 @@ import { SMTIValidator } from '../validator';
 import { filteredObject, Pagination, GraphQLHelper, uuidToId } from '../../utilities';
 import { roles, permissions, regExRoles } from '../permissions';
 import * as events from '../../events';
-import { offsetToCursor } from 'graphql-relay';
 import { collaboratorRoles } from '../../constants';
 
 import {
@@ -45,44 +44,8 @@ class ProjectDAO {
     });
   }
 
-  getEdgeCreated(args = {}) {
-    let pageObject = Pagination.getAscOrientDBPageFromGraphQL(args);
-
-    return new Promise((resolve, reject) => {
-      let user = this.user;
-      let db = this.db;
-      let id = this.targetId;
-
-      db
-      .getProject()
-      .outCollaboratesOnFromNode(id, 0)
-      .where(
-        pageObject.where
-      )
-      .limit(pageObject.limit)
-      .order(pageObject.orderBy)
-      .transform((record) => {
-        let node = filteredObject(record, '@.*|rid');
-        return {
-          node,
-          cursor: node.createdAt,
-        };
-      })
-      .all()
-      .then((edges) => {
-        let payload = GraphQLHelper.connectionFromDbArray({edges, args});
-        resolve(payload);
-      })
-      .catch((e) => {
-        reject();
-
-      })
-      .done();
-    });
-  }
-
   getEdgeCollaborations(args) {
-    let pageObject = Pagination.getAscOrientDBPageFromGraphQL(args);
+    let pageObject = Pagination.getDescOrientDBPageFromGraphQL(args);
 
     return new Promise((resolve, reject) => {
       let user = this.user;
@@ -92,7 +55,7 @@ class ProjectDAO {
       db
       .getProject()
       .select('in_CollaboratesOn.createdAt')
-      .outCollaboratesOnFromNode(id, 1, pageObject.orderBy)
+      .outCollaboratesOnFromNode(id, pageObject.orderBy)
       .where(
         pageObject.where
       )
@@ -171,20 +134,12 @@ class ProjectDAO {
             .set({ _allow })
             .set({role: collaboratorRoles.AUTHOR})
           })
-          .let('cursor', s => {
-            s
-            .select('outE(\'Creates\').size() as cursor')
-            .from('User')
-            .where({
-              uuid: relationalId
-            })
-          })
           .commit()
-          .return(['$project', '$cursor'])
+          .return(['$project'])
           .all()
           .then((result) => {
             let node = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
-            let cursor = offsetToCursor(result[1].cursor);
+            let cursor = node.createdAt;
             node = uuidToId(node);
             node.testCases = [];
             node.numOfTestCases = 0;
@@ -276,18 +231,13 @@ class ProjectDAO {
             .getProjectEvent()
             .from('$projectEvent')
           })
-          .let('cursor', s => {
-            s
-            .select('in_ProjectEvent.size() as cursor')
-            .from('$project')
-          })
           .commit()
-          .return(['$newProject', '$newProjectEvent', '$cursor'])
+          .return(['$newProject', '$newProjectEvent'])
           .all()
           .then((result) => {
             let project = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
             let projectEvent = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
-            let cursor = offsetToCursor(result[2].cursor);
+            let cursor = newProjectEvent.createdAt;
             projectEvent = uuidToId(projectEvent);
 
             let projectEventEdge = {

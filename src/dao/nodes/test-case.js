@@ -7,7 +7,6 @@ import { roles, regExRoles } from '../permissions';
 import * as events from '../../events';
 import { fulfillmentStatus } from '../../constants';
 import { FileConfig } from '../../config';
-import { offsetToCursor } from 'graphql-relay';
 import { push } from '../../notification';
 
 import {
@@ -167,22 +166,14 @@ class TestCaseDAO {
               status: fulfillment.status
             })
           })
-          .let('cursor', s => {
-            s
-            .select('outE(\'Requires\').size() as cursor')
-            .from('Project')
-            .where({
-              uuid: relationalId
-            })
-          })
           .commit()
-          .return(['$testCase', '$project', '$cursor'])
+          .return(['$testCase', '$project'])
           .all()
           .then((result) => {
             let node = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
             node = uuidToId(node);
             let project = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
-            let cursor = offsetToCursor(result[2].cursor);
+            let cursor = node.createdAt;
             let numOfTestCases = project.numOfTestCases;
             numOfTestCases++;
             project.numOfTestCases = numOfTestCases;
@@ -285,18 +276,13 @@ class TestCaseDAO {
             .getTestCaseEvent()
             .from('$testCaseEvent')
           })
-          .let('cursor', s => {
-            s
-            .select('in_TestCaseEvent.size() as cursor')
-            .from('$testCase')
-          })
           .commit()
-          .return(['$newTestCase', '$newTestCaseEvent', '$cursor'])
+          .return(['$newTestCase', '$newTestCaseEvent'])
           .all()
           .then((result) => {
             let testCase = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
             let testCaseEvent = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
-            let cursor = offsetToCursor(result[2].cursor);
+            let cursor = testCaseEvent.createdAt;
             testCaseEvent = uuidToId(testCaseEvent);
 
             let testCaseEventEdge = {

@@ -209,10 +209,10 @@ let userType = new GraphQLObjectType({
     },
     projects: {
       type: projectConnection,
-      description: 'The projects created by the user.',
+      description: 'The projects for the user.',
       args: connectionArgs,
       resolve: (user, args, context) => {
-        return new DAO(context.rootValue.user).Project(user.id).getEdgeCreated(args);
+        return new DAO(context.rootValue.user).Project(user.id).getEdgeCollaborations(args);
       }
     },
     collaborations: {
@@ -310,6 +310,10 @@ let projectType = new GraphQLObjectType({
     numOfTestCasesFulfilled: {
       type: GraphQLInt,
       description: 'The total number of test cases fulfilled for the project.',
+    },
+    role: {
+      type: collaboratorRoles,
+      description: 'The user role on the project.',
     },
     createdAt: {
       type: GraphQLString,
@@ -1037,15 +1041,15 @@ var deleteCollaborator = mutationWithClientMutationId({
   }
 });
 
-var deleteCollaboration = mutationWithClientMutationId({
-  name: 'DeleteCollaboration',
+var leaveProject = mutationWithClientMutationId({
+  name: 'LeaveProject',
   inputFields: {
     id: {
       type: new GraphQLNonNull(GraphQLID)
     }
   },
   outputFields: {
-    deletedCollaborationId: {
+    leftProjectId: {
       type: GraphQLID,
       resolve: ({id}) => id,
     },
@@ -1843,7 +1847,7 @@ var schema = new GraphQLSchema({
     fields: {
       acceptInvitation,
       declineInvitation,
-      deleteCollaboration,
+      leaveProject,
       deleteCollaborator,
       deleteInvitee,
       deleteUserCover,

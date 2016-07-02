@@ -4,7 +4,6 @@ import { SMTIValidator } from '../validator';
 import { filteredObject } from '../../utilities';
 import { roles, permissions, regExRoles } from '../permissions';
 import * as events from '../../events';
-import { offsetToCursor } from 'graphql-relay';
 import { collaboratorRoles } from '../../constants';
 import moment from 'moment';
 
@@ -147,12 +146,12 @@ class CollaborationDAO {
               .from('$collaborateson')
             })
             .commit()
-            .return(['$newCollaborator', '$project', '$cursor'])
+            .return(['$newCollaborator', '$project'])
             .all()
             .then((result) => {
               let collaborator = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
               let project = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
-              let cursor = offsetToCursor(result[2].cursor);
+              let cursor = moment(moment()).toISOString();
               let profile = collaborator.profile;
 
               //Add collaborator to project

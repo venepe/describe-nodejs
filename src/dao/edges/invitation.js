@@ -4,9 +4,9 @@ import { SMTIValidator } from '../validator';
 import { filteredObject, Pagination, GraphQLHelper } from '../../utilities';
 import { roles, permissions, regExRoles } from '../permissions';
 import * as events from '../../events';
-import { offsetToCursor } from 'graphql-relay';
 import { collaboratorRoles } from '../../constants';
 import SMTIEmail from '../../email';
+import moment from 'moment';
 
 import {
   Invitation
@@ -148,14 +148,6 @@ class InvitationDAO {
                 sponsorId: userId
               })
             })
-            .let('cursor', s => {
-              s
-              .select('inE(\'Invites\').size() as cursor')
-              .from('User')
-              .where({
-                uuid: relationalId
-              })
-            })
             .let('updateInvites', (s) => {
               s
               .update(`$invites PUT _allow = "${inviteeRole}", ${roles.owner}`)
@@ -179,14 +171,14 @@ class InvitationDAO {
               })
             })
             .commit()
-            .return(['$newInvitation', '$newInvitee', '$project', '$sponsor', '$cursor'])
+            .return(['$newInvitation', '$newInvitee', '$project', '$sponsor'])
             .all()
             .then((result) => {
               let invitation = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
               let invitee = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
               let project = filteredObject(result[2], 'in_.*|out_.*|@.*|^_');
               let sponsor = filteredObject(result[3], 'in_.*|out_.*|@.*|^_');
-              let cursor = offsetToCursor(result[4].cursor);
+              let cursor = moment(moment()).toISOString();
               let profile = invitee.profile;
 
               invitation.sponsor = sponsor;
@@ -295,14 +287,6 @@ class InvitationDAO {
         .select('expand(outE(\'Requires\').inV(\'TestCase\'))')
         .from('$project')
       })
-      .let('cursor', s => {
-        s
-        .select('inE(\'CollaboratesOn\').size() as cursor')
-        .from('$project')
-        .where({
-          role: 1
-        })
-      })
       .let('files', (s) => {
         s
         .select('expand(outE(\'Requires\').inV(\'TestCase\').inE(\'Fulfills\').outV(\'File\'))')
@@ -337,12 +321,12 @@ class InvitationDAO {
         .from('$collaborateson')
       })
       .commit()
-      .return(['$newCollaborator', '$project', '$cursor'])
+      .return(['$newCollaborator', '$project'])
       .all()
       .then((result) => {
         let collaborator = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
         let project = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
-        let cursor = offsetToCursor(result[2].cursor);
+        let cursor = moment(moment()).toISOString();
         let profile = collaborator.profile;
         let projectId = project.id;
 

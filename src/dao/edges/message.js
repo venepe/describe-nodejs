@@ -4,7 +4,6 @@ import { SMTIValidator } from '../validator';
 import { filteredObject, Pagination, GraphQLHelper, uuidToId } from '../../utilities';
 import { roles, permissions, regExRoles } from '../permissions';
 import * as events from '../../events';
-import { offsetToCursor, toGlobalId } from 'graphql-relay';
 import { collaboratorRoles } from '../../constants';
 import { push } from '../../notification';
 
@@ -95,14 +94,6 @@ class MessageDAO {
             .to('$channel')
             .set(message)
           })
-          .let('cursor', s => {
-            s
-            .select('inE(\'Message\').size() as cursor')
-            .from('indexvalues:V.uuid')
-            .where({
-              uuid: relationalId
-            })
-          })
           .let('newMessage', (s) => {
             s
             .getMessage()
@@ -125,12 +116,12 @@ class MessageDAO {
             .limit(1)
           })
           .commit()
-          .return(['$newMessage', '$newChannel', '$cursor', '$project'])
+          .return(['$newMessage', '$newChannel', '$project'])
           .all()
           .then((result) => {
             let node = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
             let channel = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
-            let cursor = offsetToCursor(result[2].cursor);
+            let cursor = node.createdAt;
             let projectId = result[3].id;
 
             channel.id = toGlobalId(channelType, channel.id)

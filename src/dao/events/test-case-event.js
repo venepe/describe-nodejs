@@ -1,7 +1,6 @@
 'use strict';
 
 import { filteredObject, Pagination, GraphQLHelper } from '../../utilities';
-import { offsetToCursor } from 'graphql-relay';
 
 import {
   TestCaseEvent
