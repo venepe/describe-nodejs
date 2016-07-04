@@ -19,8 +19,7 @@ export const unsubscribe = (channel, listener) => {
 export { channelForSubscription } from './graphql';
 
 export { didUpdateProjectChannel, didIntroduceTestCaseChannel, didDeleteCollaboratorChannel,
-  didDeleteCollaborationChannel, didIntroduceFulfillmentChannel, didUpdateFulfillmentChannel,
-  didDeleteTestCaseChannel, didUpdateTestCaseChannel, didIntroduceCollaborationChannel,
-  didIntroduceCollaboratorChannel, didDeleteProjectChannel, didIntroduceProjectChannel,
-  didIntroduceInviteeChannel, didDeleteInviteeChannel, didIntroduceInvitationChannel,
-  didDeclineInvitationChannel, didAcceptInvitationChannel, didIntroduceMessageChannel } from './channels';
+  didIntroduceFulfillmentChannel, didUpdateFulfillmentChannel, didDeleteTestCaseChannel,
+  didUpdateTestCaseChannel, didIntroduceCollaboratorChannel, didDeleteProjectChannel,
+  didIntroduceProjectChannel, didIntroduceInviteeChannel, didDeleteInviteeChannel,
+  didIntroduceInvitationChannel, didDeclineInvitationChannel, didAcceptInvitationChannel, didIntroduceMessageChannel } from './channels';

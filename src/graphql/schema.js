@@ -215,14 +215,6 @@ let userType = new GraphQLObjectType({
         return new DAO(context.rootValue.user).Project(user.id).getEdgeCollaborations(args);
       }
     },
-    collaborations: {
-      type: projectConnection,
-      description: 'The projects the user is collaborating on.',
-      args: connectionArgs,
-      resolve: (user, args, context) => {
-        return new DAO(context.rootValue.user).Project(user.id).getEdgeCollaborations(args);
-      }
-    },
     invitations: {
       type: invitationConnection,
       description: 'The invites the user recieved.',
@@ -311,9 +303,9 @@ let projectType = new GraphQLObjectType({
       type: GraphQLInt,
       description: 'The total number of test cases fulfilled for the project.',
     },
-    role: {
-      type: collaboratorRoles,
-      description: 'The user role on the project.',
+    permission: {
+      type: GraphQLInt,
+      description: 'The user permission on the project.',
     },
     createdAt: {
       type: GraphQLString,
@@ -985,33 +977,6 @@ var deleteUserCover = mutationWithClientMutationId({
   }
 });
 
-var introduceCollaborator = mutationWithClientMutationId({
-  name: 'IntroduceCollaborator',
-  inputFields: {
-    projectId: {
-      type: new GraphQLNonNull(GraphQLID)
-    },
-    email: {
-      type: new GraphQLNonNull(GraphQLString),
-      description: 'The email of the collaborator.',
-    }
-  },
-  outputFields: {
-    collaboratorEdge: {
-      type: GraphQLCollaboratorEdge,
-      resolve: ({collaboratorEdge}) => { return collaboratorEdge; }
-    },
-    project: {
-      type: projectType,
-      resolve: ({project}) => { return project; },
-    }
-  },
-  mutateAndGetPayload: ({projectId, email}, context) => {
-    var localId = fromGlobalId(projectId).id;
-    return new DAO(context.rootValue.user).Collaboration(localId).create({email});
-  }
-});
-
 var deleteCollaborator = mutationWithClientMutationId({
   name: 'DeleteCollaborator',
   inputFields: {
@@ -1060,7 +1025,7 @@ var leaveProject = mutationWithClientMutationId({
   },
   mutateAndGetPayload: ({id}, context) => {
     var localId = fromGlobalId(id).id;
-    return new DAO(context.rootValue.user).Collaboration(localId).leave().then((data) => {
+    return new DAO(context.rootValue.user).Project(localId).leave().then((data) => {
       return {id};
     });
   }
@@ -1101,9 +1066,9 @@ var acceptInvitation = mutationWithClientMutationId({
     }
   },
   outputFields: {
-    collaborationEdge: {
+    projectEdge: {
       type: GraphQLProjectEdge,
-      resolve: ({collaborationEdge}) => { return collaborationEdge; }
+      resolve: ({projectEdge}) => { return projectEdge; }
     },
     acceptedInvitationId: {
       type: GraphQLID,
@@ -1481,78 +1446,6 @@ var didDeleteCollaborator = subscriptionWithClientSubscriptionId({
   }
 });
 
-var didIntroduceCollaboration = subscriptionWithClientSubscriptionId({
-  name: 'DidIntroduceCollaboration',
-  inputFields: {
-    meId: {
-      type: new GraphQLNonNull(GraphQLID)
-    }
-  },
-  outputFields: {
-    collaborationEdge: {
-      type: GraphQLProjectEdge,
-      resolve: ({collaborationEdge}) => {
-        collaborationEdge.collaborators = {pageInfo: {hasNextPage: false, hasPreviousPage: false}, edges: []};
-        collaborationEdge.testCases = {pageInfo: {hasNextPage: false, hasPreviousPage: false}, edges: []};
-        collaborationEdge.events = {pageInfo: {hasNextPage: false, hasPreviousPage: false}, edges: []};
-        return {
-          cursor: cursorForObjectInConnection([collaborationEdge], collaborationEdge),
-          node: collaborationEdge,
-        };
-      }
-    },
-    me: {
-      type: userType,
-      resolve: (payload) => {
-        return payload.me;
-      },
-    }
-  },
-  mutateAndGetPayload: ({meId}, {rootValue}) => {
-    if (rootValue.event) {
-      return rootValue.event;
-    } else {
-      var localId = fromGlobalId(meId).id;
-      rootValue.channel = channels.didIntroduceCollaborationChannel(localId);
-      return {meId};
-    }
-  }
-});
-
-var didDeleteCollaboration = subscriptionWithClientSubscriptionId({
-  name: 'DidDeleteCollaboration',
-  inputFields: {
-    id: {
-      type: new GraphQLNonNull(GraphQLID)
-    },
-    meId: {
-      type: new GraphQLNonNull(GraphQLID)
-    }
-  },
-  outputFields: {
-    deletedCollaborationId: {
-      type: GraphQLID,
-      resolve: ({deletedCollaborationId}) => {
-        return toGlobalId('Project', deletedCollaborationId);
-      },
-    },
-    me: {
-      type: userType,
-      resolve: ({me}) => { return me; },
-    },
-  },
-  mutateAndGetPayload: ({id, meId}, {rootValue}) => {
-    if (rootValue.event) {
-      return rootValue.event;
-    } else {
-      var localId = fromGlobalId(id).id;
-      var localMeId = fromGlobalId(meId).id;
-      rootValue.channel = channels.didDeleteCollaborationChannel(localMeId, localId);
-      return {id};
-    }
-  }
-});
-
 var didIntroduceInvitee = subscriptionWithClientSubscriptionId({
   name: 'DidIntroduceInvitee',
   inputFields: {
@@ -1854,7 +1747,6 @@ var schema = new GraphQLSchema({
       deleteProject,
       deleteTestCase,
       deleteUser,
-      introduceCollaborator,
       introduceUserCover,
       introduceFulfillment,
       introduceInvitee,
@@ -1874,13 +1766,11 @@ var schema = new GraphQLSchema({
     fields: {
       didAcceptInvitation,
       didDeclineInvitation,
-      didDeleteCollaboration,
       didDeleteCollaborator,
       didDeleteInvitee,
       didDeleteProject,
       didDeleteTestCase,
       didIntroduceCollaborator,
-      didIntroduceCollaboration,
       didIntroduceInvitation,
       didIntroduceInvitee,
       didIntroduceFulfillment,

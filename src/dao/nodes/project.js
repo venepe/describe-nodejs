@@ -22,9 +22,10 @@ class ProjectDAO {
       let user = this.user;
       let db = this.db;
       let id = this.targetId;
+      let role = this.user.role;
 
       db
-      .getProject()
+      .getProject(role)
       .from(_class)
       .where({uuid: id})
       .limit(1)
@@ -48,13 +49,13 @@ class ProjectDAO {
     let pageObject = Pagination.getDescOrientDBPageFromGraphQL(args);
 
     return new Promise((resolve, reject) => {
-      let user = this.user;
+      let user = this.user || {};
       let db = this.db;
       let id = this.targetId;
+      let role = user.role;
 
       db
-      .getProject()
-      .select('in_CollaboratesOn.createdAt')
+      .getProject(role)
       .outCollaboratesOnFromNode(id, pageObject.orderBy)
       .where(
         pageObject.where
@@ -293,6 +294,116 @@ class ProjectDAO {
         resolve({
           deletedProjectId: targetId,
           me: {id: userId}
+        });
+      })
+      .catch((e) => {
+        console.log(`orientdb error: ${e}`);
+        reject();
+      })
+      .done();
+    });
+  }
+
+  leave() {
+    return new Promise((resolve, reject) => {
+      var projectId = this.targetId;
+      var db = this.db;
+      var user = this.user;
+      var userId = this.user.id;
+      var role = this.user.role;
+
+      db
+      .let('project', (s) => {
+        s
+        .select()
+        .getProject()
+        .from('Project')
+        .where({
+          uuid: projectId
+        })
+      })
+      .let('collaborator', (s) => {
+        s
+        .getCollaborator()
+        .inCollaboratesOnFromNode(projectId)
+        .where(
+          `$profile[0].id = "${userId}"`
+        )
+        .limit(1)
+      })
+      .let('deletes', (s) => {
+        s
+        .delete('edge', 'CollaboratesOn')
+        .from((s) => {
+          s
+          .select()
+          .from('User')
+          .where({
+            uuid: userId
+          })
+        })
+        .to((s) => {
+          s
+          .select()
+          .from('Project')
+          .where({
+            uuid: projectId
+          })
+        })
+        .where(
+          `_allow["${role}"].asString() MATCHES "${regExRoles.deleteNode}"`
+        )
+      })
+      .let('testCases', (s) => {
+        s
+        .select('expand(outE(\'Requires\').inV(\'TestCase\'))')
+        .from('Project')
+        .where({
+          uuid: projectId
+        })
+      })
+      .let('files', (s) => {
+        s
+        .select('expand(outE(\'Requires\').inV(\'TestCase\').inE(\'Fulfills\').inV(\'File\'))')
+        .from('Project')
+        .where({
+          uuid: projectId
+        })
+      })
+      .let('updateTestCases', (s) => {
+        s
+        .update(`$testCases REMOVE _allow = "${role}"`)
+      })
+      .let('updateFiles', (s) => {
+        s
+        .update(`$files REMOVE _allow = "${role}"`)
+      })
+      .let('updateProject', (s) => {
+        s
+        .update(`$project REMOVE _allow = "${role}"`)
+      })
+      .commit()
+      .return(['$project', '$collaborator'])
+      .all()
+      .then((result) => {
+        let project = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+        let collaborator = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
+        let collaboratorId = collaborator.id;
+
+        events.publish(events.didDeleteCollaboratorChannel(projectId, collaboratorId), {
+          deletedCollaboratorId: collaboratorId,
+          project
+        });
+
+        //Delete project from user
+        events.publish(events.didDeleteProjectChannel(userId, projectId), {
+          deletedCollaborationId: projectId,
+          me: {id: userId}
+        });
+
+        resolve({
+          deletedCollaboratorId: userId,
+          project
         });
       })
       .catch((e) => {

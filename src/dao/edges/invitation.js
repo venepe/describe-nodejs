@@ -280,7 +280,7 @@ class InvitationDAO {
         .from('$collaborator')
         .to('$project')
         .set('_allow = $project._allow[0]')
-        .set('role = $invitation[0].role')
+        .set(`role = ${collaboratorRoles.CONTRIBUTOR}`)
       })
       .let('testCases', (s) => {
         s
@@ -302,7 +302,7 @@ class InvitationDAO {
       })
       .let('updateProject', (s) => {
         s
-        .update(`$project PUT _allow = "${role}", ${roles.owner}`)
+        .update(`$project PUT _allow = "${role}", ${roles.contributor}`)
       })
       .let('updateCollaboratesOn', (s) => {
         s
@@ -339,9 +339,9 @@ class InvitationDAO {
           project
         });
 
-        // Add collaboration and acceptedInvitationId to user
+        // Add project and acceptedInvitationId to user
         events.publish(events.didAcceptInvitationChannel(profile.id), {
-          collaborationEdge: project,
+          projectEdge: project,
           acceptedInvitationId: relationalId,
           me: profile
         });
@@ -352,9 +352,9 @@ class InvitationDAO {
           project
         });
 
-        //Return the collaboration we added to the user
+        //Return the project we added to the user
         resolve({
-          collaborationEdge: {
+          projectEdge: {
             node: project,
             cursor,
           },
@@ -426,7 +426,7 @@ class InvitationDAO {
           me: {id: userId}
         });
 
-        //Return the collaboration we added to the user
+        //Return the project we added to the user
         resolve({
           declinedInvitationId: targetId,
           me: {id: userId}

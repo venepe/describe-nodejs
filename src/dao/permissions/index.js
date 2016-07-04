@@ -1,3 +1,5 @@
+'use strict';
+
   /**
    *  0 - none
    *  1 - updateNode
@@ -14,16 +16,19 @@ const permissions = {
   UPDATE_NODE: 1,
   DELETE_NODE: 2,
   ADD_EDGE: 4,
+  REMOVE_EDGE: 8,
 }
 
 const roles = {
   owner: permissions.ADD_EDGE + permissions.UPDATE_NODE + permissions.DELETE_NODE,
+  contributor: permissions.ADD_EDGE,
 }
 
 const regExRoles = {
-  updateNode: '1|3|5|7',
-  deleteNode: '2|3|6|7',
-  addEdge: '4|5|6|7',
+  updateNode: '1|3|5|7|15',
+  deleteNode: '2|3|6|7|15',
+  addEdge: '4|5|6|7|15',
+  removeEdge: '8|9|10|12|15',
 }
 
 export { permissions, roles, regExRoles };
