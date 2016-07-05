@@ -134,7 +134,7 @@ class InvitationDAO {
                 uuid: relationalId
               })
               .where(
-                `_allow["${role}"] = ${roles.owner}`
+                `_allow["${role}"].asString() MATCHES "${regExRoles.addEdge}"`
               )
             })
             .let('invites', (s) => {
@@ -482,9 +482,6 @@ class InvitationDAO {
         .where({
           uuid: targetId
         })
-        .where(
-          `_allow["${role}"].asString() MATCHES "${regExRoles.deleteNode}"`
-        )
       })
       .commit()
       .return(['$project', '$invitee'])
