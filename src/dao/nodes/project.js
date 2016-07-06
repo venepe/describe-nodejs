@@ -238,7 +238,7 @@ class ProjectDAO {
           .then((result) => {
             let project = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
             let projectEvent = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
-            let cursor = newProjectEvent.createdAt;
+            let cursor = projectEvent.createdAt;
             projectEvent = uuidToId(projectEvent);
 
             let projectEventEdge = {
