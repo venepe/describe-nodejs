@@ -127,7 +127,6 @@ class TestCaseDAO {
             s
             .create('vertex', 'TestCase')
             .set(testCase)
-            .set('_allow = $project._allow[0]')
           })
           .let('testCaseEvent', (s) => {
             s
@@ -148,7 +147,6 @@ class TestCaseDAO {
             .set({
               uri: fulfillment.uri
             })
-            .set('_allow = $project._allow[0]')
           })
           .let('fulfillmentEvent', (s) => {
             s

@@ -142,15 +142,10 @@ class InvitationDAO {
               .create('edge', 'Invites')
               .from('$project')
               .to('$invitee')
-              .set('_allow = $project._allow[0]')
               .set({
                 role: collaboratorRoles.CONTRIBUTOR,
                 sponsorId: userId
               })
-            })
-            .let('updateInvites', (s) => {
-              s
-              .update(`$invites PUT _allow = "${inviteeRole}", ${roles.owner}`)
             })
             .let('newInvitation', (s) => {
               s
@@ -279,7 +274,6 @@ class InvitationDAO {
         .create('edge', 'CollaboratesOn')
         .from('$collaborator')
         .to('$project')
-        .set('_allow = $project._allow[0]')
         .set(`role = ${collaboratorRoles.CONTRIBUTOR}`)
       })
       .let('testCases', (s) => {

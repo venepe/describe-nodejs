@@ -57,7 +57,6 @@ class CoverDAO {
             s
             .create('vertex', 'File')
             .set(coverImage)
-            .set('_allow = $target._allow[0]')
           })
           .let('covers', (s) => {
             s
