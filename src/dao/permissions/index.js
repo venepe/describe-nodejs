@@ -20,7 +20,7 @@ const permissions = {
 }
 
 const roles = {
-  owner: permissions.ADD_EDGE + permissions.UPDATE_NODE + permissions.DELETE_NODE,
+  owner: permissions.ADD_EDGE + permissions.UPDATE_NODE + permissions.DELETE_NODE + permissions.REMOVE_EDGE,
   contributor: permissions.ADD_EDGE,
 }
 
