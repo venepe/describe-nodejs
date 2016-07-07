@@ -286,8 +286,13 @@ class FulfillmentDAO {
             let fulfillment = filteredObject(result[0], 'in.*|out.*|@.*|^_');
             let testCase = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
             let project = filteredObject(result[2], 'in_.*|out_.*|@.*|^_');
-            let fulfillmentEventEdge = filteredObject(result[4], 'in_.*|out_.*|@.*|^_');
-            let cursor = fulfillmentEventEdge.createdAt;
+            let fulfillmentEvent = filteredObject(result[3], 'in_.*|out_.*|@.*|^_');
+            let cursor = fulfillmentEvent.createdAt;
+
+            let fulfillmentEventEdge = {
+              node: fulfillmentEvent,
+              cursor
+            };
 
             testCase = uuidToId(testCase);
 

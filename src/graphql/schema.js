@@ -908,12 +908,7 @@ var updateFulfillment = mutationWithClientMutationId({
     },
     fulfillmentEventEdge: {
       type: GraphQLFulfillEventEdge,
-      resolve: ({fulfillmentEventEdge}) => {
-        return {
-          cursor: cursorForObjectInConnection([fulfillmentEventEdge], fulfillmentEventEdge),
-          node: fulfillmentEventEdge,
-        };
-      }
+      resolve: ({fulfillmentEventEdge}) => { return fulfillmentEventEdge }
     },
     testCase: {
       type: testCaseType,
@@ -1292,12 +1287,7 @@ var didUpdateFulfillment = subscriptionWithClientSubscriptionId({
     },
     fulfillmentEventEdge: {
       type: GraphQLFulfillEventEdge,
-      resolve: ({fulfillmentEventEdge}) => {
-        return {
-          cursor: cursorForObjectInConnection([fulfillmentEventEdge], fulfillmentEventEdge),
-          node: fulfillmentEventEdge,
-        };
-      }
+      resolve: ({fulfillmentEventEdge}) => { return fulfillmentEventEdge }
     },
     testCase: {
       type: testCaseType,
