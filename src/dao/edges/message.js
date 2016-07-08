@@ -122,7 +122,7 @@ class MessageDAO {
             let node = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
             let channel = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
             let cursor = node.createdAt;
-            let projectId = result[3].id;
+            let projectId = result[2].id;
 
             channel.id = toGlobalId(channelType, channel.id)
 
