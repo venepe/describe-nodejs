@@ -178,6 +178,9 @@ class InvitationDAO {
 
               invitation.sponsor = sponsor;
 
+              //Add knows edges
+              this.knows(profile.id);
+
               // TODO: Add invitation to project
               events.publish(events.didIntroduceInviteeChannel(relationalId), {
                 inviteeEdge: {
@@ -232,7 +235,7 @@ class InvitationDAO {
       var relationalId = this.targetId;
       var user = this.user;
       var userId = this.user.id;
-      var role = this.user.role;
+      var role = this.user.role;  
 
       db
       .let('invitation', (s) => {
@@ -315,14 +318,18 @@ class InvitationDAO {
         .from('$collaborateson')
       })
       .commit()
-      .return(['$newCollaborator', '$project'])
+      .return(['$newCollaborator', '$project', '$invitation'])
       .all()
       .then((result) => {
         let collaborator = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
         let project = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
+        let invitation = filteredObject(result[2], 'in_.*|out_.*|@.*|^_');
         let cursor = moment(moment()).toISOString();
         let profile = collaborator.profile;
         let projectId = project.id;
+
+        //Add knows edges
+        this.knows(invitation.sponsorId);
 
         //Add collaborator to project
         events.publish(events.didIntroduceCollaboratorChannel(projectId), {
@@ -501,6 +508,70 @@ class InvitationDAO {
         resolve({
           deletedInviteeId: targetId,
           project
+        });
+      })
+      .catch((e) => {
+        console.log(`orientdb error: ${e}`);
+        reject();
+      })
+      .done();
+    });
+  }
+
+  knows(contactId) {
+    return new Promise((resolve, reject) => {
+      var db = this.db;
+      var user = this.user;
+      var userId = this.user.id;
+      var role = this.user.role;
+
+      db
+      .let('me', (s) => {
+        s
+        .select()
+        .from('User')
+        .where({
+          uuid: userId
+        })
+      })
+      .let('contact', (s) => {
+        s
+        .select()
+        .from('User')
+        .where({
+          uuid: contactId
+        })
+      })
+      .let('knows', (s) => {
+        s
+        .create('edge', 'Knows')
+        .from('$me')
+        .to('$contact')
+      })
+      .let('newContact', (s) => {
+        s
+        .getUser()
+        .from('$contact')
+      })
+      .let('newMe', (s) => {
+        s
+        .getUser()
+        .from('$me')
+      })
+      .commit()
+      .return(['$newContact', '$newMe'])
+      .all()
+      .then((result) => {
+        let contact = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+        let me = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
+        let cursor = moment(moment()).toISOString();
+
+        resolve({
+          contactEdge: {
+            node: contact,
+            cursor,
+          },
+          me
         });
       })
       .catch((e) => {

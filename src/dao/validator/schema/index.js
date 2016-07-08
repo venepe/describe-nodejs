@@ -1,6 +1,7 @@
 'use strict';
 
 export { default as isValidCollaboration } from './collaboration';
+export { default as isValidContact } from './contact';
 export { default as isValidCredential } from './credential';
 export { default as isValidFile } from './file';
 export { default as isValidInvitation } from './invitation';

@@ -222,6 +222,14 @@ let userType = new GraphQLObjectType({
       resolve: (user, args, context) => {
         return new DAO(context.rootValue.user).Invitation(user.id).getEdgeInvitations(args);
       }
+    },
+    contacts: {
+      type: contactConnection,
+      description: 'The contacts for the user.',
+      args: connectionArgs,
+      resolve: (user, args, context) => {
+        return new DAO(context.rootValue.user).User(user.id).getEdgeKnows(args);
+      }
     }
   }),
   interfaces: [nodeInterface],
@@ -633,6 +641,9 @@ var {connectionType: collaboratorConnection, edgeType: GraphQLCollaboratorEdge} 
 
 var {connectionType: inviteeConnection, edgeType: GraphQLInviteeEdge} =
   connectionDefinitions({name: 'Invitee', nodeType: inviteeType});
+
+var {connectionType: contactConnection, edgeType: GraphQLContactEdge} =
+  connectionDefinitions({name: 'Contact', nodeType: userType});
 
 var updateUser = mutationWithClientMutationId({
   name: 'UpdateUser',
@@ -1165,6 +1176,58 @@ var introduceMessage = mutationWithClientMutationId({
     var {type, id} = fromGlobalId(channelId);
     var payload = {text};
     return new DAO(context.rootValue.user).Message(id).create({payload, channelType: type});
+  }
+});
+
+var introduceContact = mutationWithClientMutationId({
+  name: 'IntroduceContact',
+  inputFields: {
+    meId: {
+      type: new GraphQLNonNull(GraphQLID)
+    },
+    email: {
+      type: new GraphQLNonNull(GraphQLString),
+      description: 'The email of the contact.',
+    }
+  },
+  outputFields: {
+    contactEdge: {
+      type: GraphQLContactEdge,
+      resolve: ({contactEdge}) => { return contactEdge; }
+    },
+    me: {
+      type: userType,
+      resolve: ({me}) => { return me; },
+    }
+  },
+  mutateAndGetPayload: ({meId, email}, context) => {
+    var localId = fromGlobalId(projectId).id;
+    return new DAO(context.rootValue.user).Know(localId).create({email});
+  }
+});
+
+var deleteContact = mutationWithClientMutationId({
+  name: 'DeleteContact',
+  inputFields: {
+    id: {
+      type: new GraphQLNonNull(GraphQLID)
+    }
+  },
+  outputFields: {
+    deletedContactId: {
+      type: GraphQLID,
+      resolve: ({deletedContactId}) => {
+        return toGlobalId('User', deletedContactId);
+      },
+    },
+    me: {
+      type: userType,
+      resolve: ({me}) => { return me },
+    },
+  },
+  mutateAndGetPayload: ({id}, context) => {
+    var localId = fromGlobalId(id).id;
+    return new DAO(context.rootValue.user).Know(localId).del();
   }
 });
 
@@ -1732,12 +1795,14 @@ var schema = new GraphQLSchema({
       declineInvitation,
       leaveProject,
       deleteCollaborator,
+      deleteContact,
       deleteInvitee,
       deleteUserCover,
       deleteProject,
       deleteTestCase,
       deleteUser,
       introduceUserCover,
+      introduceContact,
       introduceFulfillment,
       introduceInvitee,
       introduceMessage,

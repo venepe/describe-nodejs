@@ -234,6 +234,22 @@ class SMTIValidator {
     });
   }
 
+  isContact() {
+    return new Promise((resolve, reject) => {
+      let obj = this.obj;
+      let isValid = schema.isValidContact;
+
+      isValid(obj, (errorCount, errors) => {
+        if (errorCount === 0) {
+          obj.email = validator.normalizeEmail(obj.email);
+          resolve({contact: obj, contactEvent: obj});
+        } else {
+          reject(errors);
+        }
+      });
+    });
+  }
+
   isMessage() {
     return new Promise((resolve, reject) => {
       let obj = this.obj;

@@ -633,6 +633,43 @@ class UserDAO {
       .done();
     });
   }
+
+  getEdgeKnows(args) {
+    let pageObject = Pagination.getAscOrientDBPageFromGraphQL(args);
+
+    return new Promise((resolve, reject) => {
+      let user = this.user;
+      let userId = this.user.id;
+      let db = this.db;
+      let id = this.targetId;
+
+      db
+      .getUser()
+      .outKnowsFromNode(id)
+      .where(
+        pageObject.where
+      )
+      .limit(pageObject.limit)
+      .order(pageObject.orderBy)
+      .transform((record) => {
+        let node = filteredObject(record, '@.*|rid');
+        return {
+          node,
+          cursor: node.createdAt,
+        };
+      })
+      .all()
+      .then((edges) => {
+        let payload = GraphQLHelper.connectionFromDbArray({edges, args});
+        resolve(payload);
+      })
+      .catch((e) => {
+        reject();
+
+      })
+      .done();
+    });
+  }
 }
 
 export default UserDAO;

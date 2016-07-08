@@ -566,6 +566,22 @@ OrientDB.Statement.prototype.inInvitesFromNode = function(id) {
   })
 }
 
+OrientDB.Statement.prototype.outKnowsFromNode = function(id) {
+  return this.from(function (s) {
+    s
+    .select('expand(out("Knows"))')
+    .from(function (s) {
+      s
+      .select()
+      .from('indexvalues:V.uuid ')
+      .where({uuid: id})
+      .limit(1)
+    })
+    .order('createdAt DESC')
+  })
+  .where({'@class': this.db.SMTINode})
+}
+
 OrientDB.Statement.prototype.inTestCaseEvent = function(id) {
   return this.from(function (s) {
     s

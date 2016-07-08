@@ -9,6 +9,7 @@ import Cover from './edges/cover.js';
 import Fulfillment from './edges/fulfillment.js';
 import FulfillmentEvent from './events/fulfillment-event.js';
 import Invitation from './edges/invitation.js';
+import Know from './edges/know.js';
 import Message from './edges/message.js';
 import Project from './nodes/project.js';
 import ProjectEvent from './events/project-event.js';
@@ -65,6 +66,13 @@ class DAO {
     invt.db = this.db;
     invt.user = this.user;
     return invt;
+  }
+
+  Know(targetId, params) {
+    const knw = new Know(targetId, params);
+    knw.db = this.db;
+    knw.user = this.user;
+    return knw;
   }
 
   Message(targetId, params) {
