@@ -6,6 +6,7 @@ import { roles, permissions, regExRoles } from '../permissions';
 import * as events from '../../events';
 import { collaboratorRoles } from '../../constants';
 import { push } from '../../notification';
+import { toGlobalId } from 'graphql-relay';
 
 import {
   Message
