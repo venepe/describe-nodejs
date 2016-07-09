@@ -69,13 +69,13 @@ class CoverDAO {
           .return(['$newContact', '$newMe'])
           .all()
           .then((result) => {
-            let contact = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+            let node = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
             let me = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
-            let cursor = moment(moment()).toISOString();
+            let cursor = node.createdAt;
 
             resolve({
               contactEdge: {
-                node: contact,
+                node,
                 cursor,
               },
               me

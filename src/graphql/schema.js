@@ -1201,7 +1201,7 @@ var introduceContact = mutationWithClientMutationId({
     }
   },
   mutateAndGetPayload: ({meId, email}, context) => {
-    var localId = fromGlobalId(projectId).id;
+    var localId = fromGlobalId(meId).id;
     return new DAO(context.rootValue.user).Know(localId).create({email});
   }
 });
@@ -1772,6 +1772,34 @@ var didIntroduceMessage = subscriptionWithClientSubscriptionId({
   }
 });
 
+var didIntroduceContact = subscriptionWithClientSubscriptionId({
+  name: 'DidIntroduceContact',
+  inputFields: {
+    meId: {
+      type: new GraphQLNonNull(GraphQLID)
+    }
+  },
+  outputFields: {
+    contactEdge: {
+      type: GraphQLContactEdge,
+      resolve: ({contactEdge}) => { return contactEdge; }
+    },
+    me: {
+      type: userType,
+      resolve: ({me}) => { return me; },
+    }
+  },
+  mutateAndGetPayload: ({meId}, {rootValue}) => {
+    if (rootValue.event) {
+      return rootValue.event;
+    } else {
+      var localId = fromGlobalId(meId).id;
+      rootValue.channel = channels.didIntroduceContactChannel(localId);
+      return {meId};
+    }
+  }
+});
+
 var schema = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: 'RootQueryType',
@@ -1826,6 +1854,7 @@ var schema = new GraphQLSchema({
       didDeleteProject,
       didDeleteTestCase,
       didIntroduceCollaborator,
+      didIntroduceContact,
       didIntroduceInvitation,
       didIntroduceInvitee,
       didIntroduceFulfillment,

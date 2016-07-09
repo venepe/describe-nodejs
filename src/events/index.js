@@ -22,4 +22,5 @@ export { didUpdateProjectChannel, didIntroduceTestCaseChannel, didDeleteCollabor
   didIntroduceFulfillmentChannel, didUpdateFulfillmentChannel, didDeleteTestCaseChannel,
   didUpdateTestCaseChannel, didIntroduceCollaboratorChannel, didDeleteProjectChannel,
   didIntroduceProjectChannel, didIntroduceInviteeChannel, didDeleteInviteeChannel,
-  didIntroduceInvitationChannel, didDeclineInvitationChannel, didAcceptInvitationChannel, didIntroduceMessageChannel } from './channels';
+  didIntroduceInvitationChannel, didDeclineInvitationChannel, didAcceptInvitationChannel,
+  didIntroduceMessageChannel, didIntroduceContactChannel } from './channels';

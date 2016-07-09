@@ -235,7 +235,7 @@ class InvitationDAO {
       var relationalId = this.targetId;
       var user = this.user;
       var userId = this.user.id;
-      var role = this.user.role;  
+      var role = this.user.role;
 
       db
       .let('invitation', (s) => {
@@ -565,6 +565,16 @@ class InvitationDAO {
         let contact = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
         let me = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
         let cursor = moment(moment()).toISOString();
+        let meId = me.id;
+
+        // Add contact to user
+        events.publish(events.didIntroduceContactChannel(meId), {
+          contactEdge: {
+            node: contact,
+            cursor,
+          },
+          me
+        });
 
         resolve({
           contactEdge: {

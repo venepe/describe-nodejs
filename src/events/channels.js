@@ -63,3 +63,7 @@ export const didAcceptInvitationChannel = (userId, inviteeId) => {
 export const didIntroduceMessageChannel = (channelId) => {
   return `/channels/${channelId}/messages`;
 }
+
+export const didIntroduceContactChannel = (userId) => {
+  return `/users/${userId}/contacts`;
+}
