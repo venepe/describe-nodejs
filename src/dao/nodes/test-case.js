@@ -24,9 +24,10 @@ class TestCaseDAO {
       let user = this.user;
       let db = this.db;
       let id = this.targetId;
+      let role = this.user.role;
 
       db
-      .getTestCase()
+      .getTestCase(role)
       .from(_class)
       .where({uuid: id})
       .limit(1)
@@ -53,9 +54,10 @@ class TestCaseDAO {
       let user = this.user;
       let db = this.db;
       let id = this.targetId;
+      let role = this.user.role;
 
       db
-      .getTestCase()
+      .getTestCase(role)
       .outRequiresFromNode(id)
       .where(
         pageObject.where

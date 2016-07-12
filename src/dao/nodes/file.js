@@ -85,9 +85,10 @@ class FileDAO {
       let user = this.user;
       let db = this.db;
       let id = this.targetId;
+      let role = this.user.role;
 
       db
-      .getFulfillment()
+      .getFulfillment(role)
       .inFulfillsFromNode(id)
       .where(
         pageObject.where

@@ -16,9 +16,9 @@ OrientDB.Statement.prototype.getUser = function() {
   return this.select('uuid as id, name, fullName, summary, email, createdAt, updatedAt');
 }
 
-OrientDB.Db.prototype.getTestCase = function() {
+OrientDB.Db.prototype.getTestCase = function(role) {
   this.SMTINode = 'TestCase';
-  return this.select('uuid as id, text, createdAt, updatedAt, ifnull($fulfillment[0].status, -1) as status')
+  return this.select('uuid as id, text, createdAt, updatedAt, ifnull($fulfillment[0].status, -1) as status, ifnull($unread[0].sum, 0) as numOfMessagesUnread')
   .let('fulfillment', function(s) {
     s
     .select('status')
@@ -29,10 +29,19 @@ OrientDB.Db.prototype.getTestCase = function() {
       .limit(1)
     })
   })
+  .let('unread', function(s) {
+    s
+    .select(`sum(unread["${role}"])`)
+    .from(function (s) {
+      s
+      .select('expand(in_Message)')
+      .from('$parent.$current')
+    })
+  })
 }
 
-OrientDB.Statement.prototype.getTestCase = function() {
-  return this.select('uuid as id, text, createdAt, updatedAt, ifnull($fulfillment[0].status, -1) as status')
+OrientDB.Statement.prototype.getTestCase = function(role) {
+  return this.select('uuid as id, text, createdAt, updatedAt, ifnull($fulfillment[0].status, -1) as status, ifnull($unread[0].sum, 0) as numOfMessagesUnread')
   .let('fulfillment', function(s) {
     s
     .select('status')
@@ -41,6 +50,15 @@ OrientDB.Statement.prototype.getTestCase = function() {
       .select('expand(in_Fulfills)')
       .from('$parent.$current')
       .limit(1)
+    })
+  })
+  .let('unread', function(s) {
+    s
+    .select(`sum(unread["${role}"])`)
+    .from(function (s) {
+      s
+      .select('expand(in_Message)')
+      .from('$parent.$current')
     })
   })
 }
@@ -56,7 +74,7 @@ OrientDB.Statement.prototype.getFile = function() {
 
 OrientDB.Db.prototype.getProject = function(role) {
   this.SMTINode = 'Project';
-  return this.select(`uuid as id, text, createdAt, updatedAt, outE(\'Requires\').size() as numOfTestCases, $tcF.size() as numOfTestCasesFulfilled, _allow["${role}"] as permission`)
+  return this.select(`uuid as id, text, createdAt, updatedAt, outE(\'Requires\').size() as numOfTestCases, $tcF.size() as numOfTestCasesFulfilled, _allow["${role}"] as permission, ifnull($unread[0].sum, 0) as numOfMessagesUnread`)
     .let('tcF', function(s) {
       s
       .select()
@@ -69,10 +87,19 @@ OrientDB.Db.prototype.getProject = function(role) {
         `in_Fulfills.status = ${fulfillmentStatus.SUBMITTED}`
       )
     })
+    .let('unread', function(s) {
+      s
+      .select(`sum(unread["${role}"])`)
+      .from(function (s) {
+        s
+        .select('expand(in_Message)')
+        .from('$parent.$current')
+      })
+    })
 }
 
 OrientDB.Statement.prototype.getProject = function(role) {
-  return this.select(`uuid as id, text, createdAt, updatedAt, outE(\'Requires\').size() as numOfTestCases, $tcF.size() as numOfTestCasesFulfilled, _allow["${role}"] as permission`)
+  return this.select(`uuid as id, text, createdAt, updatedAt, outE(\'Requires\').size() as numOfTestCases, $tcF.size() as numOfTestCasesFulfilled, _allow["${role}"] as permission, ifnull($unread[0].sum, 0) as numOfMessagesUnread`)
     .let('tcF', function(s) {
       s
       .select()
@@ -84,6 +111,15 @@ OrientDB.Statement.prototype.getProject = function(role) {
       .where(
         `in_Fulfills.status = ${fulfillmentStatus.SUBMITTED}`
       )
+    })
+    .let('unread', function(s) {
+      s
+      .select(`sum(unread["${role}"])`)
+      .from(function (s) {
+        s
+        .select('expand(in_Message)')
+        .from('$parent.$current')
+      })
     })
 }
 
@@ -119,8 +155,8 @@ OrientDB.Statement.prototype.inCreatesFromNode = function(id) {
   .where({'@class': this.db.SMTINode})
 }
 
-OrientDB.Statement.prototype.getFulfillment = function() {
-  return this.select(`uuid as id, if(eval("$fulfillment[0].status = '${fulfillmentStatus.REJECTED}'"), "${FileConfig.RejectedImageUrl}", uri) as uri, createdAt, updatedAt, $fulfillment[0].status as status`)
+OrientDB.Statement.prototype.getFulfillment = function(role) {
+  return this.select(`uuid as id, if(eval("$fulfillment[0].status = '${fulfillmentStatus.REJECTED}'"), "${FileConfig.RejectedImageUrl}", uri) as uri, createdAt, updatedAt, $fulfillment[0].status as status, ifnull($unread[0].sum, 0) as numOfMessagesUnread`)
     .let('fulfillment', function(s) {
       s
       .select('status')
@@ -131,10 +167,19 @@ OrientDB.Statement.prototype.getFulfillment = function() {
         .limit(1)
       })
     })
+    .let('unread', function(s) {
+      s
+      .select(`sum(unread["${role}"])`)
+      .from(function (s) {
+        s
+        .select('expand(in_Message)')
+        .from('$parent.$current')
+      })
+    })
 }
 
-OrientDB.Db.prototype.getFulfillment = function() {
-  return this.select(`uuid as id, if(eval("$fulfillment[0].status = '${fulfillmentStatus.REJECTED}'"), "${FileConfig.RejectedImageUrl}", uri) as uri, createdAt, updatedAt, $fulfillment[0].status as status`)
+OrientDB.Db.prototype.getFulfillment = function(role) {
+  return this.select(`uuid as id, if(eval("$fulfillment[0].status = '${fulfillmentStatus.REJECTED}'"), "${FileConfig.RejectedImageUrl}", uri) as uri, createdAt, updatedAt, $fulfillment[0].status as status, ifnull($unread[0].sum, 0) as numOfMessagesUnread`)
     .let('fulfillment', function(s) {
       s
       .select('status')
@@ -143,6 +188,15 @@ OrientDB.Db.prototype.getFulfillment = function() {
         .select('expand(outE("Fulfills"))')
         .from('$parent.$current')
         .limit(1)
+      })
+    })
+    .let('unread', function(s) {
+      s
+      .select(`sum(unread["${role}"])`)
+      .from(function (s) {
+        s
+        .select('expand(in_Message)')
+        .from('$parent.$current')
       })
     })
 }

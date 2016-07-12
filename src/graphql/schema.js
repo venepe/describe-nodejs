@@ -122,6 +122,10 @@ let channelInterface = new GraphQLInterfaceType({
       description: 'The messages of the channel.',
       args: connectionArgs,
     },
+    numOfMessagesUnread: {
+      type: GraphQLInt,
+      description: 'The total number of messages unread on the channel.',
+    },
   }),
   resolveType: channel => {
     var {type, id} = fromGlobalId(channel.id);
@@ -315,6 +319,10 @@ let projectType = new GraphQLObjectType({
       type: GraphQLInt,
       description: 'The user permission on the project.',
     },
+    numOfMessagesUnread: {
+      type: GraphQLInt,
+      description: 'The total number of messages unread on the project.',
+    },
     createdAt: {
       type: GraphQLString,
       description: 'The timestamp when the project was created.',
@@ -400,6 +408,10 @@ let testCaseType = new GraphQLObjectType({
     status: {
       type: fulfillmentStatus,
       description: 'The status of the fulfillment.',
+    },
+    numOfMessagesUnread: {
+      type: GraphQLInt,
+      description: 'The total number of messages unread on the test case.',
     },
     createdAt: {
       type: GraphQLString,
@@ -501,6 +513,10 @@ let fulfillmentType = new GraphQLObjectType({
     status: {
       type: fulfillmentStatus,
       description: 'The status of the fulfillment.',
+    },
+    numOfMessagesUnread: {
+      type: GraphQLInt,
+      description: 'The total number of messages unread on the fulfillment.',
     },
     createdAt: {
       type: GraphQLString,
@@ -1179,6 +1195,25 @@ var introduceMessage = mutationWithClientMutationId({
   }
 });
 
+var readChannel = mutationWithClientMutationId({
+  name: 'ReadChannel',
+  inputFields: {
+    id: {
+      type: new GraphQLNonNull(GraphQLID)
+    },
+  },
+  outputFields: {
+    channel: {
+      type: channelInterface,
+      resolve: ({channel}) => { return channel },
+    },
+  },
+  mutateAndGetPayload: ({id}, context) => {
+    var {type, id} = fromGlobalId(id);
+    return new DAO(context.rootValue.user).Message(id).readChannel({channelType: type});
+  }
+});
+
 var introduceContact = mutationWithClientMutationId({
   name: 'IntroduceContact',
   inputFields: {
@@ -1836,6 +1871,7 @@ var schema = new GraphQLSchema({
       introduceMessage,
       introduceProject,
       introduceTestCase,
+      readChannel,
       updateFulfillment,
       updateProject,
       updateTestCase,

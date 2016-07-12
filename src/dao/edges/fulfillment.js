@@ -24,9 +24,10 @@ class FulfillmentDAO {
       let user = this.user;
       let db = this.db;
       let id = this.targetId;
+      let role = this.user.role;
 
       db
-      .getFulfillment()
+      .getFulfillment(role)
       .from('File')
       .where({uuid: id})
       .limit(1)

@@ -163,6 +163,64 @@ class MessageDAO {
     });
   }
 
+  readChannel({channelType}) {
+    return new Promise((resolve, reject) => {
+      var db = this.db;
+      var targetId = this.targetId;
+      var user = this.user;
+      var userId = this.user.id;
+      var role = this.user.role;
+
+      db
+      .let('messages', (s) => {
+        s
+        .select('expand(in_Message)')
+        .from('indexvalues:V.uuid')
+        .where({
+          uuid: targetId
+        })
+      })
+      .let('updateMessages', (s) => {
+        s
+        .update(`$messages REMOVE unread = "${role}"`)
+      })
+      .let('channel', (s) => {
+        s
+        .select('uuid as id, text')
+        .from('indexvalues:V.uuid')
+        .where({
+          uuid: targetId
+        })
+      })
+      .commit()
+      .return(['$channel'])
+      .all()
+      .then((result) => {
+        let channel = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+        channel.numOfMessagesUnread = 0;
+
+        channel.id = toGlobalId(channelType, channel.id);
+
+        // events.publish(events.didIntroduceMessageChannel(relationalId), {
+        //   messageEdge: {
+        //     cursor,
+        //     node
+        //   },
+        //   channel
+        // });
+
+        resolve({
+          channel
+        });
+      })
+      .catch((e) => {
+        console.log(`orientdb error: ${e}`);
+        reject();
+      })
+      .done();
+    });
+  }
+
   // TODO: order by backwards pagination fails
   getEdgeMessages(args) {
     let pageObject = Pagination.getDescOrientDBPageFromGraphQL(args);
