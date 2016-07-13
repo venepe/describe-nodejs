@@ -60,8 +60,8 @@ export const didAcceptInvitationChannel = (userId, inviteeId) => {
   return `/users/${userId}/invitations/${inviteeId}/accept`;
 }
 
-export const didIntroduceMessageChannel = (channelId) => {
-  return `/channels/${channelId}/messages`;
+export const didIntroduceMessageChannel = (role, channelId) => {
+  return `roles/${role}/channels/${channelId}/messages`;
 }
 
 export const didIntroduceContactChannel = (userId) => {

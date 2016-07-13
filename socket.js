@@ -20,7 +20,7 @@ export const connect = socket => {
   });
 
   socket.on('graphql/subscription', async request => {
-    const channel = await events.channelForSubscription(request);
+    const channel = await events.channelForSubscription(request, rootValue);
     const listener = ev => handleSubscription(request, ev);
 
     subscriptions[request.id] = {

@@ -1793,15 +1793,23 @@ var didIntroduceMessage = subscriptionWithClientSubscriptionId({
     },
     channel: {
       type: channelInterface,
-      resolve: ({channel}) => { return channel },
+      resolve: ({channel}) => {
+          // TODO: Fix this, the interface is locked on test case
+          channel.id = toGlobalId('TestCase', channel.id);
+         return channel
+       },
     },
   },
   mutateAndGetPayload: ({channelId}, {rootValue}) => {
     if (rootValue.event) {
       return rootValue.event;
     } else {
-      var localId = fromGlobalId(channelId).id;
-      rootValue.channel = channels.didIntroduceMessageChannel(localId);
+      var user = rootValue.user || {};
+      var role = user.role;
+      if (role) {
+        var localId = fromGlobalId(channelId).id;
+        rootValue.channel = channels.didIntroduceMessageChannel(role, localId);
+      }
       return {channelId};
     }
   }

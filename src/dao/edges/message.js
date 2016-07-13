@@ -7,6 +7,7 @@ import * as events from '../../events';
 import { collaboratorRoles } from '../../constants';
 import { push } from '../../notification';
 import { toGlobalId } from 'graphql-relay';
+import _ from 'lodash';
 
 import {
   Message
@@ -102,7 +103,7 @@ class MessageDAO {
           })
           .let('newChannel', (s) => {
             s
-            .select('uuid as id, text')
+            .select('uuid as id, text, numOfMessagesUnread')
             .from('$channel')
           })
           .let('project', (s) => {
@@ -124,16 +125,31 @@ class MessageDAO {
             let channel = filteredObject(result[1], 'in_.*|out_.*|@.*|^_');
             let cursor = node.createdAt;
             let projectId = result[2].id;
+            let numOfMessagesUnread = channel.numOfMessagesUnread || {};
 
-            channel.id = toGlobalId(channelType, channel.id)
+            channel.id = toGlobalId(channelType, channel.id);
 
-            events.publish(events.didIntroduceMessageChannel(relationalId), {
-              messageEdge: {
-                cursor,
-                node
-              },
-              channel
-            });
+            const keys = Object.keys(numOfMessagesUnread);
+            function publishIntroducedMessage(index = 0) {
+              if (keys.length > index) {
+                setTimeout(() => {
+                  const role = keys[index];
+                  const unreadMessages = numOfMessagesUnread[role];
+                  channel.numOfMessagesUnread = unreadMessages;
+                  events.publish(events.didIntroduceMessageChannel(role, relationalId), {
+                    messageEdge: {
+                      cursor,
+                      node
+                    },
+                    channel
+                  });
+                  index++;
+                  publishIntroducedMessage(index)
+                }, 100);
+              }
+            }
+
+            publishIntroducedMessage(0);
 
             //Start push notification
             let title = `${channel.text}`;
@@ -172,42 +188,27 @@ class MessageDAO {
       var role = this.user.role;
 
       db
-      .let('messages', (s) => {
-        s
-        .select('expand(in_Message)')
-        .from('indexvalues:V.uuid')
-        .where({
-          uuid: targetId
-        })
-      })
-      .let('updateMessages', (s) => {
-        s
-        .update(`$messages REMOVE unread = "${role}"`)
-      })
       .let('channel', (s) => {
         s
-        .select('uuid as id, text')
+        .select()
         .from('indexvalues:V.uuid')
         .where({
           uuid: targetId
         })
+      })
+      .let('updateChannel', (s) => {
+        s
+        .update(`$channel REMOVE numOfMessagesUnread = "${role}"`)
       })
       .commit()
       .return(['$channel'])
       .all()
       .then((result) => {
         let channel = filteredObject(result[0], 'in_.*|out_.*|@.*|^_');
+        channel = uuidToId(channel);
         channel.numOfMessagesUnread = 0;
 
         channel.id = toGlobalId(channelType, channel.id);
-
-        // events.publish(events.didIntroduceMessageChannel(relationalId), {
-        //   messageEdge: {
-        //     cursor,
-        //     node
-        //   },
-        //   channel
-        // });
 
         resolve({
           channel
