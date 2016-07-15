@@ -1306,7 +1306,7 @@ var didIntroduceTestCase = subscriptionWithClientSubscriptionId({
       type: GraphQLTestCaseEdge,
       resolve: ({testCaseEdge}) => {
         testCaseEdge.node.fulfillments = {pageInfo: {hasNextPage: false, hasPreviousPage: false}, edges: []};
-        testCaseEdge.node.rejections = {pageInfo: {hasNextPage: false, hasPreviousPage: false}, edges: []};
+        testCaseEdge.node.messages = {pageInfo: {hasNextPage: false, hasPreviousPage: false}, edges: []};
         testCaseEdge.node.events = {pageInfo: {hasNextPage: false, hasPreviousPage: false}, edges: []};
 
         return testCaseEdge;
