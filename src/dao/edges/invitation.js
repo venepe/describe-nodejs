@@ -289,21 +289,21 @@ class InvitationDAO {
         .select('expand(outE(\'Requires\').inV(\'TestCase\').inE(\'Fulfills\').outV(\'File\'))')
         .from('$project')
       })
-      .let('updateTestCases', (s) => {
-        s
-        .update(`$testCases PUT _allow = "${role}", ${roles.owner}`)
-      })
       .let('updateFiles', (s) => {
         s
         .update(`$files PUT _allow = "${role}", ${roles.owner}`)
       })
-      .let('updateProject', (s) => {
+      .let('updateTestCases', (s) => {
         s
-        .update(`$project PUT _allow = "${role}", ${roles.contributor}`)
+        .update(`$testCases PUT _allow = "${role}", ${roles.owner}`)
       })
       .let('updateCollaboratesOn', (s) => {
         s
         .update(`$collaborateson PUT _allow = "${role}", ${roles.owner}`)
+      })
+      .let('updateProject', (s) => {
+        s
+        .update(`$project PUT _allow = "${role}", ${roles.contributor}`)
       })
       .let('deletes', (s) => {
         s
