@@ -261,6 +261,10 @@ let collaboratorType = new GraphQLObjectType({
       type: collaboratorRoles,
       description: 'The role of the collaborator.',
     },
+    permission: {
+      type: GraphQLInt,
+      description: 'The user permission on the collaborator.',
+    },
     createdAt: {
       type: GraphQLString,
       description: 'The timestamp when the collaborator was created.',
@@ -413,6 +417,10 @@ let testCaseType = new GraphQLObjectType({
       type: GraphQLInt,
       description: 'The total number of messages unread on the test case.',
     },
+    permission: {
+      type: GraphQLInt,
+      description: 'The user permission on the test case.',
+    },
     createdAt: {
       type: GraphQLString,
       description: 'The timestamp when the test case was created.',
@@ -479,6 +487,10 @@ let coverType = new GraphQLObjectType({
       type: GraphQLString,
       description: 'The uri of the cover.',
     },
+    permission: {
+      type: GraphQLInt,
+      description: 'The user permission on the cover.',
+    },
     createdAt: {
       type: GraphQLString,
       description: 'The timestamp when the file was created.',
@@ -517,6 +529,10 @@ let fulfillmentType = new GraphQLObjectType({
     numOfMessagesUnread: {
       type: GraphQLInt,
       description: 'The total number of messages unread on the fulfillment.',
+    },
+    permission: {
+      type: GraphQLInt,
+      description: 'The user permission on the fulfillment.',
     },
     createdAt: {
       type: GraphQLString,

@@ -22,9 +22,10 @@ class CollaborationDAO {
       let user = this.user;
       let db = this.db;
       let id = this.targetId;
+      let role = this.user.role;
 
       db
-      .getCollaborator()
+      .getCollaborator(role)
       .from('CollaboratesOn')
       .where({uuid: id})
       .limit(1)

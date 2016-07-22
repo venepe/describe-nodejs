@@ -18,7 +18,7 @@ OrientDB.Statement.prototype.getUser = function() {
 
 OrientDB.Db.prototype.getTestCase = function(role) {
   this.SMTINode = 'TestCase';
-  return this.select(`uuid as id, text, createdAt, updatedAt, ifnull($fulfillment[0].status, -1) as status, ifnull(numOfMessagesUnread["${role}"], 0) as numOfMessagesUnread`)
+  return this.select(`uuid as id, text, createdAt, updatedAt, ifnull($fulfillment[0].status, -1) as status, _allow["${role}"] as permission, ifnull(numOfMessagesUnread["${role}"], 0) as numOfMessagesUnread`)
   .let('fulfillment', function(s) {
     s
     .select('status')
@@ -32,7 +32,7 @@ OrientDB.Db.prototype.getTestCase = function(role) {
 }
 
 OrientDB.Statement.prototype.getTestCase = function(role) {
-  return this.select(`uuid as id, text, createdAt, updatedAt, ifnull($fulfillment[0].status, -1) as status, ifnull(numOfMessagesUnread["${role}"], 0) as numOfMessagesUnread`)
+  return this.select(`uuid as id, text, createdAt, updatedAt, ifnull($fulfillment[0].status, -1) as status, _allow["${role}"] as permission, ifnull(numOfMessagesUnread["${role}"], 0) as numOfMessagesUnread`)
   .let('fulfillment', function(s) {
     s
     .select('status')
@@ -120,7 +120,7 @@ OrientDB.Statement.prototype.inCreatesFromNode = function(id) {
 }
 
 OrientDB.Statement.prototype.getFulfillment = function(role) {
-  return this.select(`uuid as id, if(eval("$fulfillment[0].status = '${fulfillmentStatus.REJECTED}'"), "${FileConfig.RejectedImageUrl}", uri) as uri, createdAt, updatedAt, $fulfillment[0].status as status, ifnull(numOfMessagesUnread["${role}"], 0) as numOfMessagesUnread`)
+  return this.select(`uuid as id, if(eval("$fulfillment[0].status = '${fulfillmentStatus.REJECTED}'"), "${FileConfig.RejectedImageUrl}", uri) as uri, createdAt, updatedAt, $fulfillment[0].status as status, _allow["${role}"] as permission, ifnull(numOfMessagesUnread["${role}"], 0) as numOfMessagesUnread`)
     .let('fulfillment', function(s) {
       s
       .select('status')
@@ -134,7 +134,7 @@ OrientDB.Statement.prototype.getFulfillment = function(role) {
 }
 
 OrientDB.Db.prototype.getFulfillment = function(role) {
-  return this.select(`uuid as id, if(eval("$fulfillment[0].status = '${fulfillmentStatus.REJECTED}'"), "${FileConfig.RejectedImageUrl}", uri) as uri, createdAt, updatedAt, $fulfillment[0].status as status, ifnull(numOfMessagesUnread["${role}"], 0) as numOfMessagesUnread`)
+  return this.select(`uuid as id, if(eval("$fulfillment[0].status = '${fulfillmentStatus.REJECTED}'"), "${FileConfig.RejectedImageUrl}", uri) as uri, createdAt, updatedAt, $fulfillment[0].status as status, _allow["${role}"] as permission, ifnull(numOfMessagesUnread["${role}"], 0) as numOfMessagesUnread`)
     .let('fulfillment', function(s) {
       s
       .select('status')
@@ -147,8 +147,8 @@ OrientDB.Db.prototype.getFulfillment = function(role) {
     })
 }
 
-OrientDB.Db.prototype.getCollaborator = function() {
-  return this.select('uuid as id, role, createdAt, updatedAt, $profile[0] as profile')
+OrientDB.Db.prototype.getCollaborator = function(role) {
+  return this.select(`uuid as id, role, createdAt, updatedAt, $profile[0] as profile, _allow["${role}"] as permission`)
     .let('profile', function(s) {
       s
       .getUser()
@@ -162,8 +162,8 @@ OrientDB.Db.prototype.getCollaborator = function() {
     })
 }
 
-OrientDB.Statement.prototype.getCollaborator = function() {
-  return this.select('uuid as id, role, createdAt, updatedAt, $profile[0] as profile')
+OrientDB.Statement.prototype.getCollaborator = function(role) {
+  return this.select(`uuid as id, role, createdAt, updatedAt, $profile[0] as profile, _allow["${role}"] as permission`)
     .let('profile', function(s) {
       s
       .getUser()
